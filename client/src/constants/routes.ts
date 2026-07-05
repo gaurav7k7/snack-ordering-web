@@ -3,5 +3,8 @@ export const ROUTES = {
   products: '/products',
   cart: '/cart',
   login: '/login',
+  register: '/register',
+  forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password',
   adminDashboard: '/admin/dashboard',
 } as const;

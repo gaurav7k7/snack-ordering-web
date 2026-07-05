@@ -8,7 +8,12 @@ type SearchSuggestionsProps = {
   onSuggestionClick: (value: string) => void;
 };
 
-export function SearchSuggestions({ query, suggestions, popularSearches, onSuggestionClick }: SearchSuggestionsProps) {
+export function SearchSuggestions({
+  query,
+  suggestions,
+  popularSearches,
+  onSuggestionClick,
+}: SearchSuggestionsProps) {
   const hasQuery = query.trim().length > 0;
 
   const displayItems = useMemo(() => {

@@ -69,7 +69,10 @@ export function SearchFilters({
   onResetFilters,
 }: SearchFiltersProps) {
   const brandOptions = useMemo(
-    () => [{ value: '', label: 'All brands' }, ...brands.map((brand) => ({ value: brand, label: brand }))],
+    () => [
+      { value: '', label: 'All brands' },
+      ...brands.map((brand) => ({ value: brand, label: brand })),
+    ],
     [brands],
   );
 

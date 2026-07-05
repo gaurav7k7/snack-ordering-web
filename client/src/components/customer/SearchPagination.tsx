@@ -28,7 +28,12 @@ export function SearchPagination({ page, totalPages, onPageChange }: SearchPagin
         Page {page} of {totalPages}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="ghost" disabled={page === 1} onClick={() => onPageChange(page - 1)}>
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={page === 1}
+          onClick={() => onPageChange(page - 1)}
+        >
           Previous
         </Button>
         {createPageButtons().map((pageNumber) => (

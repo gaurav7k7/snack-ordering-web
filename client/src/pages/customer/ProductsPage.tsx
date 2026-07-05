@@ -15,7 +15,9 @@ import type { SearchProduct } from '@/types/product';
 const DEFAULT_PAGE_SIZE = 16;
 
 function getUniqueValues(items: SearchProduct[], field: keyof SearchProduct) {
-  return Array.from(new Set(items.flatMap((item) => (item[field] ? [item[field]] : [])))) as string[];
+  return Array.from(
+    new Set(items.flatMap((item) => (item[field] ? [item[field]] : []))),
+  ) as string[];
 }
 
 export default function ProductsPage() {
@@ -42,7 +44,16 @@ export default function ProductsPage() {
       page: String(page),
       limit: String(DEFAULT_PAGE_SIZE),
     }),
-    [selectedAvailability, selectedBrand, selectedCategory, selectedDiscount, selectedRating, selectedSort, page, searchParams],
+    [
+      selectedAvailability,
+      selectedBrand,
+      selectedCategory,
+      selectedDiscount,
+      selectedRating,
+      selectedSort,
+      page,
+      searchParams,
+    ],
   );
 
   const { data, isFetching } = useSearchProductsQuery(queryParams);
@@ -50,7 +61,12 @@ export default function ProductsPage() {
   const { data: suggestionsData } = useSearchSuggestionsQuery(suggestionsQuery);
 
   const products = data?.products ?? [];
-  const pagination = data?.pagination ?? { total: 0, page: 1, limit: DEFAULT_PAGE_SIZE, totalPages: 1 };
+  const pagination = data?.pagination ?? {
+    total: 0,
+    page: 1,
+    limit: DEFAULT_PAGE_SIZE,
+    totalPages: 1,
+  };
 
   const categories = useMemo(() => getUniqueValues(products, 'category'), [products]);
   const brands = useMemo(() => getUniqueValues(products, 'brand'), [products]);

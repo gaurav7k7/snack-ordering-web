@@ -12,5 +12,7 @@ export const listProducts = asyncHandler(async (req, res) => {
 export const getProductSearchSuggestions = asyncHandler(async (req, res) => {
   const q = typeof req.query.q === 'string' ? req.query.q : '';
   const response = await getSearchSuggestions(q);
-  res.status(StatusCodes.OK).json(createApiResponse('Search suggestions retrieved successfully.', response));
+  res
+    .status(StatusCodes.OK)
+    .json(createApiResponse('Search suggestions retrieved successfully.', response));
 });

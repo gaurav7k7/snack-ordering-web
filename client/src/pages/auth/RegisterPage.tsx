@@ -8,32 +8,39 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { useLoginMutation } from '@/redux/api/authApi';
+import { useRegisterMutation } from '@/redux/api/authApi';
 import { setUser } from '@/redux/slices/authSlice';
-import { loginSchema, type LoginInput } from '@/validation/auth.schema';
+import { registerSchema, type RegisterFormInput } from '@/validation/auth.schema';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const authState = useAppSelector((state) => state.auth);
-  const [login, { data, error, isLoading, isSuccess }] = useLoginMutation();
+  const [register, { data, error, isLoading, isSuccess }] = useRegisterMutation();
   const {
-    register,
+    register: registerField,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '', rememberMe: false },
+  } = useForm<RegisterFormInput>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      rememberMe: false,
+    },
   });
 
   useEffect(() => {
     if (isSuccess && data?.data?.user) {
       dispatch(setUser(data.data.user));
-      toast.success('Welcome back!');
+      toast.success('Welcome aboard!');
       navigate(ROUTES.home, { replace: true });
     }
+
     if (error) {
-      const message = (error as any)?.data?.message ?? 'Login failed.';
+      const message = (error as any)?.data?.message ?? 'Registration failed.';
       toast.error(message);
     }
   }, [data, dispatch, error, isSuccess, navigate]);
@@ -44,22 +51,35 @@ export default function LoginPage() {
     }
   }, [authState.isAuthenticated, navigate]);
 
+  const onSubmit = async (values: RegisterFormInput) => {
+    const { confirmPassword, ...payload } = values;
+    await register(payload);
+  };
+
   return (
     <main className="grid min-h-screen place-items-center bg-background p-6">
       <Helmet>
-        <title>Sign in | SnackCo</title>
+        <title>Create account | SnackCo</title>
       </Helmet>
       <section className="w-full max-w-lg rounded-3xl border border-border bg-card p-8 shadow-sm">
-        <h1 className="text-3xl font-black">Sign in to SnackCo</h1>
+        <h1 className="text-3xl font-black">Create your account</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Access your cart, orders, and saved favorites.
+          Sign up to save favorites, order faster, and track your snacks.
         </p>
-        <form className="mt-8 grid gap-4" onSubmit={handleSubmit((values) => login(values))}>
+        <form className="mt-8 grid gap-4" onSubmit={handleSubmit(onSubmit)}>
+          <label className="grid gap-2 text-sm">
+            <span>Name</span>
+            <input
+              {...registerField('name')}
+              className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+            {errors.name && <span className="text-sm text-destructive">{errors.name.message}</span>}
+          </label>
           <label className="grid gap-2 text-sm">
             <span>Email address</span>
             <input
               type="email"
-              {...register('email')}
+              {...registerField('email')}
               className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             {errors.email && (
@@ -70,36 +90,42 @@ export default function LoginPage() {
             <span>Password</span>
             <input
               type="password"
-              {...register('password')}
+              {...registerField('password')}
               className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             {errors.password && (
               <span className="text-sm text-destructive">{errors.password.message}</span>
             )}
           </label>
+          <label className="grid gap-2 text-sm">
+            <span>Confirm password</span>
+            <input
+              type="password"
+              {...registerField('confirmPassword')}
+              className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+            {errors.confirmPassword && (
+              <span className="text-sm text-destructive">{errors.confirmPassword.message}</span>
+            )}
+          </label>
           <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <input
               type="checkbox"
-              {...register('rememberMe')}
+              {...registerField('rememberMe')}
               className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
             />
-            Remember me
+            Remember me for 30 days
           </label>
           <Button type="submit" className="mt-4 w-full" disabled={isLoading}>
-            {isLoading ? 'Signing in…' : 'Sign in'}
+            {isLoading ? 'Creating account…' : 'Create account'}
           </Button>
         </form>
-        <div className="mt-6 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <Link to={ROUTES.forgotPassword} className="font-semibold text-primary hover:underline">
-            Forgot password?
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Already have an account?{' '}
+          <Link to={ROUTES.login} className="font-semibold text-primary hover:underline">
+            Sign in
           </Link>
-          <span>
-            New here?{' '}
-            <Link to={ROUTES.register} className="font-semibold text-primary hover:underline">
-              Create account
-            </Link>
-          </span>
-        </div>
+        </p>
       </section>
     </main>
   );

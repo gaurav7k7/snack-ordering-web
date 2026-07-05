@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import passport from 'passport';
+import './config/passport.js';
 
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';

@@ -85,7 +85,11 @@ export async function searchProducts(params: SearchProductsParams) {
   const sort = SORT_MAP[params.sort ?? 'newest'] ?? { isFeatured: -1, createdAt: -1 };
 
   const [products, total] = await Promise.all([
-    ProductModel.find(query).sort(sort).skip((page - 1) * limit).limit(limit).lean(),
+    ProductModel.find(query)
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
     ProductModel.countDocuments(query),
   ]);
 

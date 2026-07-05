@@ -3,71 +3,70 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { useLoginMutation } from '@/redux/api/authApi';
-import { setUser } from '@/redux/slices/authSlice';
-import { loginSchema, type LoginInput } from '@/validation/auth.schema';
+import { useResetPasswordMutation } from '@/redux/api/authApi';
+import { resetPasswordSchema, type ResetPasswordFormInput } from '@/validation/auth.schema';
 
-export default function LoginPage() {
-  const dispatch = useAppDispatch();
+export default function ResetPasswordPage() {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const authState = useAppSelector((state) => state.auth);
-  const [login, { data, error, isLoading, isSuccess }] = useLoginMutation();
+  const [resetPassword, { isLoading, isSuccess, error }] = useResetPasswordMutation();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '', rememberMe: false },
+  } = useForm<ResetPasswordFormInput>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      email: searchParams.get('email') ?? '',
+      token: searchParams.get('token') ?? '',
+      password: '',
+      rememberMe: false,
+    },
   });
 
   useEffect(() => {
-    if (isSuccess && data?.data?.user) {
-      dispatch(setUser(data.data.user));
-      toast.success('Welcome back!');
+    if (isSuccess) {
+      toast.success('Password reset successfully.');
       navigate(ROUTES.home, { replace: true });
     }
     if (error) {
-      const message = (error as any)?.data?.message ?? 'Login failed.';
+      const message = (error as any)?.data?.message ?? 'Unable to reset password.';
       toast.error(message);
     }
-  }, [data, dispatch, error, isSuccess, navigate]);
-
-  useEffect(() => {
-    if (authState.isAuthenticated) {
-      navigate(ROUTES.home, { replace: true });
-    }
-  }, [authState.isAuthenticated, navigate]);
+  }, [error, isSuccess, navigate]);
 
   return (
     <main className="grid min-h-screen place-items-center bg-background p-6">
       <Helmet>
-        <title>Sign in | SnackCo</title>
+        <title>Reset password | SnackCo</title>
       </Helmet>
       <section className="w-full max-w-lg rounded-3xl border border-border bg-card p-8 shadow-sm">
-        <h1 className="text-3xl font-black">Sign in to SnackCo</h1>
+        <h1 className="text-3xl font-black">Choose a new password</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Access your cart, orders, and saved favorites.
+          Enter your new password to finish the reset.
         </p>
-        <form className="mt-8 grid gap-4" onSubmit={handleSubmit((values) => login(values))}>
+        <form
+          className="mt-8 grid gap-4"
+          onSubmit={handleSubmit((values) => resetPassword(values))}
+        >
           <label className="grid gap-2 text-sm">
             <span>Email address</span>
             <input
               type="email"
               {...register('email')}
-              className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              readOnly
+              className="rounded-xl border border-input bg-muted px-4 py-3 text-sm outline-none"
             />
             {errors.email && (
               <span className="text-sm text-destructive">{errors.email.message}</span>
             )}
           </label>
           <label className="grid gap-2 text-sm">
-            <span>Password</span>
+            <span>New password</span>
             <input
               type="password"
               {...register('password')}
@@ -83,23 +82,17 @@ export default function LoginPage() {
               {...register('rememberMe')}
               className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
             />
-            Remember me
+            Keep me signed in
           </label>
           <Button type="submit" className="mt-4 w-full" disabled={isLoading}>
-            {isLoading ? 'Signing in…' : 'Sign in'}
+            {isLoading ? 'Resetting…' : 'Reset password'}
           </Button>
         </form>
-        <div className="mt-6 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <Link to={ROUTES.forgotPassword} className="font-semibold text-primary hover:underline">
-            Forgot password?
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          <Link to={ROUTES.login} className="font-semibold text-primary hover:underline">
+            Back to sign in
           </Link>
-          <span>
-            New here?{' '}
-            <Link to={ROUTES.register} className="font-semibold text-primary hover:underline">
-              Create account
-            </Link>
-          </span>
-        </div>
+        </p>
       </section>
     </main>
   );

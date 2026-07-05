@@ -119,7 +119,11 @@ export function SiteHeader() {
             />
             <aside className="absolute left-0 top-0 h-full w-80 max-w-[88vw] bg-background p-5 shadow-2xl">
               <div className="mb-6 flex items-center justify-between">
-                <Link to={ROUTES.home} className="text-xl font-black" onClick={() => setIsMobileOpen(false)}>
+                <Link
+                  to={ROUTES.home}
+                  className="text-xl font-black"
+                  onClick={() => setIsMobileOpen(false)}
+                >
                   SnackCo
                 </Link>
                 <Button

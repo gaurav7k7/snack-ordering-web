@@ -14,7 +14,9 @@ type SearchResponse = {
 
 export const productsApi = createApi({
   reducerPath: 'productsApi',
-  baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api/v1' }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api/v1',
+  }),
   tagTypes: ['Products', 'Suggestions'],
   endpoints: (builder) => ({
     searchProducts: builder.query<SearchResponse, Record<string, string>>({

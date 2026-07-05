@@ -11,12 +11,7 @@ type ProductCardProps = {
 };
 
 function getProductImage(product: HomeProduct | SearchProduct) {
-  return (
-    product.image ||
-    product.images?.[0]?.url ||
-    product.images?.[0]?.url ||
-    ''
-  );
+  return product.image || product.images?.[0]?.url || product.images?.[0]?.url || '';
 }
 
 function getProductPrice(product: HomeProduct | SearchProduct) {
@@ -24,7 +19,10 @@ function getProductPrice(product: HomeProduct | SearchProduct) {
 }
 
 function getCompareAtPrice(product: HomeProduct | SearchProduct) {
-  return product.compareAtPrice ?? (product.price !== undefined && product.offerPrice ? product.price : undefined);
+  return (
+    product.compareAtPrice ??
+    (product.price !== undefined && product.offerPrice ? product.price : undefined)
+  );
 }
 
 function getProductRating(product: HomeProduct | SearchProduct) {
