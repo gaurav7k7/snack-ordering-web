@@ -1,6 +1,6 @@
 import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { MiniCart } from '@/components/shared/MiniCart';
@@ -17,6 +17,15 @@ const navItems = [
 export function SiteHeader() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearchSubmit = (query: string) => {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return;
+    navigate(`${ROUTES.products}?q=${encodeURIComponent(trimmedQuery)}`);
+  };
 
   return (
     <>
@@ -51,7 +60,14 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          <form className="ml-auto hidden max-w-md flex-1 items-center md:flex" role="search">
+          <form
+            className="ml-auto hidden max-w-md flex-1 items-center md:flex"
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleSearchSubmit(searchQuery);
+            }}
+          >
             <label htmlFor="site-search" className="sr-only">
               Search snacks
             </label>
@@ -60,6 +76,8 @@ export function SiteHeader() {
               <input
                 id="site-search"
                 type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search popcorn, chips, combos..."
                 className="h-11 w-full rounded-md border bg-background pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
@@ -113,7 +131,15 @@ export function SiteHeader() {
                   <X className="h-5 w-5" />
                 </Button>
               </div>
-              <form className="mb-6" role="search">
+              <form
+                className="mb-6"
+                role="search"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  handleSearchSubmit(mobileSearchQuery);
+                  setIsMobileOpen(false);
+                }}
+              >
                 <label htmlFor="mobile-site-search" className="sr-only">
                   Search snacks
                 </label>
@@ -122,6 +148,8 @@ export function SiteHeader() {
                   <input
                     id="mobile-site-search"
                     type="search"
+                    value={mobileSearchQuery}
+                    onChange={(event) => setMobileSearchQuery(event.target.value)}
                     placeholder="Search snacks..."
                     className="h-11 w-full rounded-md border bg-background pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />

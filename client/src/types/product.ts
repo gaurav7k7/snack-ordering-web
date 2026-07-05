@@ -10,3 +10,32 @@ export type Product = {
   stock: number;
   isActive: boolean;
 };
+
+export type SearchProduct = {
+  id?: string;
+  _id?: string;
+  slug: string;
+  name: string;
+  category: string;
+  subCategory?: string;
+  brand?: string;
+  sku?: string;
+  description?: string;
+  price?: number;
+  offerPrice?: number;
+  compareAtPrice?: number;
+  discount?: number;
+  image?: string;
+  images?: { url: string }[];
+  tags?: string[];
+  rating?: number;
+  averageRating?: number;
+  reviews?: number;
+  reviewCount?: number;
+  isFeatured?: boolean;
+  isTrending?: boolean;
+  isBestSeller?: boolean;
+  badge?: string;
+  availableQuantity?: number;
+  stock?: 'in_stock' | 'low_stock' | 'out_of_stock';
+};

@@ -3,27 +3,72 @@ import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import type { HomeProduct } from '@/types/home';
+import type { SearchProduct } from '@/types/product';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 type ProductCardProps = {
-  product: HomeProduct;
+  product: HomeProduct | SearchProduct;
 };
 
+function getProductImage(product: HomeProduct | SearchProduct) {
+  return (
+    product.image ||
+    product.images?.[0]?.url ||
+    product.images?.[0]?.url ||
+    ''
+  );
+}
+
+function getProductPrice(product: HomeProduct | SearchProduct) {
+  return product.price ?? product.offerPrice ?? product.compareAtPrice ?? 0;
+}
+
+function getCompareAtPrice(product: HomeProduct | SearchProduct) {
+  return product.compareAtPrice ?? (product.price !== undefined && product.offerPrice ? product.price : undefined);
+}
+
+function getProductRating(product: HomeProduct | SearchProduct) {
+  return product.rating ?? product.averageRating ?? 0;
+}
+
+function getProductReviews(product: HomeProduct | SearchProduct) {
+  return product.reviews ?? product.reviewCount ?? 0;
+}
+
+function getBadge(product: HomeProduct | SearchProduct) {
+  return (
+    product.badge ||
+    (product.isBestSeller ? 'Best seller' : undefined) ||
+    (product.isTrending ? 'Trending' : undefined) ||
+    (product.isFeatured ? 'Featured' : undefined) ||
+    ''
+  );
+}
+
 export function ProductCard({ product }: ProductCardProps) {
+  const imageUrl = getProductImage(product);
+  const price = getProductPrice(product);
+  const compareAtPrice = getCompareAtPrice(product);
+  const rating = getProductRating(product);
+  const reviews = getProductReviews(product);
+  const badge = getBadge(product);
+
   return (
     <article className="group overflow-hidden rounded-lg border bg-card text-card-foreground transition duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <Link to={`/products/${product.slug}`} className="block h-full">
           <img
-            src={product.image}
+            src={imageUrl}
             alt={product.name}
             loading="lazy"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
         </Link>
-        <span className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-          {product.badge}
-        </span>
+        {badge ? (
+          <span className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+            {badge}
+          </span>
+        ) : null}
         <Button
           type="button"
           size="icon"
@@ -47,15 +92,15 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         <div className="flex items-center gap-1 text-sm">
           <Star className="h-4 w-4 fill-secondary text-secondary" aria-hidden="true" />
-          <span className="font-semibold">{product.rating}</span>
-          <span className="text-muted-foreground">({product.reviews})</span>
+          <span className="font-semibold">{rating.toFixed(1)}</span>
+          <span className="text-muted-foreground">({reviews})</span>
         </div>
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-lg font-bold">{formatCurrency(product.price)}</span>
-            {product.compareAtPrice ? (
+            <span className="text-lg font-bold">{formatCurrency(price)}</span>
+            {compareAtPrice ? (
               <span className="text-sm text-muted-foreground line-through">
-                {formatCurrency(product.compareAtPrice)}
+                {formatCurrency(compareAtPrice)}
               </span>
             ) : null}
           </div>
