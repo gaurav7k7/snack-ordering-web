@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 import { App } from '@/app/App';
+import { ThemeProvider } from '@/components/shared/ThemeProvider';
 import { store } from '@/redux/store';
 import '@/styles/globals.css';
 
@@ -13,12 +14,14 @@ createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <HelmetProvider>
       <Provider store={store}>
-        <BrowserRouter>
-          <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
-            <App />
-          </Suspense>
-          <Toaster position="top-right" />
-        </BrowserRouter>
+        <ThemeProvider>
+          <BrowserRouter>
+            <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
+              <App />
+            </Suspense>
+            <Toaster position="top-right" />
+          </BrowserRouter>
+        </ThemeProvider>
       </Provider>
     </HelmetProvider>
   </StrictMode>,

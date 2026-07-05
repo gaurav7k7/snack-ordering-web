@@ -1,8 +1,10 @@
 import { lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { CustomerLayout } from '@/layouts/CustomerLayout';
+import { PageTransition } from '@/components/shared/PageTransition';
 
 const HomePage = lazy(() => import('@/pages/customer/HomePage'));
 const ProductsPage = lazy(() => import('@/pages/customer/ProductsPage'));
@@ -12,22 +14,68 @@ const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage')
 const NotFoundPage = lazy(() => import('@/pages/shared/NotFoundPage'));
 
 export function AppRoutes() {
+  const location = useLocation();
+
   return (
-    <Routes>
-      <Route element={<CustomerLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="products" element={<ProductsPage />} />
-        <Route path="cart" element={<CartPage />} />
-      </Route>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route element={<CustomerLayout />}>
+          <Route
+            index
+            element={
+              <PageTransition>
+                <HomePage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="products"
+            element={
+              <PageTransition>
+                <ProductsPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="cart"
+            element={
+              <PageTransition>
+                <CartPage />
+              </PageTransition>
+            }
+          />
+        </Route>
 
-      <Route path="login" element={<LoginPage />} />
+        <Route
+          path="login"
+          element={
+            <PageTransition>
+              <LoginPage />
+            </PageTransition>
+          }
+        />
 
-      <Route path="admin" element={<AdminLayout />}>
-        <Route index element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="dashboard" element={<AdminDashboardPage />} />
-      </Route>
+        <Route path="admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route
+            path="dashboard"
+            element={
+              <PageTransition>
+                <AdminDashboardPage />
+              </PageTransition>
+            }
+          />
+        </Route>
 
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        <Route
+          path="*"
+          element={
+            <PageTransition>
+              <NotFoundPage />
+            </PageTransition>
+          }
+        />
+      </Routes>
+    </AnimatePresence>
   );
 }
