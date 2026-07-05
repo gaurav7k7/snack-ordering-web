@@ -1,0 +1,25 @@
+import { StrictMode, Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
+import { Provider } from 'react-redux';
+import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+
+import { App } from '@/app/App';
+import { store } from '@/redux/store';
+import '@/styles/globals.css';
+
+createRoot(document.getElementById('root') as HTMLElement).render(
+  <StrictMode>
+    <HelmetProvider>
+      <Provider store={store}>
+        <BrowserRouter>
+          <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
+            <App />
+          </Suspense>
+          <Toaster position="top-right" />
+        </BrowserRouter>
+      </Provider>
+    </HelmetProvider>
+  </StrictMode>,
+);

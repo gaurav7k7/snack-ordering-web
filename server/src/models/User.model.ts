@@ -1,0 +1,40 @@
+import bcrypt from 'bcrypt';
+import { Schema, model, type InferSchemaType } from 'mongoose';
+
+import { USER_ROLES } from '../constants/roles.js';
+
+const userSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true, maxlength: 80 },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    password: { type: String, select: false },
+    avatar: { type: String },
+    phone: { type: String },
+    role: {
+      type: String,
+      enum: Object.values(USER_ROLES),
+      default: USER_ROLES.customer,
+    },
+    googleId: { type: String, index: true, sparse: true },
+    isEmailVerified: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
+  },
+  { timestamps: true },
+);
+
+userSchema.pre('save', async function hashPassword(next) {
+  if (!this.isModified('password') || !this.password) {
+    next();
+    return;
+  }
+
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+userSchema.methods.comparePassword = function comparePassword(candidatePassword: string) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+export type User = InferSchemaType<typeof userSchema>;
+export const UserModel = model('User', userSchema);

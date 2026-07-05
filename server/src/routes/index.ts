@@ -1,0 +1,11 @@
+import { Router } from 'express';
+
+import { authRoutes } from './auth.routes.js';
+import { healthRoutes } from './health.routes.js';
+import { productRoutes } from './product.routes.js';
+
+export const apiRoutes = Router();
+
+apiRoutes.use('/health', healthRoutes);
+apiRoutes.use('/auth', authRoutes);
+apiRoutes.use('/products', productRoutes);
