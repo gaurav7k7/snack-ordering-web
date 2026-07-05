@@ -1,4 +1,5 @@
 import { Heart, ShoppingBag, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import type { HomeProduct } from '@/types/home';
@@ -12,16 +13,19 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <article className="group overflow-hidden rounded-lg border bg-card text-card-foreground transition duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-        />
+        <Link to={`/products/${product.slug}`} className="block h-full">
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          />
+        </Link>
         <span className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
           {product.badge}
         </span>
         <Button
+          type="button"
           size="icon"
           variant="secondary"
           className="absolute right-3 top-3 rounded-full"
@@ -35,7 +39,11 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {product.category}
           </p>
-          <h3 className="mt-1 line-clamp-2 min-h-12 text-base font-semibold">{product.name}</h3>
+          <h3 className="mt-1 line-clamp-2 min-h-12 text-base font-semibold">
+            <Link to={`/products/${product.slug}`} className="hover:text-primary">
+              {product.name}
+            </Link>
+          </h3>
         </div>
         <div className="flex items-center gap-1 text-sm">
           <Star className="h-4 w-4 fill-secondary text-secondary" aria-hidden="true" />

@@ -1,0 +1,247 @@
+import { Heart, Share2, ShieldCheck, ShoppingBag, Star, Zap } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import toast from 'react-hot-toast';
+import { Navigate, useParams } from 'react-router-dom';
+
+import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
+import { ProductInfoPanels } from '@/components/customer/ProductInfoPanels';
+import { ProductReviews } from '@/components/customer/ProductReviews';
+import { ProductShelf } from '@/components/customer/ProductShelf';
+import { QuantitySelector } from '@/components/customer/QuantitySelector';
+import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
+import { Button } from '@/components/ui/button';
+import { products } from '@/constants/homeContent';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { formatCurrency } from '@/utils/formatCurrency';
+
+export default function ProductDetailPage() {
+  const { slug } = useParams();
+  const product = products.find((item) => item.slug === slug || item.id === slug);
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const recentlyViewedIds = useRecentlyViewed(product?.id ?? '');
+
+  const recommendedProducts = useMemo(
+    () =>
+      product
+        ? products.filter((item) => product.recommendedProductIds.includes(item.id)).slice(0, 4)
+        : [],
+    [product],
+  );
+
+  const relatedProducts = useMemo(
+    () =>
+      product ? products.filter((item) => product.relatedProductIds.includes(item.id)).slice(0, 4) : [],
+    [product],
+  );
+
+  const recentlyViewedProducts = useMemo(
+    () => products.filter((item) => recentlyViewedIds.includes(item.id)).slice(0, 4),
+    [recentlyViewedIds],
+  );
+
+  if (!product) {
+    return <Navigate to="/products" replace />;
+  }
+
+  const isOutOfStock = product.stock === 'out_of_stock' || product.availableQuantity === 0;
+
+  const shareProduct = async () => {
+    const shareUrl = window.location.href;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: product.name,
+        text: product.description,
+        url: shareUrl,
+      });
+      return;
+    }
+
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Product link copied.');
+      return;
+    }
+
+    toast('Copy this link from your browser address bar.');
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>{product.name} | SnackCo</title>
+        <meta name="description" content={product.description} />
+        <meta property="og:title" content={`${product.name} | SnackCo`} />
+        <meta property="og:description" content={product.description} />
+        <meta property="og:image" content={product.image} />
+      </Helmet>
+
+      <Breadcrumbs
+        items={[
+          { label: 'Shop snacks', href: '/products' },
+          { label: product.category, href: `/products?category=${product.category}` },
+          { label: product.name },
+        ]}
+      />
+
+      <section className="container grid gap-10 pb-12 lg:grid-cols-[1fr_0.9fr]">
+        <ProductImageGallery images={product.images} productName={product.name} />
+
+        <div>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {product.isFeatured ? (
+              <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">
+                Featured
+              </span>
+            ) : null}
+            {product.isTrending ? (
+              <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">
+                Trending
+              </span>
+            ) : null}
+            {product.isBestSeller ? (
+              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-secondary-foreground">
+                Best seller
+              </span>
+            ) : null}
+          </div>
+
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            {product.brand} | {product.subCategory}
+          </p>
+          <h1 className="mt-3 text-3xl font-black leading-tight sm:text-5xl">{product.name}</h1>
+          <p className="mt-4 text-base leading-7 text-muted-foreground">{product.description}</p>
+
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Star className="h-5 w-5 fill-secondary text-secondary" />
+              <span className="font-bold">{product.averageRating}</span>
+              <a href="#reviews" className="text-sm text-muted-foreground hover:text-foreground">
+                {product.reviewCount} reviews
+              </a>
+            </div>
+            <span className="text-sm text-muted-foreground">SKU: {product.sku}</span>
+          </div>
+
+          <div className="mt-6 rounded-lg border bg-card p-5">
+            <div className="flex flex-wrap items-end gap-3">
+              <span className="text-4xl font-black">{formatCurrency(product.offerPrice)}</span>
+              <span className="pb-1 text-lg text-muted-foreground line-through">
+                {formatCurrency(product.mrp)}
+              </span>
+              {product.discount > 0 ? (
+                <span className="mb-1 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">
+                  {product.discount}% off
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">MRP inclusive of all taxes.</p>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
+              <QuantitySelector
+                value={quantity}
+                max={product.availableQuantity}
+                onChange={setQuantity}
+              />
+              <p className="text-sm font-medium text-muted-foreground">
+                {isOutOfStock
+                  ? 'Currently out of stock'
+                  : `${product.availableQuantity} packs available`}
+              </p>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <Button
+                size="lg"
+                disabled={isOutOfStock}
+                onClick={() => toast.success(`${quantity} x ${product.name} added to cart.`)}
+              >
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                Add to cart
+              </Button>
+              <Button
+                size="lg"
+                variant="secondary"
+                disabled={isOutOfStock}
+                onClick={() => toast.success('Checkout flow will open in the cart phase.')}
+              >
+                <Zap className="mr-2 h-4 w-4" />
+                Buy now
+              </Button>
+            </div>
+
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsWishlisted((current) => !current);
+                  toast.success(isWishlisted ? 'Removed from wishlist.' : 'Added to wishlist.');
+                }}
+              >
+                <Heart className={isWishlisted ? 'mr-2 h-4 w-4 fill-current' : 'mr-2 h-4 w-4'} />
+                Wishlist
+              </Button>
+              <Button type="button" variant="outline" onClick={shareProduct}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share product
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            {product.tags.map((tag) => (
+              <span key={tag} className="rounded-md border bg-background px-3 py-2 text-sm font-medium">
+                #{tag}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-5 flex gap-3 rounded-lg border bg-muted/50 p-4">
+            <ShieldCheck className="mt-1 h-5 w-5 text-primary" />
+            <p className="text-sm leading-6 text-muted-foreground">
+              Secure checkout ready, protected packaging, and verified product details for every
+              snack pack.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="container space-y-8 pb-12">
+        <ProductInfoPanels product={product} />
+        <div id="reviews">
+          <ProductReviews product={product} />
+        </div>
+      </section>
+
+      {recommendedProducts.length > 0 ? (
+        <ProductShelf
+          eyebrow="Recommended products"
+          title="You may also like"
+          description="Curated picks that pair well with this snack."
+          products={recommendedProducts}
+        />
+      ) : null}
+
+      {relatedProducts.length > 0 ? (
+        <ProductShelf
+          eyebrow="Related products"
+          title="More from nearby shelves"
+          description="Similar flavors, formats, and snack moments."
+          products={relatedProducts}
+        />
+      ) : null}
+
+      {recentlyViewedProducts.length > 0 ? (
+        <ProductShelf
+          eyebrow="Recently viewed"
+          title="Pick up where you left off"
+          description="Products viewed in this browser session."
+          products={recentlyViewedProducts}
+        />
+      ) : null}
+    </>
+  );
+}

@@ -8,6 +8,7 @@ import { PageTransition } from '@/components/shared/PageTransition';
 
 const HomePage = lazy(() => import('@/pages/customer/HomePage'));
 const ProductsPage = lazy(() => import('@/pages/customer/ProductsPage'));
+const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'));
 const CartPage = lazy(() => import('@/pages/customer/CartPage'));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
@@ -33,6 +34,14 @@ export function AppRoutes() {
             element={
               <PageTransition>
                 <ProductsPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="products/:slug"
+            element={
+              <PageTransition>
+                <ProductDetailPage />
               </PageTransition>
             }
           />
