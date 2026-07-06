@@ -8,7 +8,7 @@ import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { useCreateOrderMutation } from '@/redux/api/ordersApi';
+import { useCreateOrderMutation, useVerifyPaymentMutation } from '@/redux/api/ordersApi';
 import { clearCart } from '@/redux/slices/cartSlice';
 import { formatCurrency } from '@/utils/formatCurrency';
 
@@ -29,6 +29,7 @@ export default function CheckoutPage() {
   const { items, couponCode, giftCouponCode } = useAppSelector((state) => state.cart);
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const [createOrder, { isLoading }] = useCreateOrderMutation();
+  const [verifyPayment] = useVerifyPaymentMutation();
   const [address, setAddress] = useState(defaultAddress);
   const [deliveryInstructions, setDeliveryInstructions] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'razorpay'>('cod');
@@ -49,6 +50,35 @@ export default function CheckoutPage() {
   if (!items.length) {
     return <Navigate to={ROUTES.cart} replace />;
   }
+
+  const loadRazorpayScript = () =>
+    new Promise<void>((resolve, reject) => {
+      if (typeof window === 'undefined') {
+        reject(new Error('Razorpay is not available in this environment.'));
+        return;
+      }
+
+      if ((window as Window & { Razorpay?: unknown }).Razorpay) {
+        resolve();
+        return;
+      }
+
+      const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+      if (existingScript) {
+        existingScript.addEventListener('load', () => resolve(), { once: true });
+        existingScript.addEventListener('error', () => reject(new Error('Unable to load Razorpay SDK.')), {
+          once: true,
+        });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Unable to load Razorpay SDK.'));
+      document.body.appendChild(script);
+    });
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -83,6 +113,58 @@ export default function CheckoutPage() {
         guestPhone: address.phone,
         isGuest: !isAuthenticated,
       }).unwrap();
+
+      if (paymentMethod === 'razorpay' && result.data?.payment?.razorpayOrderId) {
+        await loadRazorpayScript();
+        const razorpayOptions = {
+          key: result.data.payment.key,
+          amount: result.data.payment.amount * 100,
+          currency: result.data.payment.currency,
+          name: 'SnackCo',
+          description: `Payment for ${result.data.order?.orderNumber ?? 'your order'}`,
+          order_id: result.data.payment.razorpayOrderId,
+          handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+            try {
+              await verifyPayment({
+                orderId: result.data?.order?._id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }).unwrap();
+              dispatch(clearCart());
+              toast.success('Payment successful. Your order is confirmed.');
+              navigate('/order-confirmation', { state: { order: result.data?.order } });
+            } catch (verifyError: any) {
+              toast.error(verifyError?.data?.message ?? 'Payment could not be verified.');
+            }
+          },
+          prefill: {
+            name: address.fullName,
+            email: isAuthenticated ? user?.email : guestEmail,
+            contact: address.phone,
+          },
+          theme: {
+            color: '#f97316',
+          },
+          modal: {
+            ondismiss: () => {
+              toast.error('Payment was cancelled.');
+            },
+          },
+        };
+
+        const razorpayWindow = window as Window & {
+          Razorpay?: new (options: typeof razorpayOptions) => { open: () => void };
+        };
+        const Razorpay = razorpayWindow.Razorpay;
+        if (!Razorpay) {
+          throw new Error('Razorpay is not available.');
+        }
+
+        const razorpayInstance = new Razorpay(razorpayOptions);
+        razorpayInstance.open();
+        return;
+      }
 
       dispatch(clearCart());
       toast.success('Order placed successfully.');

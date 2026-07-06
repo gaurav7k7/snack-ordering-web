@@ -34,12 +34,22 @@ type OrderPayload = {
   isGuest?: boolean;
 };
 
+type VerifyPaymentPayload = {
+  orderId: string;
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+};
+
 export const ordersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    createOrder: builder.mutation<ApiResponse<{ order: any }>, OrderPayload>({
+    createOrder: builder.mutation<ApiResponse<{ order: any; payment?: any }>, OrderPayload>({
       query: (body) => ({ url: '/orders', method: 'POST', body }),
+    }),
+    verifyPayment: builder.mutation<ApiResponse<{ order: any }>, VerifyPaymentPayload>({
+      query: (body) => ({ url: '/orders/verify-payment', method: 'POST', body }),
     }),
   }),
 });
 
-export const { useCreateOrderMutation } = ordersApi;
+export const { useCreateOrderMutation, useVerifyPaymentMutation } = ordersApi;

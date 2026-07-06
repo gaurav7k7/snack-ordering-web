@@ -16,7 +16,7 @@ const orderItemSchema = new Schema(
 const orderSchema = new Schema(
   {
     orderNumber: { type: String, required: true, unique: true, index: true },
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
     items: { type: [orderItemSchema], required: true },
     shippingAddress: {
       fullName: String,

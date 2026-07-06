@@ -9,6 +9,7 @@ import passport from 'passport';
 import './config/passport.js';
 
 import { env } from './config/env.js';
+import { handleRazorpayWebhook } from './controllers/order.controller.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { apiRoutes } from './routes/index.js';
@@ -29,6 +30,7 @@ app.use(
   }),
 );
 app.use(compression());
+app.post('/api/v1/orders/payment/webhook', express.raw({ type: 'application/json' }), handleRazorpayWebhook);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser(env.cookieSecret));
