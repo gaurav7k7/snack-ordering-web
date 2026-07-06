@@ -228,8 +228,10 @@ export default function CartPage() {
                   <span>Order total</span>
                   <span>{formatCurrency(total)}</span>
                 </div>
-                <Button className="mt-5 w-full" size="lg">
-                  Checkout <ArrowRight className="ml-2 h-4 w-4" />
+                <Button asChild className="mt-5 w-full" size="lg">
+                  <Link to={ROUTES.checkout}>
+                    Checkout <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
                 </Button>
               </div>
             </div>

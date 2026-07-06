@@ -32,6 +32,22 @@ export const authenticate: RequestHandler = (req, _res, next) => {
   }
 };
 
+export const optionalAuthenticate: RequestHandler = (req, _res, next) => {
+  const token = req.cookies?.accessToken ?? req.headers.authorization?.replace('Bearer ', '');
+
+  if (!token) {
+    next();
+    return;
+  }
+
+  try {
+    req.user = jwt.verify(token, env.jwtAccessSecret) as AccessTokenPayload;
+    next();
+  } catch {
+    next();
+  }
+};
+
 export function authorize(...roles: UserRole[]): RequestHandler {
   return (req, _res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {

@@ -11,6 +11,8 @@ const HomePage = lazy(() => import('@/pages/customer/HomePage'));
 const ProductsPage = lazy(() => import('@/pages/customer/ProductsPage'));
 const ProductDetailPage = lazy(() => import('@/pages/customer/ProductDetailPage'));
 const CartPage = lazy(() => import('@/pages/customer/CartPage'));
+const CheckoutPage = lazy(() => import('@/pages/customer/CheckoutPage'));
+const OrderConfirmationPage = lazy(() => import('@/pages/customer/OrderConfirmationPage'));
 const ProfilePage = lazy(() => import('@/pages/customer/ProfilePage'));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
@@ -55,6 +57,22 @@ export function AppRoutes() {
             element={
               <PageTransition>
                 <CartPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="checkout"
+            element={
+              <PageTransition>
+                <CheckoutPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="order-confirmation"
+            element={
+              <PageTransition>
+                <OrderConfirmationPage />
               </PageTransition>
             }
           />

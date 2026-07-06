@@ -32,6 +32,13 @@ const orderSchema = new Schema(
     shippingFee: { type: Number, required: true, min: 0, default: 0 },
     tax: { type: Number, required: true, min: 0, default: 0 },
     total: { type: Number, required: true, min: 0 },
+    deliveryInstructions: { type: String, default: '' },
+    couponCode: { type: String, default: '' },
+    giftCouponCode: { type: String, default: '' },
+    guestEmail: { type: String },
+    guestName: { type: String },
+    guestPhone: { type: String },
+    isGuest: { type: Boolean, default: false },
     status: {
       type: String,
       enum: Object.values(ORDER_STATUS),

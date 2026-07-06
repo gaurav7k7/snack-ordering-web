@@ -7,5 +7,6 @@ export const ROUTES = {
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   profile: '/profile',
+  checkout: '/checkout',
   adminDashboard: '/admin/dashboard',
 } as const;
