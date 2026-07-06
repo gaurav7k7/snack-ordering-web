@@ -2,7 +2,7 @@ import { Heart, Share2, ShieldCheck, ShoppingBag, Star, Zap } from 'lucide-react
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import toast from 'react-hot-toast';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
 import { ProductInfoPanels } from '@/components/customer/ProductInfoPanels';
@@ -11,8 +11,11 @@ import { ProductShelf } from '@/components/customer/ProductShelf';
 import { QuantitySelector } from '@/components/customer/QuantitySelector';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
+import { ROUTES } from '@/constants/routes';
 import { products } from '@/constants/homeContent';
+import { useAppDispatch } from '@/hooks/redux';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { addItem } from '@/redux/slices/cartSlice';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function ProductDetailPage() {
@@ -20,6 +23,8 @@ export default function ProductDetailPage() {
   const product = products.find((item) => item.slug === slug || item.id === slug);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const recentlyViewedIds = useRecentlyViewed(product?.id ?? '');
 
   const recommendedProducts = useMemo(
@@ -32,7 +37,9 @@ export default function ProductDetailPage() {
 
   const relatedProducts = useMemo(
     () =>
-      product ? products.filter((item) => product.relatedProductIds.includes(item.id)).slice(0, 4) : [],
+      product
+        ? products.filter((item) => product.relatedProductIds.includes(item.id)).slice(0, 4)
+        : [],
     [product],
   );
 
@@ -46,6 +53,36 @@ export default function ProductDetailPage() {
   }
 
   const isOutOfStock = product.stock === 'out_of_stock' || product.availableQuantity === 0;
+
+  const handleAddToCart = () => {
+    dispatch(
+      addItem({
+        productId: product.id,
+        name: product.name,
+        image: product.image,
+        price: product.offerPrice,
+        quantity,
+        slug: product.slug,
+        stock: product.availableQuantity,
+      }),
+    );
+    toast.success(`${quantity} x ${product.name} added to cart.`);
+  };
+
+  const handleBuyNow = () => {
+    dispatch(
+      addItem({
+        productId: product.id,
+        name: product.name,
+        image: product.image,
+        price: product.offerPrice,
+        quantity,
+        slug: product.slug,
+        stock: product.availableQuantity,
+      }),
+    );
+    navigate(ROUTES.cart);
+  };
 
   const shareProduct = async () => {
     const shareUrl = window.location.href;
@@ -153,20 +190,11 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <Button
-                size="lg"
-                disabled={isOutOfStock}
-                onClick={() => toast.success(`${quantity} x ${product.name} added to cart.`)}
-              >
+              <Button size="lg" disabled={isOutOfStock} onClick={handleAddToCart}>
                 <ShoppingBag className="mr-2 h-4 w-4" />
                 Add to cart
               </Button>
-              <Button
-                size="lg"
-                variant="secondary"
-                disabled={isOutOfStock}
-                onClick={() => toast.success('Checkout flow will open in the cart phase.')}
-              >
+              <Button size="lg" variant="secondary" disabled={isOutOfStock} onClick={handleBuyNow}>
                 <Zap className="mr-2 h-4 w-4" />
                 Buy now
               </Button>
@@ -193,7 +221,10 @@ export default function ProductDetailPage() {
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             {product.tags.map((tag) => (
-              <span key={tag} className="rounded-md border bg-background px-3 py-2 text-sm font-medium">
+              <span
+                key={tag}
+                className="rounded-md border bg-background px-3 py-2 text-sm font-medium"
+              >
                 #{tag}
               </span>
             ))}

@@ -2,6 +2,8 @@ import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { useAppSelector } from '@/hooks/redux';
+
 import { Button } from '@/components/ui/button';
 import { MiniCart } from '@/components/shared/MiniCart';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
@@ -20,6 +22,10 @@ export function SiteHeader() {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileSearchQuery, setMobileSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const cartItemCount = useAppSelector((state) =>
+    state.cart.items.reduce((total, item) => total + item.quantity, 0),
+  );
 
   const handleSearchSubmit = (query: string) => {
     const trimmedQuery = query.trim();
@@ -97,12 +103,14 @@ export function SiteHeader() {
               onClick={() => setIsCartOpen(true)}
             >
               <ShoppingBag className="h-5 w-5" />
-              <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                2
-              </span>
+              {cartItemCount > 0 ? (
+                <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                  {cartItemCount}
+                </span>
+              ) : null}
             </Button>
             <Button asChild variant="ghost" size="icon" aria-label="Profile">
-              <Link to={ROUTES.login}>
+              <Link to={isAuthenticated ? ROUTES.profile : ROUTES.login}>
                 <User className="h-5 w-5" />
               </Link>
             </Button>
@@ -160,6 +168,15 @@ export function SiteHeader() {
                 </div>
               </form>
               <nav className="grid gap-2">
+                {isAuthenticated ? (
+                  <Link
+                    to={ROUTES.profile}
+                    className="rounded-md px-3 py-3 text-base font-semibold hover:bg-muted"
+                    onClick={() => setIsMobileOpen(false)}
+                  >
+                    My account
+                  </Link>
+                ) : null}
                 {navItems.map((item) => (
                   <Link
                     key={item.label}

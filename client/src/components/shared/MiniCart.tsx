@@ -1,8 +1,9 @@
-import { Minus, Plus, ShoppingBag, X } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
-import { products } from '@/constants/homeContent';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { removeItem, updateQuantity } from '@/redux/slices/cartSlice';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 type MiniCartProps = {
@@ -10,13 +11,10 @@ type MiniCartProps = {
   onClose: () => void;
 };
 
-const miniCartItems = products.slice(0, 2).map((product, index) => ({
-  ...product,
-  quantity: index + 1,
-}));
-
 export function MiniCart({ isOpen, onClose }: MiniCartProps) {
-  const subtotal = miniCartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  const dispatch = useAppDispatch();
+  const items = useAppSelector((state) => state.cart.items);
+  const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
 
   if (!isOpen) return null;
 
@@ -41,28 +39,74 @@ export function MiniCart({ isOpen, onClose }: MiniCartProps) {
 
         <div className="flex-1 overflow-y-auto p-5">
           <div className="space-y-4">
-            {miniCartItems.map((item) => (
-              <article key={item.id} className="grid grid-cols-[84px_1fr] gap-4">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="aspect-square rounded-md object-cover"
-                />
-                <div className="min-w-0">
-                  <h3 className="line-clamp-2 font-semibold">{item.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
-                  <div className="mt-3 inline-flex items-center rounded-md border">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Decrease item">
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Increase item">
-                      <Plus className="h-3 w-3" />
-                    </Button>
+            {items.length ? (
+              items.map((item) => (
+                <article key={item.productId} className="grid grid-cols-[84px_1fr] gap-4">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="aspect-square rounded-md object-cover"
+                  />
+                  <div className="min-w-0">
+                    <h3 className="line-clamp-2 font-semibold">{item.name}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {formatCurrency(item.price)}
+                    </p>
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="inline-flex items-center rounded-md border">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          aria-label="Decrease item"
+                          onClick={() =>
+                            dispatch(
+                              updateQuantity({
+                                productId: item.productId,
+                                quantity: item.quantity - 1,
+                              }),
+                            )
+                          }
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-8 text-center text-sm font-semibold">
+                          {item.quantity}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          aria-label="Increase item"
+                          onClick={() =>
+                            dispatch(
+                              updateQuantity({
+                                productId: item.productId,
+                                quantity: item.quantity + 1,
+                              }),
+                            )
+                          }
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Remove item"
+                        onClick={() => dispatch(removeItem(item.productId))}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))
+            ) : (
+              <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                Your mini cart is empty.
+              </p>
+            )}
           </div>
         </div>
 
