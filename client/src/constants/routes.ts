@@ -12,4 +12,11 @@ export const ROUTES = {
   orderDetail: (id: string) => `/orders/${id}`,
   wishlist: '/wishlist',
   adminDashboard: '/admin/dashboard',
+  adminOrders: '/admin/orders',
+  adminCoupons: '/admin/coupons',
+  adminProducts: '/admin/products',
+  adminProductNew: '/admin/products/new',
+  adminProductEdit: (id: string) => `/admin/products/${id}/edit`,
+  adminInventory: '/admin/inventory',
+  adminCategories: '/admin/categories',
 } as const;

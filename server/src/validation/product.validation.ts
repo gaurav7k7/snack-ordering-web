@@ -33,7 +33,7 @@ export const productQuerySchema = z.object({
 
 export const createProductSchema = z.object({
   name: z.string().min(2).max(120),
-  slug: z.string().min(2).max(140),
+  slug: z.string().min(2).max(140).optional(),
   description: z.string().min(20).max(2000),
   ingredients: z.array(z.string().min(1).max(80)).min(1),
   weight: z.string().min(1).max(50),

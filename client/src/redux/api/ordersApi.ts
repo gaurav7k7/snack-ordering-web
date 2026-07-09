@@ -92,6 +92,30 @@ export const ordersApi = baseApi.injectEndpoints({
         { type: 'Order' as const, id: 'LIST' },
       ],
     }),
+    getAllOrdersForAdmin: builder.query<OrdersListResponse, { page?: number; status?: string } | void>({
+      query: (params) => ({
+        url: '/orders/admin',
+        params: {
+          ...(params?.status ? { status: params.status } : {}),
+          ...(params?.page ? { page: params.page } : {}),
+        },
+      }),
+      providesTags: (result) =>
+        result?.data
+          ? [
+              ...result.data.orders.map((order) => ({ type: 'Order' as const, id: order._id })),
+              { type: 'Order' as const, id: 'LIST' },
+            ]
+          : [{ type: 'Order' as const, id: 'LIST' }],
+    }),
+    updateOrderStatus: builder.mutation<OrderResponse, { id: string; status: string; note?: string }>({
+      query: ({ id, ...body }) => ({ url: `/orders/${id}/status`, method: 'PATCH', body }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Order' as const, id },
+        { type: 'Order' as const, id: 'LIST' },
+        'Dashboard',
+      ],
+    }),
   }),
 });
 
@@ -102,4 +126,6 @@ export const {
   useGetOrderByIdQuery,
   useCancelOrderMutation,
   useRequestReturnMutation,
+  useGetAllOrdersForAdminQuery,
+  useUpdateOrderStatusMutation,
 } = ordersApi;

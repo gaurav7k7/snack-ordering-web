@@ -1,4 +1,6 @@
 import type { FilterQuery } from 'mongoose';
+
+import { LOW_STOCK_THRESHOLD } from '../constants/inventory.js';
 import { ProductModel } from '../models/Product.model.js';
 
 export type SearchProductsParams = {
@@ -166,4 +168,69 @@ export async function getProductBySlug(slug: string) {
     .populate('recommendedProducts', PRODUCT_CARD_FIELDS)
     .populate('relatedProducts', PRODUCT_CARD_FIELDS)
     .lean();
+}
+
+export type AdminProductListParams = {
+  search?: string;
+  category?: string;
+  status?: 'active' | 'inactive';
+  stockFilter?: 'low' | 'out';
+  page?: string;
+  limit?: string;
+};
+
+export async function getAllProductsForAdmin(params: AdminProductListParams) {
+  const page = Math.max(parseNumber(params.page, 1), 1);
+  const limit = Math.min(Math.max(parseNumber(params.limit, 20), 1), 100);
+
+  const query: FilterQuery<Record<string, unknown>> = {};
+  if (params.search?.trim()) {
+    query.$text = { $search: params.search.trim() };
+  }
+  if (params.category?.trim()) {
+    query.category = params.category.trim();
+  }
+  if (params.status === 'active') query.isActive = true;
+  if (params.status === 'inactive') query.isActive = false;
+  if (params.stockFilter === 'low') {
+    query.availableQuantity = { $gt: 0, $lte: LOW_STOCK_THRESHOLD };
+  }
+  if (params.stockFilter === 'out') {
+    query.availableQuantity = { $lte: 0 };
+  }
+
+  const [products, total] = await Promise.all([
+    ProductModel.find(query)
+      .select('-reviews')
+      .populate('category', 'name slug')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+    ProductModel.countDocuments(query),
+  ]);
+
+  return {
+    products,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    },
+  };
+}
+
+export async function ensureUniqueProductSlug(baseSlug: string, excludeId?: string) {
+  let slug = baseSlug;
+  let counter = 2;
+
+  while (
+    await ProductModel.exists({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })
+  ) {
+    slug = `${baseSlug}-${counter}`;
+    counter += 1;
+  }
+
+  return slug;
 }

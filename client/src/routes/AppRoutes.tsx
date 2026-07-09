@@ -22,6 +22,12 @@ const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
+const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage'));
+const AdminCouponsPage = lazy(() => import('@/pages/admin/AdminCouponsPage'));
+const AdminProductsPage = lazy(() => import('@/pages/admin/AdminProductsPage'));
+const AdminProductFormPage = lazy(() => import('@/pages/admin/AdminProductFormPage'));
+const AdminInventoryPage = lazy(() => import('@/pages/admin/AdminInventoryPage'));
+const AdminCategoriesPage = lazy(() => import('@/pages/admin/AdminCategoriesPage'));
 const NotFoundPage = lazy(() => import('@/pages/shared/NotFoundPage'));
 
 export function AppRoutes() {
@@ -156,6 +162,62 @@ export function AppRoutes() {
               element={
                 <PageTransition>
                   <AdminDashboardPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <PageTransition>
+                  <AdminOrdersPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="coupons"
+              element={
+                <PageTransition>
+                  <AdminCouponsPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="products"
+              element={
+                <PageTransition>
+                  <AdminProductsPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="products/new"
+              element={
+                <PageTransition>
+                  <AdminProductFormPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="products/:id/edit"
+              element={
+                <PageTransition>
+                  <AdminProductFormPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="inventory"
+              element={
+                <PageTransition>
+                  <AdminInventoryPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="categories"
+              element={
+                <PageTransition>
+                  <AdminCategoriesPage />
                 </PageTransition>
               }
             />

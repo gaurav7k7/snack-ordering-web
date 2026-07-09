@@ -1,7 +1,9 @@
 import { Router } from 'express';
 
 import { authRoutes } from './auth.routes.js';
+import { categoryRoutes } from './category.routes.js';
 import { couponRoutes } from './coupon.routes.js';
+import { dashboardRoutes } from './dashboard.routes.js';
 import { healthRoutes } from './health.routes.js';
 import { orderRoutes } from './order.routes.js';
 import { productRoutes } from './product.routes.js';
@@ -12,6 +14,8 @@ export const apiRoutes = Router();
 apiRoutes.use('/health', healthRoutes);
 apiRoutes.use('/auth', authRoutes);
 apiRoutes.use('/products', productRoutes);
+apiRoutes.use('/categories', categoryRoutes);
 apiRoutes.use('/profile', profileRoutes);
 apiRoutes.use('/orders', orderRoutes);
 apiRoutes.use('/coupons', couponRoutes);
+apiRoutes.use('/dashboard', dashboardRoutes);

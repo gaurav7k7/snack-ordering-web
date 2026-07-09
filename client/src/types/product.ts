@@ -57,25 +57,30 @@ export type ApiProductCard = {
   isFeatured: boolean;
   isTrending: boolean;
   isBestSeller: boolean;
+  isActive: boolean;
   availableQuantity: number;
   brand: string;
   subCategory: string;
   stock: number;
+  sku?: string;
+  createdAt?: string;
+};
+
+export type NutritionFacts = {
+  servingSize: string;
+  calories: number;
+  protein: string;
+  carbs: string;
+  fat: string;
+  sugar: string;
+  sodium: string;
 };
 
 export type ApiProduct = ApiProductCard & {
   description: string;
   ingredients: string[];
   weight: string;
-  nutritionFacts: {
-    servingSize: string;
-    calories: number;
-    protein: string;
-    carbs: string;
-    fat: string;
-    sugar: string;
-    sodium: string;
-  };
+  nutritionFacts: NutritionFacts;
   sku: string;
   tags: string[];
   deliveryEstimate: string;
@@ -83,4 +88,40 @@ export type ApiProduct = ApiProductCard & {
   shippingInformation: string;
   recommendedProducts: ApiProductCard[];
   relatedProducts: ApiProductCard[];
+};
+
+export type Category = {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+};
+
+export type ProductFormInput = {
+  name: string;
+  slug?: string;
+  description: string;
+  ingredients: string[];
+  weight: string;
+  nutritionFacts: NutritionFacts;
+  mrp: number;
+  discount: number;
+  offerPrice: number;
+  images: ApiProductImage[];
+  category: string;
+  subCategory: string;
+  stock: number;
+  availableQuantity: number;
+  sku: string;
+  brand: string;
+  tags: string[];
+  isActive: boolean;
+  isFeatured: boolean;
+  isTrending: boolean;
+  isBestSeller: boolean;
+  deliveryEstimate: string;
+  returnPolicy: string;
+  shippingInformation: string;
 };

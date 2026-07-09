@@ -11,17 +11,23 @@ type ProtectedRouteProps = {
 
 export function ProtectedRoute({ requireAuth = true, allowedRoles }: ProtectedRouteProps) {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
-  // App.tsx already fires this on mount to restore the session from the httpOnly
-  // cookie; RTK Query dedupes this against that same cache entry. Without waiting
-  // on it here, a hard reload briefly sees the pre-hydration isAuthenticated=false
-  // and bounces an already-logged-in user to /login.
-  const { isLoading, isUninitialized } = useGetCurrentUserQuery();
+  // App.tsx also calls this to restore the session from the httpOnly cookie and
+  // sync it into `state.auth` via a useEffect — but that sync lands one render
+  // after the query itself resolves. Reading only `data`/`isSuccess` here (not
+  // relying on `state.auth` to have caught up yet) closes that race: without it,
+  // there's a render where isLoading has gone false but state.auth is still
+  // stale, and this component would incorrectly redirect an authenticated user
+  // to /login.
+  const { data, isLoading, isUninitialized } = useGetCurrentUserQuery();
+  const queryUser = data?.data?.user;
+  const resolvedIsAuthenticated = isAuthenticated || Boolean(queryUser);
+  const resolvedRole = user?.role ?? queryUser?.role;
 
   if (!requireAuth) {
-    return isAuthenticated ? <Navigate to={ROUTES.home} replace /> : <Outlet />;
+    return resolvedIsAuthenticated ? <Navigate to={ROUTES.home} replace /> : <Outlet />;
   }
 
-  if ((isLoading || isUninitialized) && !isAuthenticated) {
+  if ((isLoading || isUninitialized) && !resolvedIsAuthenticated) {
     return (
       <div className="grid min-h-[50vh] place-items-center text-sm text-muted-foreground">
         Loading…
@@ -29,11 +35,11 @@ export function ProtectedRoute({ requireAuth = true, allowedRoles }: ProtectedRo
     );
   }
 
-  if (!isAuthenticated) {
+  if (!resolvedIsAuthenticated) {
     return <Navigate to={ROUTES.login} replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && resolvedRole && !allowedRoles.includes(resolvedRole)) {
     return <Navigate to={ROUTES.home} replace />;
   }
 

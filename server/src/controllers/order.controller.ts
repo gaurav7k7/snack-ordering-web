@@ -312,6 +312,29 @@ export const getMyOrders = asyncHandler(async (req, res) => {
   );
 });
 
+export const getAllOrdersForAdmin = asyncHandler(async (req, res) => {
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+  const statusFilter = typeof req.query.status === 'string' ? req.query.status : undefined;
+
+  const filter: Record<string, unknown> = {};
+  if (statusFilter) {
+    filter.status = statusFilter;
+  }
+
+  const [orders, total] = await Promise.all([
+    OrderModel.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+    OrderModel.countDocuments(filter),
+  ]);
+
+  res.status(StatusCodes.OK).json(
+    createApiResponse('Orders retrieved.', {
+      orders,
+      pagination: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) },
+    }),
+  );
+});
+
 export const getOrderById = asyncHandler(async (req, res) => {
   const order = await loadOwnedOrder(req.params.id, req.user?.userId);
   res.status(StatusCodes.OK).json(createApiResponse('Order retrieved.', { order }));

@@ -3,6 +3,7 @@ import { Router } from 'express';
 import {
   cancelOrder,
   createOrder,
+  getAllOrdersForAdmin,
   getInvoice,
   getMyOrders,
   getOrderById,
@@ -18,6 +19,7 @@ orderRoutes.post('/', optionalAuthenticate, createOrder);
 orderRoutes.post('/verify-payment', optionalAuthenticate, verifyPayment);
 
 orderRoutes.get('/', authenticate, getMyOrders);
+orderRoutes.get('/admin', authenticate, authorize('admin'), getAllOrdersForAdmin);
 orderRoutes.get('/:id', authenticate, getOrderById);
 orderRoutes.get('/:id/invoice', authenticate, getInvoice);
 orderRoutes.post('/:id/cancel', authenticate, cancelOrder);
