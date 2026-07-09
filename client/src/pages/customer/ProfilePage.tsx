@@ -446,11 +446,24 @@ export default function ProfilePage() {
                   <Sparkles className="h-4 w-4 text-primary" />
                   <span className="font-semibold">Reviews</span>
                 </div>
-                <p className="mt-2 text-muted-foreground">
-                  {reviews.length
-                    ? reviews.slice(0, 3).join(', ')
-                    : 'Your reviews will show up here.'}
-                </p>
+                <div className="mt-2 space-y-2">
+                  {reviews.length ? (
+                    reviews.slice(0, 3).map((review: any) => (
+                      <Link
+                        key={review._id}
+                        to={`/products/${review.productSlug}#reviews`}
+                        className="block rounded-lg border border-border/70 bg-card px-3 py-2 transition hover:border-primary/50"
+                      >
+                        <p className="font-semibold">{review.productName}</p>
+                        <p className="text-muted-foreground">
+                          {review.rating}/5 · {review.title}
+                        </p>
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground">Your reviews will show up here.</p>
+                  )}
+                </div>
               </div>
             </div>
           </section>

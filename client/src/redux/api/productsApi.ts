@@ -1,8 +1,14 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-import type { SearchProduct } from '@/types/product';
+import type { ApiProduct, SearchProduct } from '@/types/product';
 
-type SearchResponse = {
+type ApiResponse<T> = {
+  success: boolean;
+  message: string;
+  data?: T;
+};
+
+type SearchResponse = ApiResponse<{
   products: SearchProduct[];
   pagination: {
     total: number;
@@ -10,7 +16,10 @@ type SearchResponse = {
     limit: number;
     totalPages: number;
   };
-};
+}>;
+
+type SuggestionsResponse = ApiResponse<{ suggestions: string[]; popularSearches: string[] }>;
+type ProductResponse = ApiResponse<{ product: ApiProduct }>;
 
 export const productsApi = createApi({
   reducerPath: 'productsApi',
@@ -26,11 +35,16 @@ export const productsApi = createApi({
       },
       providesTags: ['Products'],
     }),
-    searchSuggestions: builder.query<{ suggestions: string[]; popularSearches: string[] }, string>({
+    searchSuggestions: builder.query<SuggestionsResponse, string>({
       query: (q) => `/products/suggestions?q=${encodeURIComponent(q)}`,
       providesTags: ['Suggestions'],
+    }),
+    getProductBySlug: builder.query<ProductResponse, string>({
+      query: (slug) => `/products/${slug}`,
+      providesTags: (_result, _error, slug) => [{ type: 'Products' as const, id: slug }],
     }),
   }),
 });
 
-export const { useSearchProductsQuery, useSearchSuggestionsQuery } = productsApi;
+export const { useSearchProductsQuery, useSearchSuggestionsQuery, useGetProductBySlugQuery } =
+  productsApi;

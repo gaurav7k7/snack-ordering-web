@@ -13,7 +13,11 @@ export type SearchProductsParams = {
   sort?: string;
   page?: string;
   limit?: string;
+  ids?: string;
 };
+
+const PRODUCT_CARD_FIELDS =
+  'name slug images offerPrice mrp discount averageRating reviewCount category isFeatured isTrending isBestSeller availableQuantity brand subCategory stock';
 
 const SORT_MAP: Record<string, Record<string, 1 | -1>> = {
   newest: { createdAt: -1 },
@@ -34,6 +38,15 @@ function buildQuery(params: SearchProductsParams): FilterQuery<Record<string, un
 
   if (params.q?.trim()) {
     query.$text = { $search: params.q.trim() };
+  }
+
+  if (params.ids?.trim()) {
+    query._id = {
+      $in: params.ids
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean),
+    };
   }
 
   if (params.category?.trim()) {
@@ -86,6 +99,7 @@ export async function searchProducts(params: SearchProductsParams) {
 
   const [products, total] = await Promise.all([
     ProductModel.find(query)
+      .select('-reviews')
       .sort(sort)
       .skip((page - 1) * limit)
       .limit(limit)
@@ -143,4 +157,13 @@ export async function getSearchSuggestions(query = '') {
     suggestions: Array.from(suggestionSet).slice(0, 12),
     popularSearches,
   };
+}
+
+export async function getProductBySlug(slug: string) {
+  return ProductModel.findOne({ slug, isActive: true })
+    .select('-reviews')
+    .populate('category', 'name slug')
+    .populate('recommendedProducts', PRODUCT_CARD_FIELDS)
+    .populate('relatedProducts', PRODUCT_CARD_FIELDS)
+    .lean();
 }

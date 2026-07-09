@@ -6,50 +6,58 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
 import { ProductInfoPanels } from '@/components/customer/ProductInfoPanels';
-import { ProductReviews } from '@/components/customer/ProductReviews';
 import { ProductShelf } from '@/components/customer/ProductShelf';
 import { QuantitySelector } from '@/components/customer/QuantitySelector';
+import { ProductReviewsSection } from '@/components/reviews/ProductReviewsSection';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
-import { products } from '@/constants/homeContent';
 import { useAppDispatch } from '@/hooks/redux';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useGetProductBySlugQuery, useSearchProductsQuery } from '@/redux/api/productsApi';
 import { addItem } from '@/redux/slices/cartSlice';
+import { mapApiProductCardToHomeProduct, mapApiProductToHomeProduct } from '@/utils/mapProduct';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
-  const product = products.find((item) => item.slug === slug || item.id === slug);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  const { data, isLoading } = useGetProductBySlugQuery(slug ?? '', { skip: !slug });
+  const apiProduct = data?.data?.product;
+  const product = useMemo(() => (apiProduct ? mapApiProductToHomeProduct(apiProduct) : null), [apiProduct]);
+
   const recentlyViewedIds = useRecentlyViewed(product?.id ?? '');
+  const { data: recentlyViewedData } = useSearchProductsQuery(
+    { ids: recentlyViewedIds.join(',') },
+    { skip: recentlyViewedIds.length === 0 },
+  );
 
   const recommendedProducts = useMemo(
-    () =>
-      product
-        ? products.filter((item) => product.recommendedProductIds.includes(item.id)).slice(0, 4)
-        : [],
-    [product],
+    () => (apiProduct?.recommendedProducts ?? []).map(mapApiProductCardToHomeProduct),
+    [apiProduct],
   );
 
   const relatedProducts = useMemo(
-    () =>
-      product
-        ? products.filter((item) => product.relatedProductIds.includes(item.id)).slice(0, 4)
-        : [],
-    [product],
+    () => (apiProduct?.relatedProducts ?? []).map(mapApiProductCardToHomeProduct),
+    [apiProduct],
   );
 
-  const recentlyViewedProducts = useMemo(
-    () => products.filter((item) => recentlyViewedIds.includes(item.id)).slice(0, 4),
-    [recentlyViewedIds],
-  );
+  const recentlyViewedProducts = recentlyViewedData?.data?.products ?? [];
+
+  if (!slug) {
+    return <Navigate to={ROUTES.products} replace />;
+  }
+
+  if (isLoading) {
+    return <main className="container py-24 text-center text-sm text-muted-foreground">Loading product…</main>;
+  }
 
   if (!product) {
-    return <Navigate to="/products" replace />;
+    return <Navigate to={ROUTES.products} replace />;
   }
 
   const isOutOfStock = product.stock === 'out_of_stock' || product.availableQuantity === 0;
@@ -243,7 +251,11 @@ export default function ProductDetailPage() {
       <section className="container space-y-8 pb-12">
         <ProductInfoPanels product={product} />
         <div id="reviews">
-          <ProductReviews product={product} />
+          <ProductReviewsSection
+            productId={product.id}
+            fallbackAverageRating={product.averageRating}
+            fallbackReviewCount={product.reviewCount}
+          />
         </div>
       </section>
 

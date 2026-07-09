@@ -60,8 +60,8 @@ export default function ProductsPage() {
   const suggestionsQuery = searchQuery.trim();
   const { data: suggestionsData } = useSearchSuggestionsQuery(suggestionsQuery);
 
-  const products = data?.products ?? [];
-  const pagination = data?.pagination ?? {
+  const products = data?.data?.products ?? [];
+  const pagination = data?.data?.pagination ?? {
     total: 0,
     page: 1,
     limit: DEFAULT_PAGE_SIZE,
@@ -192,8 +192,8 @@ export default function ProductsPage() {
             />
             <SearchSuggestions
               query={searchQuery}
-              suggestions={suggestionsData?.suggestions ?? []}
-              popularSearches={suggestionsData?.popularSearches ?? []}
+              suggestions={suggestionsData?.data?.suggestions ?? []}
+              popularSearches={suggestionsData?.data?.popularSearches ?? []}
               onSuggestionClick={(value) => {
                 setSearchQuery(value);
                 const nextParams = new URLSearchParams(searchParams);

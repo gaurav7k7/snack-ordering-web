@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import mongoose from 'mongoose';
 
 import { CANCELLABLE_STATUSES, ORDER_STATUS, RETURN_WINDOW_DAYS } from '../constants/orderStatus.js';
 import { env } from '../config/env.js';
@@ -46,6 +47,16 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   if (!Array.isArray(items) || items.length === 0) {
     throw new AppError('Your cart is empty.', StatusCodes.BAD_REQUEST);
+  }
+
+  const invalidItem = items.find(
+    (item: any) => !item?.productId || !mongoose.Types.ObjectId.isValid(item.productId),
+  );
+  if (invalidItem) {
+    throw new AppError(
+      `"${invalidItem?.name ?? 'An item'}" in your cart is out of date. Please remove it and add it again.`,
+      StatusCodes.BAD_REQUEST,
+    );
   }
 
   if (

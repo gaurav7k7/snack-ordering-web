@@ -3,12 +3,13 @@ import { motion } from 'framer-motion';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { SectionHeader } from '@/components/shared/SectionHeader';
 import type { HomeProduct } from '@/types/home';
+import type { SearchProduct } from '@/types/product';
 
 type ProductShelfProps = {
   eyebrow: string;
   title: string;
   description: string;
-  products: HomeProduct[];
+  products: Array<HomeProduct | SearchProduct>;
 };
 
 export function ProductShelf({ eyebrow, title, description, products }: ProductShelfProps) {
@@ -28,7 +29,7 @@ export function ProductShelf({ eyebrow, title, description, products }: ProductS
         >
           {products.map((product) => (
             <motion.div
-              key={product.id}
+              key={product.slug}
               variants={{
                 hidden: { opacity: 0, y: 24 },
                 show: { opacity: 1, y: 0 },

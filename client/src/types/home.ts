@@ -58,7 +58,8 @@ export type HomeProduct = {
   badge: string;
   image: string;
   images: ProductImage[];
-  customerReviews: ProductReview[];
+  /** @deprecated superseded by ProductReviewsSection, which fetches live review data by product id */
+  customerReviews?: ProductReview[];
 };
 
 export type ProductImage = {

@@ -30,7 +30,8 @@ function getProductRating(product: HomeProduct | SearchProduct) {
 }
 
 function getProductReviews(product: HomeProduct | SearchProduct) {
-  return product.reviews ?? product.reviewCount ?? 0;
+  if (typeof product.reviews === 'number') return product.reviews;
+  return product.reviewCount ?? 0;
 }
 
 function getBadge(product: HomeProduct | SearchProduct) {

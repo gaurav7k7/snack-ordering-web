@@ -22,6 +22,14 @@ const nutritionFactsSchema = new Schema(
   { _id: false },
 );
 
+const reviewImageSchema = new Schema(
+  {
+    url: { type: String, required: true },
+    publicId: { type: String, required: true },
+  },
+  { _id: false },
+);
+
 const productReviewSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -29,7 +37,10 @@ const productReviewSchema = new Schema(
     rating: { type: Number, required: true, min: 1, max: 5 },
     title: { type: String, required: true, trim: true, maxlength: 120 },
     comment: { type: String, required: true, trim: true, maxlength: 1000 },
+    images: { type: [reviewImageSchema], default: [] },
     isVerifiedPurchase: { type: Boolean, default: false },
+    helpfulVoters: { type: [Schema.Types.ObjectId], ref: 'User', default: [] },
+    status: { type: String, enum: ['approved', 'rejected'], default: 'approved' },
   },
   { timestamps: true },
 );

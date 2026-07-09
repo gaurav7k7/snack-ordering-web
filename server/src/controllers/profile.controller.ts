@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { OrderModel } from '../models/Order.model.js';
+import { ProductModel } from '../models/Product.model.js';
 import { UserModel } from '../models/User.model.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -168,10 +169,29 @@ export const getRecentlyViewed = asyncHandler(async (req, res) => {
 });
 
 export const getReviewHistory = asyncHandler(async (req, res) => {
-  const user = await UserModel.findById(req.user?.userId);
-  if (!user) throw new AppError('User not found.', StatusCodes.NOT_FOUND);
+  const userId = req.user?.userId;
+  const products = await ProductModel.find({ 'reviews.user': userId })
+    .select('name slug images reviews')
+    .lean();
 
-  res
-    .status(StatusCodes.OK)
-    .json(createApiResponse('Review history retrieved.', { reviews: user.reviews ?? [] }));
+  const reviews = products
+    .flatMap((product: any) =>
+      (product.reviews ?? [])
+        .filter((review: any) => review.user?.toString() === userId)
+        .map((review: any) => ({
+          _id: review._id,
+          productId: product._id,
+          productName: product.name,
+          productSlug: product.slug,
+          productImage: product.images?.[0]?.url,
+          rating: review.rating,
+          title: review.title,
+          comment: review.comment,
+          status: review.status,
+          createdAt: review.createdAt,
+        })),
+    )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  res.status(StatusCodes.OK).json(createApiResponse('Review history retrieved.', { reviews }));
 });

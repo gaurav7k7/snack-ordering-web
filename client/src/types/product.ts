@@ -39,3 +39,48 @@ export type SearchProduct = {
   availableQuantity?: number;
   stock?: 'in_stock' | 'low_stock' | 'out_of_stock';
 };
+
+export type ApiProductImage = { url: string; publicId: string; alt: string };
+export type ApiProductCategory = { _id: string; name: string; slug: string };
+
+export type ApiProductCard = {
+  _id: string;
+  name: string;
+  slug: string;
+  images: ApiProductImage[];
+  offerPrice: number;
+  mrp: number;
+  discount: number;
+  averageRating: number;
+  reviewCount: number;
+  category?: ApiProductCategory | string;
+  isFeatured: boolean;
+  isTrending: boolean;
+  isBestSeller: boolean;
+  availableQuantity: number;
+  brand: string;
+  subCategory: string;
+  stock: number;
+};
+
+export type ApiProduct = ApiProductCard & {
+  description: string;
+  ingredients: string[];
+  weight: string;
+  nutritionFacts: {
+    servingSize: string;
+    calories: number;
+    protein: string;
+    carbs: string;
+    fat: string;
+    sugar: string;
+    sodium: string;
+  };
+  sku: string;
+  tags: string[];
+  deliveryEstimate: string;
+  returnPolicy: string;
+  shippingInformation: string;
+  recommendedProducts: ApiProductCard[];
+  relatedProducts: ApiProductCard[];
+};
