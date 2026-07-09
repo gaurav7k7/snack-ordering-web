@@ -7,6 +7,7 @@ import {
   Package,
   ShoppingBag,
   Tag,
+  Users,
   X,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { label: 'Categories', href: ROUTES.adminCategories, icon: LayoutGrid },
   { label: 'Orders', href: ROUTES.adminOrders, icon: ShoppingBag },
   { label: 'Coupons', href: ROUTES.adminCoupons, icon: Tag },
+  { label: 'Customers', href: ROUTES.adminCustomers, icon: Users },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {

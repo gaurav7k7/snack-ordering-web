@@ -17,6 +17,7 @@ import { UserModel } from '../models/User.model.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
+import { escapeRegex } from '../utils/escapeRegex.js';
 
 async function loadOwnedOrder(orderId: string, userId?: string) {
   const order = await OrderModel.findById(orderId);
@@ -374,19 +375,19 @@ export const getMyOrders = asyncHandler(async (req, res) => {
   );
 });
 
-function escapeRegex(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 export const getAllOrdersForAdmin = asyncHandler(async (req, res) => {
   const page = Math.max(Number(req.query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
   const statusFilter = typeof req.query.status === 'string' ? req.query.status : undefined;
   const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+  const userId = typeof req.query.userId === 'string' ? req.query.userId : undefined;
 
   const filter: Record<string, unknown> = {};
   if (statusFilter) {
     filter.status = statusFilter;
+  }
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    filter.user = userId;
   }
   if (search) {
     const pattern = new RegExp(escapeRegex(search), 'i');

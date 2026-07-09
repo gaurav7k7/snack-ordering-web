@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { adminUserRoutes } from './adminUser.routes.js';
 import { authRoutes } from './auth.routes.js';
 import { categoryRoutes } from './category.routes.js';
 import { couponRoutes } from './coupon.routes.js';
@@ -21,3 +22,4 @@ apiRoutes.use('/orders', orderRoutes);
 apiRoutes.use('/coupons', couponRoutes);
 apiRoutes.use('/dashboard', dashboardRoutes);
 apiRoutes.use('/uploads', uploadRoutes);
+apiRoutes.use('/users', adminUserRoutes);

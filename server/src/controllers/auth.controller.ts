@@ -104,6 +104,13 @@ export const login = asyncHandler(async (req, res) => {
     throw new AppError('Invalid email or password.', StatusCodes.UNAUTHORIZED);
   }
 
+  if (!user.isActive) {
+    throw new AppError(
+      'Your account has been blocked. Contact support if you believe this is a mistake.',
+      StatusCodes.FORBIDDEN,
+    );
+  }
+
   const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
   const refreshToken = signRefreshToken(
     { userId: user._id.toString(), role: user.role },
@@ -127,6 +134,16 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 
   const payload = verifyRefreshToken(refreshToken);
+
+  const user = await UserModel.findById(payload.userId);
+  if (!user) {
+    throw new AppError('Account not found.', StatusCodes.UNAUTHORIZED);
+  }
+  if (!user.isActive) {
+    clearAuthCookies(res);
+    throw new AppError('Your account has been blocked.', StatusCodes.FORBIDDEN);
+  }
+
   const accessToken = signAccessToken({ userId: payload.userId, role: payload.role });
   const nextRefreshToken = signRefreshToken({ userId: payload.userId, role: payload.role });
   createAuthCookies(res, accessToken, nextRefreshToken);
@@ -286,6 +303,13 @@ export const verifyOtp = asyncHandler(async (req, res) => {
     throw new AppError('OTP is invalid or expired.', StatusCodes.BAD_REQUEST);
   }
 
+  if (!user.isActive) {
+    throw new AppError(
+      'Your account has been blocked. Contact support if you believe this is a mistake.',
+      StatusCodes.FORBIDDEN,
+    );
+  }
+
   user.otpCode = undefined;
   user.otpExpires = undefined;
   await user.save();
@@ -306,6 +330,11 @@ export const googleAuthCallback = asyncHandler(async (req, res) => {
   const user = req.user as any;
   if (!user) {
     throw new AppError('Google authentication failed.', StatusCodes.UNAUTHORIZED);
+  }
+
+  if (!user.isActive) {
+    res.redirect(`${env.clientUrl}/login?error=account-blocked`);
+    return;
   }
 
   const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });

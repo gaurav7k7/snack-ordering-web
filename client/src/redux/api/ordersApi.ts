@@ -94,13 +94,14 @@ export const ordersApi = baseApi.injectEndpoints({
     }),
     getAllOrdersForAdmin: builder.query<
       OrdersListResponse,
-      { page?: number; status?: string; search?: string } | void
+      { page?: number; status?: string; search?: string; userId?: string } | void
     >({
       query: (params) => ({
         url: '/orders/admin',
         params: {
           ...(params?.status ? { status: params.status } : {}),
           ...(params?.search ? { search: params.search } : {}),
+          ...(params?.userId ? { userId: params.userId } : {}),
           ...(params?.page ? { page: params.page } : {}),
         },
       }),

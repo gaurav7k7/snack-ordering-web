@@ -30,6 +30,8 @@ const userSchema = new Schema(
     googleId: { type: String, index: true, sparse: true },
     isEmailVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    blockedAt: { type: Date },
+    blockedReason: { type: String },
     emailVerificationToken: { type: String, select: false },
     emailVerificationExpires: { type: Date, select: false },
     passwordResetToken: { type: String, select: false },
