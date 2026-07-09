@@ -30,7 +30,11 @@ app.use(
   }),
 );
 app.use(compression());
-app.post('/api/v1/orders/payment/webhook', express.raw({ type: 'application/json' }), handleRazorpayWebhook);
+app.post(
+  '/api/v1/orders/payment/webhook',
+  express.raw({ type: 'application/json' }),
+  handleRazorpayWebhook,
+);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser(env.cookieSecret));

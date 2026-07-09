@@ -38,7 +38,7 @@ export default function OrderConfirmationPage() {
             </Link>
           </Button>
           <Button asChild>
-            <Link to={ROUTES.profile}>
+            <Link to={ROUTES.orders}>
               <Mail className="mr-2 h-4 w-4" /> View orders
             </Link>
           </Button>

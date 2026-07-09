@@ -13,6 +13,15 @@ const orderItemSchema = new Schema(
   { _id: false },
 );
 
+const statusHistoryEntrySchema = new Schema(
+  {
+    status: { type: String, enum: Object.values(ORDER_STATUS), required: true },
+    note: { type: String, default: '' },
+    timestamp: { type: Date, default: Date.now },
+  },
+  { _id: false },
+);
+
 const orderSchema = new Schema(
   {
     orderNumber: { type: String, required: true, unique: true, index: true },
@@ -44,16 +53,41 @@ const orderSchema = new Schema(
       enum: Object.values(ORDER_STATUS),
       default: ORDER_STATUS.pending,
     },
+    statusHistory: { type: [statusHistoryEntrySchema], default: [] },
+    deliveredAt: { type: Date },
+    cancellation: {
+      reason: { type: String },
+      cancelledAt: { type: Date },
+    },
+    returnRequest: {
+      reason: { type: String },
+      requestedAt: { type: Date },
+      status: { type: String, enum: ['pending', 'approved', 'rejected'] },
+      resolvedAt: { type: Date },
+    },
     payment: {
       provider: { type: String, default: 'razorpay' },
       razorpayOrderId: String,
       razorpayPaymentId: String,
       razorpaySignature: String,
       status: { type: String, default: 'pending' },
+      refundId: String,
     },
   },
   { timestamps: true },
 );
+
+orderSchema.pre('save', function pushStatusHistory(next) {
+  if (this.isModified('status')) {
+    this.statusHistory = this.statusHistory ?? [];
+    this.statusHistory.push({
+      status: this.status,
+      note: (this as unknown as { _statusNote?: string })._statusNote ?? '',
+      timestamp: new Date(),
+    } as never);
+  }
+  next();
+});
 
 export type Order = InferSchemaType<typeof orderSchema>;
 export const OrderModel = model('Order', orderSchema);

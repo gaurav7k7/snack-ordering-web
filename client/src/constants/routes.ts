@@ -8,5 +8,7 @@ export const ROUTES = {
   resetPassword: '/reset-password',
   profile: '/profile',
   checkout: '/checkout',
+  orders: '/orders',
+  orderDetail: (id: string) => `/orders/${id}`,
   adminDashboard: '/admin/dashboard',
 } as const;

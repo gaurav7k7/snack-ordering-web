@@ -1,14 +1,34 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { ORDER_STATUS } from '../constants/orderStatus.js';
+import { CANCELLABLE_STATUSES, ORDER_STATUS, RETURN_WINDOW_DAYS } from '../constants/orderStatus.js';
 import { env } from '../config/env.js';
 import { sendEmail } from '../services/email.service.js';
-import { createRazorpayOrder, verifyRazorpaySignature, verifyWebhookSignature } from '../services/razorpay.service.js';
+import { generateInvoicePdf } from '../services/invoice.service.js';
+import {
+  createRazorpayOrder,
+  refundPayment,
+  verifyRazorpaySignature,
+  verifyWebhookSignature,
+} from '../services/razorpay.service.js';
 import { OrderModel } from '../models/Order.model.js';
 import { UserModel } from '../models/User.model.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
+
+async function loadOwnedOrder(orderId: string, userId?: string) {
+  const order = await OrderModel.findById(orderId);
+
+  if (!order) {
+    throw new AppError('Order not found.', StatusCodes.NOT_FOUND);
+  }
+
+  if (!order.user || order.user.toString() !== userId) {
+    throw new AppError('You do not have permission to access this order.', StatusCodes.FORBIDDEN);
+  }
+
+  return order;
+}
 
 export const createOrder = asyncHandler(async (req, res) => {
   const {
@@ -182,7 +202,11 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
   }
 
   if (event.event === 'payment.captured' || event.event === 'payment.authorized') {
-    order.payment = { ...(order.payment ?? {}), razorpayPaymentId: paymentEntity.id, status: 'paid' } as any;
+    order.payment = {
+      ...(order.payment ?? {}),
+      razorpayPaymentId: paymentEntity.id,
+      status: 'paid',
+    } as any;
     order.status = ORDER_STATUS.confirmed;
     await order.save();
   }
@@ -194,4 +218,181 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
   }
 
   res.status(StatusCodes.OK).json({ status: 'ok' });
+});
+
+export const getMyOrders = asyncHandler(async (req, res) => {
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
+  const statusFilter = typeof req.query.status === 'string' ? req.query.status : undefined;
+
+  const filter: Record<string, unknown> = { user: req.user?.userId };
+  if (statusFilter) {
+    filter.status = statusFilter;
+  }
+
+  const [orders, total] = await Promise.all([
+    OrderModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+    OrderModel.countDocuments(filter),
+  ]);
+
+  res.status(StatusCodes.OK).json(
+    createApiResponse('Orders retrieved.', {
+      orders,
+      pagination: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) },
+    }),
+  );
+});
+
+export const getOrderById = asyncHandler(async (req, res) => {
+  const order = await loadOwnedOrder(req.params.id, req.user?.userId);
+  res.status(StatusCodes.OK).json(createApiResponse('Order retrieved.', { order }));
+});
+
+export const cancelOrder = asyncHandler(async (req, res) => {
+  const order = await loadOwnedOrder(req.params.id, req.user?.userId);
+  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+
+  if (!CANCELLABLE_STATUSES.includes(order.status as (typeof CANCELLABLE_STATUSES)[number])) {
+    throw new AppError(
+      `Orders that are already ${order.status} can no longer be cancelled.`,
+      StatusCodes.BAD_REQUEST,
+    );
+  }
+
+  const cancellationReason = reason || 'Cancelled by customer';
+  order.cancellation = { reason: cancellationReason, cancelledAt: new Date() };
+  order.status = ORDER_STATUS.cancelled;
+  (order as unknown as { _statusNote?: string })._statusNote = cancellationReason;
+  await order.save();
+
+  const payment = order.payment as
+    | { provider?: string; status?: string; razorpayPaymentId?: string }
+    | undefined;
+  const isPaidRazorpayOrder =
+    payment?.status === 'paid' && payment?.provider === 'razorpay' && payment?.razorpayPaymentId;
+
+  if (isPaidRazorpayOrder) {
+    try {
+      const refund = await refundPayment(payment.razorpayPaymentId as string, order.total);
+      order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as never;
+      order.status = ORDER_STATUS.refunded;
+      (order as unknown as { _statusNote?: string })._statusNote = 'Refund processed for cancelled order.';
+      await order.save();
+    } catch (error) {
+      console.error(`Refund failed for order ${order.orderNumber}:`, error);
+    }
+  }
+
+  if (order.guestEmail) {
+    await sendEmail({
+      to: order.guestEmail,
+      subject: `Your SnackCo order ${order.orderNumber} was cancelled`,
+      text: `Hi, your order ${order.orderNumber} has been cancelled. Reason: ${cancellationReason}.`,
+      html: `<p>Your order <strong>${order.orderNumber}</strong> has been cancelled.</p><p>Reason: ${cancellationReason}</p>`,
+    });
+  }
+
+  res.status(StatusCodes.OK).json(createApiResponse('Order cancelled.', { order }));
+});
+
+export const requestReturn = asyncHandler(async (req, res) => {
+  const order = await loadOwnedOrder(req.params.id, req.user?.userId);
+  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+
+  if (order.status !== ORDER_STATUS.delivered) {
+    throw new AppError('Only delivered orders are eligible for a return.', StatusCodes.BAD_REQUEST);
+  }
+
+  if (!reason) {
+    throw new AppError('Please tell us why you want to return this order.', StatusCodes.BAD_REQUEST);
+  }
+
+  const deliveredAt = order.deliveredAt ?? order.updatedAt ?? order.createdAt;
+  const daysSinceDelivery = (Date.now() - new Date(deliveredAt as Date).getTime()) / 86_400_000;
+
+  if (daysSinceDelivery > RETURN_WINDOW_DAYS) {
+    throw new AppError(
+      `The return window (${RETURN_WINDOW_DAYS} days) for this order has closed.`,
+      StatusCodes.BAD_REQUEST,
+    );
+  }
+
+  order.returnRequest = { reason, requestedAt: new Date(), status: 'pending' };
+  order.status = ORDER_STATUS.return_requested;
+  (order as unknown as { _statusNote?: string })._statusNote = reason;
+  await order.save();
+
+  if (order.guestEmail) {
+    await sendEmail({
+      to: order.guestEmail,
+      subject: `Return request received for order ${order.orderNumber}`,
+      text: `We've received your return request for order ${order.orderNumber}. Our team will review it within 24-48 hours.`,
+      html: `<p>We've received your return request for order <strong>${order.orderNumber}</strong>.</p><p>Our team will review it within 24-48 hours.</p>`,
+    });
+  }
+
+  res.status(StatusCodes.OK).json(createApiResponse('Return request submitted.', { order }));
+});
+
+const ADMIN_SETTABLE_STATUSES = new Set<string>(Object.values(ORDER_STATUS));
+
+export const updateOrderStatus = asyncHandler(async (req, res) => {
+  const { status, note } = req.body ?? {};
+
+  if (!status || !ADMIN_SETTABLE_STATUSES.has(status)) {
+    throw new AppError('A valid order status is required.', StatusCodes.BAD_REQUEST);
+  }
+
+  const order = await OrderModel.findById(req.params.id);
+  if (!order) {
+    throw new AppError('Order not found.', StatusCodes.NOT_FOUND);
+  }
+
+  if (status === ORDER_STATUS.delivered) {
+    order.deliveredAt = new Date();
+  }
+
+  const payment = order.payment as
+    | { provider?: string; status?: string; razorpayPaymentId?: string }
+    | undefined;
+
+  if (
+    status === ORDER_STATUS.refunded &&
+    payment?.status !== 'refunded' &&
+    payment?.provider === 'razorpay' &&
+    payment?.razorpayPaymentId
+  ) {
+    try {
+      const refund = await refundPayment(payment.razorpayPaymentId as string, order.total);
+      order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as never;
+    } catch (error) {
+      console.error(`Refund failed for order ${order.orderNumber}:`, error);
+    }
+  }
+
+  if (order.returnRequest && status === ORDER_STATUS.returned) {
+    order.returnRequest = { ...order.returnRequest, status: 'approved', resolvedAt: new Date() } as never;
+  }
+
+  order.status = status;
+  (order as unknown as { _statusNote?: string })._statusNote = typeof note === 'string' ? note : '';
+  await order.save();
+
+  res.status(StatusCodes.OK).json(createApiResponse('Order status updated.', { order }));
+});
+
+export const getInvoice = asyncHandler(async (req, res) => {
+  const order = await loadOwnedOrder(req.params.id, req.user?.userId);
+  const doc = generateInvoicePdf(order.toObject() as never);
+
+  const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `${disposition}; filename="invoice-${order.orderNumber}.pdf"`);
+
+  doc.pipe(res);
+  doc.end();
 });

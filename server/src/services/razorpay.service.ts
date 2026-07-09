@@ -3,12 +3,13 @@ import Razorpay from 'razorpay';
 
 import { env } from '../config/env.js';
 
-const razorpayClient = env.razorpayKeyId && env.razorpayKeySecret
-  ? new Razorpay({
-      key_id: env.razorpayKeyId,
-      key_secret: env.razorpayKeySecret,
-    })
-  : null;
+const razorpayClient =
+  env.razorpayKeyId && env.razorpayKeySecret
+    ? new Razorpay({
+        key_id: env.razorpayKeyId,
+        key_secret: env.razorpayKeySecret,
+      })
+    : null;
 
 export async function createRazorpayOrder(amount: number, receipt: string) {
   if (!razorpayClient) {
@@ -45,6 +46,16 @@ export function verifyRazorpaySignature({
     .digest('hex');
 
   return expectedSignature === razorpaySignature;
+}
+
+export async function refundPayment(paymentId: string, amountInRupees?: number) {
+  if (!razorpayClient) {
+    throw new Error('Razorpay is not configured.');
+  }
+
+  return razorpayClient.payments.refund(paymentId, {
+    ...(amountInRupees ? { amount: Math.round(amountInRupees * 100) } : {}),
+  });
 }
 
 export function verifyWebhookSignature(body: string, signature: string) {

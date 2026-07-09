@@ -13,8 +13,11 @@ import {
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
+import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
 import { Button } from '@/components/ui/button';
+import { ROUTES } from '@/constants/routes';
 import { useAppDispatch } from '@/hooks/redux';
 import {
   useChangePasswordMutation,
@@ -32,6 +35,7 @@ import {
   useUploadProfilePictureMutation,
 } from '@/redux/api/profileApi';
 import { setUser } from '@/redux/slices/authSlice';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function ProfilePage() {
   const dispatch = useAppDispatch();
@@ -315,25 +319,31 @@ export default function ProfilePage() {
 
         <div className="grid gap-6 xl:grid-cols-2">
           <section className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-black">Order history</h2>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-black">Order history</h2>
+              </div>
+              <Link to={ROUTES.orders} className="text-sm font-semibold text-primary hover:underline">
+                View all
+              </Link>
             </div>
             <div className="mt-4 space-y-3">
               {orders.length ? (
                 orders.slice(0, 4).map((order: any) => (
-                  <div
+                  <Link
                     key={order._id}
-                    className="rounded-2xl border border-border/70 bg-background p-4 text-sm"
+                    to={ROUTES.orderDetail(order._id)}
+                    className="block rounded-2xl border border-border/70 bg-background p-4 text-sm transition hover:border-primary/50"
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <span className="font-semibold">Order #{order._id?.slice(-6)}</span>
-                      <span className="text-muted-foreground">{order.status ?? 'Processing'}</span>
+                      <span className="font-semibold">Order #{order.orderNumber ?? order._id?.slice(-6)}</span>
+                      {order.status && <OrderStatusBadge status={order.status} />}
                     </div>
                     <p className="mt-2 text-muted-foreground">
-                      {order.items?.length ?? 0} items • {order.totalAmount ?? 0}
+                      {order.items?.length ?? 0} items • {formatCurrency(order.total ?? 0)}
                     </p>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <p className="rounded-2xl border border-dashed border-border/70 bg-background p-4 text-sm text-muted-foreground">

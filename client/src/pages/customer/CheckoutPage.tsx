@@ -63,12 +63,18 @@ export default function CheckoutPage() {
         return;
       }
 
-      const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+      const existingScript = document.querySelector(
+        'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
+      );
       if (existingScript) {
         existingScript.addEventListener('load', () => resolve(), { once: true });
-        existingScript.addEventListener('error', () => reject(new Error('Unable to load Razorpay SDK.')), {
-          once: true,
-        });
+        existingScript.addEventListener(
+          'error',
+          () => reject(new Error('Unable to load Razorpay SDK.')),
+          {
+            once: true,
+          },
+        );
         return;
       }
 
@@ -114,7 +120,9 @@ export default function CheckoutPage() {
         isGuest: !isAuthenticated,
       }).unwrap();
 
-      if (paymentMethod === 'razorpay' && result.data?.payment?.razorpayOrderId) {
+      const createdOrderId = result.data?.order?._id;
+
+      if (paymentMethod === 'razorpay' && result.data?.payment?.razorpayOrderId && createdOrderId) {
         await loadRazorpayScript();
         const razorpayOptions = {
           key: result.data.payment.key,
@@ -123,10 +131,14 @@ export default function CheckoutPage() {
           name: 'SnackCo',
           description: `Payment for ${result.data.order?.orderNumber ?? 'your order'}`,
           order_id: result.data.payment.razorpayOrderId,
-          handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+          handler: async (response: {
+            razorpay_order_id: string;
+            razorpay_payment_id: string;
+            razorpay_signature: string;
+          }) => {
             try {
               await verifyPayment({
-                orderId: result.data?.order?._id,
+                orderId: createdOrderId,
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
