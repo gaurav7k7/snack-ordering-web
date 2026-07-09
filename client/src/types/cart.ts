@@ -12,5 +12,4 @@ export type CartState = {
   items: CartItem[];
   savedItems: CartItem[];
   couponCode: string;
-  giftCouponCode: string;
 };

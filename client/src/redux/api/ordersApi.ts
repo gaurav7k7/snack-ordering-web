@@ -35,7 +35,6 @@ type OrderPayload = {
   deliveryInstructions?: string;
   paymentMethod?: 'cod' | 'razorpay';
   couponCode?: string;
-  giftCouponCode?: string;
   guestName?: string;
   guestEmail?: string;
   guestPhone?: string;

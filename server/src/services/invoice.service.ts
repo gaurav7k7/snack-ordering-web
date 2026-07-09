@@ -20,7 +20,9 @@ type InvoiceOrder = {
   tax: number;
   total: number;
   couponCode?: string;
-  giftCouponCode?: string;
+  couponDiscount?: number;
+  automaticOfferCode?: string;
+  automaticDiscount?: number;
   payment?: { provider?: string; status?: string };
 };
 
@@ -90,9 +92,14 @@ export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
 
   const summaryLines: Array<[string, string]> = [
     ['Subtotal', currency(order.subtotal)],
-    ...(order.couponCode ? [['Coupon (' + order.couponCode + ')', 'Applied'] as [string, string]] : []),
-    ...(order.giftCouponCode
-      ? [['Gift coupon (' + order.giftCouponCode + ')', 'Applied'] as [string, string]]
+    ...(order.couponCode && order.couponDiscount
+      ? [[`Coupon (${order.couponCode})`, `-${currency(order.couponDiscount)}`] as [string, string]]
+      : []),
+    ...(order.automaticOfferCode && order.automaticDiscount
+      ? [[`Automatic offer (${order.automaticOfferCode})`, `-${currency(order.automaticDiscount)}`] as [
+          string,
+          string,
+        ]]
       : []),
     ['Shipping', order.shippingFee === 0 ? 'Free' : currency(order.shippingFee)],
     ['Tax (GST)', currency(order.tax)],

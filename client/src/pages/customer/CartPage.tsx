@@ -1,4 +1,5 @@
-import { ArrowRight, Minus, Plus, Sparkles, Trash2, Heart } from 'lucide-react';
+import { ArrowRight, Minus, Plus, Sparkles, Tag, Trash2, Heart, X, Zap } from 'lucide-react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 
@@ -6,28 +7,44 @@ import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { useCartPricing } from '@/hooks/useCartPricing';
 import {
   moveBackToCart,
   moveToSaved,
   removeItem,
   removeSavedItem,
   setCouponCode,
-  setGiftCouponCode,
   updateQuantity,
 } from '@/redux/slices/cartSlice';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function CartPage() {
   const dispatch = useAppDispatch();
-  const { items, savedItems, couponCode, giftCouponCode } = useAppSelector((state) => state.cart);
+  const { items, savedItems, couponCode } = useAppSelector((state) => state.cart);
+  const [couponInput, setCouponInput] = useState(couponCode);
 
   const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
-  const couponDiscount = couponCode.trim().toLowerCase() === 'snack10' ? subtotal * 0.1 : 0;
-  const giftDiscount =
-    giftCouponCode.trim().toLowerCase() === 'gift50' ? Math.min(subtotal * 0.05, 100) : 0;
-  const tax = Math.round(Math.max(subtotal - couponDiscount - giftDiscount, 0) * 0.18);
-  const deliveryCharges = subtotal > 999 ? 0 : 69;
-  const total = subtotal - couponDiscount - giftDiscount + tax + deliveryCharges;
+  const {
+    appliedCoupon,
+    couponErrorMessage,
+    isValidatingCoupon,
+    automaticOffer,
+    couponDiscount,
+    automaticDiscount,
+    tax,
+    shippingFee,
+    total,
+  } = useCartPricing(subtotal, couponCode);
+
+  const handleApplyCoupon = (event: React.FormEvent) => {
+    event.preventDefault();
+    dispatch(setCouponCode(couponInput.trim()));
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponInput('');
+    dispatch(setCouponCode(''));
+  };
 
   return (
     <>
@@ -57,6 +74,16 @@ export default function CartPage() {
             <Button asChild className="mt-6">
               <Link to={ROUTES.products}>Browse snacks</Link>
             </Button>
+          </div>
+        ) : null}
+
+        {automaticOffer ? (
+          <div className="mt-6 flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
+            <Zap className="h-5 w-5 shrink-0 text-primary" />
+            <p>
+              <span className="font-semibold">{automaticOffer.description || 'Automatic offer applied'}</span>{' '}
+              — you're saving {formatCurrency(automaticOffer.discountAmount)} automatically, no code needed.
+            </p>
           </div>
         ) : null}
 
@@ -206,21 +233,25 @@ export default function CartPage() {
                   <span>Subtotal</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>Coupon savings</span>
-                  <span>-{formatCurrency(couponDiscount)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Gift coupon</span>
-                  <span>-{formatCurrency(giftDiscount)}</span>
-                </div>
+                {couponDiscount > 0 ? (
+                  <div className="flex items-center justify-between text-emerald-600">
+                    <span>Coupon ({appliedCoupon?.code})</span>
+                    <span>-{formatCurrency(couponDiscount)}</span>
+                  </div>
+                ) : null}
+                {automaticDiscount > 0 ? (
+                  <div className="flex items-center justify-between text-emerald-600">
+                    <span>Automatic offer</span>
+                    <span>-{formatCurrency(automaticDiscount)}</span>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between">
                   <span>Tax</span>
                   <span>{formatCurrency(tax)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Delivery charges</span>
-                  <span>{deliveryCharges === 0 ? 'Free' : formatCurrency(deliveryCharges)}</span>
+                  <span>{shippingFee === 0 ? 'Free' : formatCurrency(shippingFee)}</span>
                 </div>
               </div>
               <div className="mt-5 border-t pt-4">
@@ -228,7 +259,7 @@ export default function CartPage() {
                   <span>Order total</span>
                   <span>{formatCurrency(total)}</span>
                 </div>
-                <Button asChild className="mt-5 w-full" size="lg">
+                <Button asChild className="mt-5 w-full" size="lg" disabled={items.length === 0}>
                   <Link to={ROUTES.checkout}>
                     Checkout <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -237,27 +268,43 @@ export default function CartPage() {
             </div>
 
             <div className="rounded-3xl border bg-card p-5 shadow-sm">
-              <h2 className="text-xl font-black">Coupon code</h2>
-              <input
-                value={couponCode}
-                onChange={(event) => dispatch(setCouponCode(event.target.value))}
-                placeholder="Enter coupon"
-                className="mt-4 w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary"
-              />
-              <p className="mt-2 text-sm text-muted-foreground">Try SNACK10 for 10% off.</p>
-            </div>
-
-            <div className="rounded-3xl border bg-card p-5 shadow-sm">
-              <h2 className="text-xl font-black">Gift coupon</h2>
-              <input
-                value={giftCouponCode}
-                onChange={(event) => dispatch(setGiftCouponCode(event.target.value))}
-                placeholder="Enter gift coupon"
-                className="mt-4 w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary"
-              />
-              <p className="mt-2 text-sm text-muted-foreground">
-                Try GIFT50 for a ₹100 gift discount.
-              </p>
+              <div className="flex items-center gap-2">
+                <Tag className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-black">Coupon code</h2>
+              </div>
+              {appliedCoupon ? (
+                <div className="mt-4 flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-sm">
+                  <div>
+                    <p className="font-semibold text-emerald-700 dark:text-emerald-400">
+                      {appliedCoupon.code} applied
+                    </p>
+                    <p className="text-muted-foreground">{appliedCoupon.description}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    aria-label="Remove coupon"
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-accent"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleApplyCoupon} className="mt-4 flex gap-2">
+                  <input
+                    value={couponInput}
+                    onChange={(event) => setCouponInput(event.target.value)}
+                    placeholder="Enter coupon code"
+                    className="w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary"
+                  />
+                  <Button type="submit" variant="outline" disabled={isValidatingCoupon || !couponInput.trim()}>
+                    {isValidatingCoupon ? 'Checking…' : 'Apply'}
+                  </Button>
+                </form>
+              )}
+              {couponErrorMessage ? (
+                <p className="mt-2 text-sm text-destructive">{couponErrorMessage}</p>
+              ) : null}
             </div>
           </aside>
         </div>

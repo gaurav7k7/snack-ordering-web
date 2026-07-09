@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 
 import { CANCELLABLE_STATUSES, ORDER_STATUS, RETURN_WINDOW_DAYS } from '../constants/orderStatus.js';
 import { env } from '../config/env.js';
+import { evaluateCouponByCode, findBestAutomaticOffer, redeemCouponByCode } from '../services/coupon.service.js';
 import { sendEmail } from '../services/email.service.js';
 import { generateInvoicePdf } from '../services/invoice.service.js';
 import {
@@ -31,6 +32,24 @@ async function loadOwnedOrder(orderId: string, userId?: string) {
   return order;
 }
 
+async function redeemOrderCoupons(order: {
+  couponCode?: string | null;
+  automaticOfferCode?: string | null;
+  user?: unknown;
+  guestEmail?: string | null;
+  _id: unknown;
+}) {
+  const userId = order.user ? String(order.user) : undefined;
+  const guestEmail = order.guestEmail ?? undefined;
+  const orderId = String(order._id);
+
+  await Promise.all(
+    [order.couponCode, order.automaticOfferCode]
+      .filter((code): code is string => Boolean(code))
+      .map((code) => redeemCouponByCode(code, { userId, guestEmail, orderId })),
+  );
+}
+
 export const createOrder = asyncHandler(async (req, res) => {
   const {
     items,
@@ -38,7 +57,6 @@ export const createOrder = asyncHandler(async (req, res) => {
     deliveryInstructions,
     paymentMethod = 'cod',
     couponCode,
-    giftCouponCode,
     guestName,
     guestEmail,
     guestPhone,
@@ -82,12 +100,30 @@ export const createOrder = asyncHandler(async (req, res) => {
     (sum: number, item: any) => sum + Number(item.price) * Number(item.quantity),
     0,
   );
-  const couponDiscount = couponCode?.trim().toLowerCase() === 'snack10' ? subtotal * 0.1 : 0;
-  const giftDiscount =
-    giftCouponCode?.trim().toLowerCase() === 'gift50' ? Math.min(subtotal * 0.05, 100) : 0;
-  const tax = Math.round(Math.max(subtotal - couponDiscount - giftDiscount, 0) * 0.18);
+
+  let couponDiscount = 0;
+  let validatedCouponCode = '';
+  if (typeof couponCode === 'string' && couponCode.trim()) {
+    const result = await evaluateCouponByCode(couponCode, {
+      subtotal,
+      userId,
+      guestEmail: effectiveEmail,
+    });
+    if (result.error || !result.coupon) {
+      throw new AppError(result.error ?? 'This coupon cannot be applied.', StatusCodes.BAD_REQUEST);
+    }
+    couponDiscount = result.discountAmount;
+    validatedCouponCode = result.coupon.code;
+  }
+
+  const automaticOffer = await findBestAutomaticOffer({ subtotal, userId, guestEmail: effectiveEmail });
+  const automaticDiscount = automaticOffer?.discountAmount ?? 0;
+  const automaticOfferCode = automaticOffer?.coupon.code ?? '';
+
+  const totalDiscount = Math.min(couponDiscount + automaticDiscount, subtotal);
+  const tax = Math.round(Math.max(subtotal - totalDiscount, 0) * 0.18);
   const shippingFee = subtotal > 999 ? 0 : 69;
-  const total = subtotal - couponDiscount - giftDiscount + tax + shippingFee;
+  const total = subtotal - totalDiscount + tax + shippingFee;
   const isRazorpayPayment = paymentMethod === 'razorpay';
 
   const order = await OrderModel.create({
@@ -115,14 +151,20 @@ export const createOrder = asyncHandler(async (req, res) => {
       provider: isRazorpayPayment ? 'razorpay' : 'cod',
       status: 'pending',
     },
-    couponCode,
-    giftCouponCode,
+    couponCode: validatedCouponCode,
+    couponDiscount,
+    automaticOfferCode,
+    automaticDiscount,
     guestEmail: effectiveEmail,
     guestName: effectiveName,
     guestPhone: effectivePhone,
     isGuest: Boolean(isGuest || !userId),
     status: isRazorpayPayment ? ORDER_STATUS.pending : ORDER_STATUS.confirmed,
   });
+
+  if (!isRazorpayPayment) {
+    await redeemOrderCoupons(order);
+  }
 
   if (isRazorpayPayment) {
     const razorpayOrder = await createRazorpayOrder(total, order._id.toString());
@@ -178,6 +220,8 @@ export const verifyPayment = asyncHandler(async (req, res) => {
     throw new AppError('Payment verification failed.', StatusCodes.BAD_REQUEST);
   }
 
+  const wasAlreadyConfirmed = order.status === ORDER_STATUS.confirmed;
+
   order.payment = {
     ...(order.payment ?? {}),
     razorpayOrderId,
@@ -187,6 +231,10 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   } as any;
   order.status = ORDER_STATUS.confirmed;
   await order.save();
+
+  if (!wasAlreadyConfirmed) {
+    await redeemOrderCoupons(order);
+  }
 
   res.status(StatusCodes.OK).json(createApiResponse('Payment verified successfully.', { order }));
 });
@@ -213,6 +261,8 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
   }
 
   if (event.event === 'payment.captured' || event.event === 'payment.authorized') {
+    const wasAlreadyConfirmed = order.status === ORDER_STATUS.confirmed;
+
     order.payment = {
       ...(order.payment ?? {}),
       razorpayPaymentId: paymentEntity.id,
@@ -220,6 +270,10 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
     } as any;
     order.status = ORDER_STATUS.confirmed;
     await order.save();
+
+    if (!wasAlreadyConfirmed) {
+      await redeemOrderCoupons(order);
+    }
   }
 
   if (event.event === 'payment.failed') {

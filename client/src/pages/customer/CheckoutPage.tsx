@@ -8,6 +8,7 @@ import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { useCartPricing } from '@/hooks/useCartPricing';
 import { useCreateOrderMutation, useVerifyPaymentMutation } from '@/redux/api/ordersApi';
 import { clearCart } from '@/redux/slices/cartSlice';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -26,7 +27,7 @@ const defaultAddress = {
 export default function CheckoutPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { items, couponCode, giftCouponCode } = useAppSelector((state) => state.cart);
+  const { items, couponCode } = useAppSelector((state) => state.cart);
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const [createOrder, { isLoading }] = useCreateOrderMutation();
   const [verifyPayment] = useVerifyPaymentMutation();
@@ -40,12 +41,8 @@ export default function CheckoutPage() {
     () => items.reduce((total, item) => total + item.price * item.quantity, 0),
     [items],
   );
-  const couponDiscount = couponCode.trim().toLowerCase() === 'snack10' ? subtotal * 0.1 : 0;
-  const giftDiscount =
-    giftCouponCode.trim().toLowerCase() === 'gift50' ? Math.min(subtotal * 0.05, 100) : 0;
-  const tax = Math.round(Math.max(subtotal - couponDiscount - giftDiscount, 0) * 0.18);
-  const deliveryCharges = subtotal > 999 ? 0 : 69;
-  const total = subtotal - couponDiscount - giftDiscount + tax + deliveryCharges;
+  const { appliedCoupon, automaticOffer, couponDiscount, automaticDiscount, tax, shippingFee, total } =
+    useCartPricing(subtotal, couponCode);
 
   if (!items.length) {
     return <Navigate to={ROUTES.cart} replace />;
@@ -113,7 +110,6 @@ export default function CheckoutPage() {
         deliveryInstructions,
         paymentMethod,
         couponCode,
-        giftCouponCode,
         guestName: isAuthenticated ? user?.name : address.fullName,
         guestEmail: isAuthenticated ? user?.email : guestEmail,
         guestPhone: address.phone,
@@ -357,21 +353,25 @@ export default function CheckoutPage() {
                   <span>Subtotal</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>Coupon</span>
-                  <span>-{formatCurrency(couponDiscount)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Gift coupon</span>
-                  <span>-{formatCurrency(giftDiscount)}</span>
-                </div>
+                {couponDiscount > 0 ? (
+                  <div className="flex items-center justify-between text-emerald-600">
+                    <span>Coupon ({appliedCoupon?.code})</span>
+                    <span>-{formatCurrency(couponDiscount)}</span>
+                  </div>
+                ) : null}
+                {automaticDiscount > 0 ? (
+                  <div className="flex items-center justify-between text-emerald-600">
+                    <span>Automatic offer{automaticOffer ? ` (${automaticOffer.code})` : ''}</span>
+                    <span>-{formatCurrency(automaticDiscount)}</span>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between">
                   <span>Tax</span>
                   <span>{formatCurrency(tax)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Delivery</span>
-                  <span>{deliveryCharges === 0 ? 'Free' : formatCurrency(deliveryCharges)}</span>
+                  <span>{shippingFee === 0 ? 'Free' : formatCurrency(shippingFee)}</span>
                 </div>
               </div>
               <div className="mt-5 border-t pt-4">

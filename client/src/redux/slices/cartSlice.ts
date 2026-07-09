@@ -10,7 +10,6 @@ const loadPersistedCart = (): CartState => {
       items: [],
       savedItems: [],
       couponCode: '',
-      giftCouponCode: '',
     };
   }
 
@@ -21,7 +20,6 @@ const loadPersistedCart = (): CartState => {
         items: [],
         savedItems: [],
         couponCode: '',
-        giftCouponCode: '',
       };
     }
 
@@ -31,7 +29,6 @@ const loadPersistedCart = (): CartState => {
       items: [],
       savedItems: [],
       couponCode: '',
-      giftCouponCode: '',
     };
   }
 };
@@ -95,14 +92,10 @@ const cartSlice = createSlice({
     setCouponCode(state, action: PayloadAction<string>) {
       state.couponCode = action.payload;
     },
-    setGiftCouponCode(state, action: PayloadAction<string>) {
-      state.giftCouponCode = action.payload;
-    },
     clearCart(state) {
       state.items = [];
       state.savedItems = [];
       state.couponCode = '';
-      state.giftCouponCode = '';
     },
   },
 });
@@ -115,7 +108,6 @@ export const {
   moveBackToCart,
   removeSavedItem,
   setCouponCode,
-  setGiftCouponCode,
   clearCart,
 } = cartSlice.actions;
 export default cartSlice.reducer;
