@@ -23,6 +23,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage'));
+const AdminOrderDetailPage = lazy(() => import('@/pages/admin/AdminOrderDetailPage'));
 const AdminCouponsPage = lazy(() => import('@/pages/admin/AdminCouponsPage'));
 const AdminProductsPage = lazy(() => import('@/pages/admin/AdminProductsPage'));
 const AdminProductFormPage = lazy(() => import('@/pages/admin/AdminProductFormPage'));
@@ -170,6 +171,14 @@ export function AppRoutes() {
               element={
                 <PageTransition>
                   <AdminOrdersPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="orders/:id"
+              element={
+                <PageTransition>
+                  <AdminOrderDetailPage />
                 </PageTransition>
               }
             />

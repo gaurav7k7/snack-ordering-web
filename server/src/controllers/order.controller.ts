@@ -32,6 +32,68 @@ async function loadOwnedOrder(orderId: string, userId?: string) {
   return order;
 }
 
+async function loadOrderById(orderId: string) {
+  const order = await OrderModel.findById(orderId);
+
+  if (!order) {
+    throw new AppError('Order not found.', StatusCodes.NOT_FOUND);
+  }
+
+  return order;
+}
+
+type OrderPayment = { provider?: string; status?: string; razorpayPaymentId?: string; refundId?: string };
+
+// Best-effort refund used by flows where the primary action (cancel, status
+// change) should still succeed even if the payment gateway call fails
+// transiently — the failure is logged so an admin can retry manually via the
+// dedicated refund action, which surfaces errors instead of swallowing them.
+async function attemptAutoRefund(order: InstanceType<typeof OrderModel>, note: string) {
+  const payment = order.payment as OrderPayment | undefined;
+  const isPaidRazorpayOrder =
+    payment?.status === 'paid' && payment?.provider === 'razorpay' && payment?.razorpayPaymentId;
+
+  if (!isPaidRazorpayOrder) return;
+
+  try {
+    const refund = await refundPayment(payment.razorpayPaymentId as string, order.total);
+    order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as never;
+    order.status = ORDER_STATUS.refunded;
+    (order as unknown as { _statusNote?: string })._statusNote = note;
+    await order.save();
+  } catch (error) {
+    console.error(`Refund failed for order ${order.orderNumber}:`, error);
+  }
+}
+
+async function performCancellation(order: InstanceType<typeof OrderModel>, reason: string, actor: 'customer' | 'admin') {
+  if (!CANCELLABLE_STATUSES.includes(order.status as (typeof CANCELLABLE_STATUSES)[number])) {
+    throw new AppError(
+      `Orders that are already ${order.status} can no longer be cancelled.`,
+      StatusCodes.BAD_REQUEST,
+    );
+  }
+
+  const cancellationReason = reason || (actor === 'admin' ? 'Cancelled by admin' : 'Cancelled by customer');
+  order.cancellation = { reason: cancellationReason, cancelledAt: new Date() };
+  order.status = ORDER_STATUS.cancelled;
+  (order as unknown as { _statusNote?: string })._statusNote = cancellationReason;
+  await order.save();
+
+  await attemptAutoRefund(order, 'Refund processed for cancelled order.');
+
+  if (order.guestEmail) {
+    await sendEmail({
+      to: order.guestEmail,
+      subject: `Your SnackCo order ${order.orderNumber} was cancelled`,
+      text: `Hi, your order ${order.orderNumber} has been cancelled. Reason: ${cancellationReason}.`,
+      html: `<p>Your order <strong>${order.orderNumber}</strong> has been cancelled.</p><p>Reason: ${cancellationReason}</p>`,
+    });
+  }
+
+  return order;
+}
+
 async function redeemOrderCoupons(order: {
   couponCode?: string | null;
   automaticOfferCode?: string | null;
@@ -312,14 +374,28 @@ export const getMyOrders = asyncHandler(async (req, res) => {
   );
 });
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export const getAllOrdersForAdmin = asyncHandler(async (req, res) => {
   const page = Math.max(Number(req.query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
   const statusFilter = typeof req.query.status === 'string' ? req.query.status : undefined;
+  const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
   const filter: Record<string, unknown> = {};
   if (statusFilter) {
     filter.status = statusFilter;
+  }
+  if (search) {
+    const pattern = new RegExp(escapeRegex(search), 'i');
+    filter.$or = [
+      { orderNumber: pattern },
+      { guestName: pattern },
+      { guestEmail: pattern },
+      { guestPhone: pattern },
+    ];
   }
 
   const [orders, total] = await Promise.all([
@@ -344,45 +420,7 @@ export const cancelOrder = asyncHandler(async (req, res) => {
   const order = await loadOwnedOrder(req.params.id, req.user?.userId);
   const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
 
-  if (!CANCELLABLE_STATUSES.includes(order.status as (typeof CANCELLABLE_STATUSES)[number])) {
-    throw new AppError(
-      `Orders that are already ${order.status} can no longer be cancelled.`,
-      StatusCodes.BAD_REQUEST,
-    );
-  }
-
-  const cancellationReason = reason || 'Cancelled by customer';
-  order.cancellation = { reason: cancellationReason, cancelledAt: new Date() };
-  order.status = ORDER_STATUS.cancelled;
-  (order as unknown as { _statusNote?: string })._statusNote = cancellationReason;
-  await order.save();
-
-  const payment = order.payment as
-    | { provider?: string; status?: string; razorpayPaymentId?: string }
-    | undefined;
-  const isPaidRazorpayOrder =
-    payment?.status === 'paid' && payment?.provider === 'razorpay' && payment?.razorpayPaymentId;
-
-  if (isPaidRazorpayOrder) {
-    try {
-      const refund = await refundPayment(payment.razorpayPaymentId as string, order.total);
-      order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as never;
-      order.status = ORDER_STATUS.refunded;
-      (order as unknown as { _statusNote?: string })._statusNote = 'Refund processed for cancelled order.';
-      await order.save();
-    } catch (error) {
-      console.error(`Refund failed for order ${order.orderNumber}:`, error);
-    }
-  }
-
-  if (order.guestEmail) {
-    await sendEmail({
-      to: order.guestEmail,
-      subject: `Your SnackCo order ${order.orderNumber} was cancelled`,
-      text: `Hi, your order ${order.orderNumber} has been cancelled. Reason: ${cancellationReason}.`,
-      html: `<p>Your order <strong>${order.orderNumber}</strong> has been cancelled.</p><p>Reason: ${cancellationReason}</p>`,
-    });
-  }
+  await performCancellation(order, reason, 'customer');
 
   res.status(StatusCodes.OK).json(createApiResponse('Order cancelled.', { order }));
 });
@@ -483,4 +521,109 @@ export const getInvoice = asyncHandler(async (req, res) => {
 
   doc.pipe(res);
   doc.end();
+});
+
+export const getOrderByIdForAdmin = asyncHandler(async (req, res) => {
+  const order = await OrderModel.findById(req.params.id).populate('user', 'name email phone');
+  if (!order) {
+    throw new AppError('Order not found.', StatusCodes.NOT_FOUND);
+  }
+  res.status(StatusCodes.OK).json(createApiResponse('Order retrieved.', { order }));
+});
+
+export const getInvoiceForAdmin = asyncHandler(async (req, res) => {
+  const order = await loadOrderById(req.params.id);
+  const doc = generateInvoicePdf(order.toObject() as never);
+
+  const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `${disposition}; filename="invoice-${order.orderNumber}.pdf"`);
+
+  doc.pipe(res);
+  doc.end();
+});
+
+export const adminCancelOrder = asyncHandler(async (req, res) => {
+  const order = await loadOrderById(req.params.id);
+  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+
+  await performCancellation(order, reason, 'admin');
+
+  res.status(StatusCodes.OK).json(createApiResponse('Order cancelled.', { order }));
+});
+
+export const refundOrder = asyncHandler(async (req, res) => {
+  const order = await loadOrderById(req.params.id);
+  const { amount, reason } = req.body ?? {};
+
+  const payment = order.payment as OrderPayment | undefined;
+
+  if (payment?.status !== 'paid') {
+    throw new AppError('This order does not have a captured payment to refund.', StatusCodes.BAD_REQUEST);
+  }
+  if (payment.provider !== 'razorpay' || !payment.razorpayPaymentId) {
+    throw new AppError('Only online payments can be refunded through this action.', StatusCodes.BAD_REQUEST);
+  }
+  if (order.status === ORDER_STATUS.refunded) {
+    throw new AppError('This order has already been refunded.', StatusCodes.BAD_REQUEST);
+  }
+
+  const refundAmount = Number(amount) > 0 ? Number(amount) : order.total;
+  if (refundAmount > order.total) {
+    throw new AppError('Refund amount cannot exceed the order total.', StatusCodes.BAD_REQUEST);
+  }
+
+  let refund;
+  try {
+    refund = await refundPayment(payment.razorpayPaymentId, refundAmount);
+  } catch (error) {
+    console.error(`Manual refund failed for order ${order.orderNumber}:`, error);
+    throw new AppError(
+      'Refund could not be processed. Check the Razorpay dashboard and try again.',
+      StatusCodes.BAD_GATEWAY,
+    );
+  }
+
+  const refundReason = typeof reason === 'string' && reason.trim() ? reason.trim() : `Refund of ₹${refundAmount} processed by admin.`;
+  order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as never;
+  order.status = ORDER_STATUS.refunded;
+  (order as unknown as { _statusNote?: string })._statusNote = refundReason;
+  await order.save();
+
+  if (order.guestEmail) {
+    await sendEmail({
+      to: order.guestEmail,
+      subject: `Refund processed for order ${order.orderNumber}`,
+      text: `Hi, a refund of ₹${refundAmount} has been processed for your order ${order.orderNumber}.`,
+      html: `<p>A refund of <strong>₹${refundAmount}</strong> has been processed for your order <strong>${order.orderNumber}</strong>.</p>`,
+    });
+  }
+
+  res.status(StatusCodes.OK).json(createApiResponse('Refund processed.', { order }));
+});
+
+export const assignDelivery = asyncHandler(async (req, res) => {
+  const order = await loadOrderById(req.params.id);
+  const { name, phone, notes, clear } = req.body ?? {};
+
+  if (clear === true) {
+    order.assignedDelivery = undefined;
+    await order.save();
+    res.status(StatusCodes.OK).json(createApiResponse('Delivery assignment cleared.', { order }));
+    return;
+  }
+
+  if (typeof name !== 'string' || !name.trim()) {
+    throw new AppError('A delivery partner name is required.', StatusCodes.BAD_REQUEST);
+  }
+
+  order.assignedDelivery = {
+    name: name.trim(),
+    phone: typeof phone === 'string' ? phone.trim() : '',
+    notes: typeof notes === 'string' ? notes.trim() : '',
+    assignedAt: new Date(),
+  };
+  await order.save();
+
+  res.status(StatusCodes.OK).json(createApiResponse('Delivery assigned.', { order }));
 });

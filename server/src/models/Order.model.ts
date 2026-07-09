@@ -67,6 +67,12 @@ const orderSchema = new Schema(
       status: { type: String, enum: ['pending', 'approved', 'rejected'] },
       resolvedAt: { type: Date },
     },
+    assignedDelivery: {
+      name: { type: String },
+      phone: { type: String },
+      notes: { type: String },
+      assignedAt: { type: Date },
+    },
     payment: {
       provider: { type: String, default: 'razorpay' },
       razorpayOrderId: String,

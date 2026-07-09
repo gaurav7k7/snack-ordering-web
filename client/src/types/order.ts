@@ -35,10 +35,19 @@ export type OrderAddress = {
   country?: string;
 };
 
+export type OrderCustomer = { _id: string; name: string; email: string; phone?: string };
+
+export type AssignedDelivery = {
+  name?: string;
+  phone?: string;
+  notes?: string;
+  assignedAt?: string;
+};
+
 export type Order = {
   _id: string;
   orderNumber: string;
-  user?: string;
+  user?: string | OrderCustomer;
   items: OrderItem[];
   shippingAddress?: OrderAddress;
   subtotal: number;
@@ -47,7 +56,9 @@ export type Order = {
   total: number;
   deliveryInstructions?: string;
   couponCode?: string;
-  giftCouponCode?: string;
+  couponDiscount?: number;
+  automaticOfferCode?: string;
+  automaticDiscount?: number;
   guestEmail?: string;
   guestName?: string;
   guestPhone?: string;
@@ -62,6 +73,7 @@ export type Order = {
     status?: 'pending' | 'approved' | 'rejected';
     resolvedAt?: string;
   };
+  assignedDelivery?: AssignedDelivery;
   payment: {
     provider?: string;
     razorpayOrderId?: string;

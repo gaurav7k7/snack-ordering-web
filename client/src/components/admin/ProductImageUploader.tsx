@@ -2,7 +2,7 @@ import { GripVertical, ImagePlus, Loader2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
-import { isCloudinaryConfigured, uploadImageToCloudinary } from '@/services/cloudinaryUpload';
+import { uploadImageToCloudinary } from '@/services/cloudinaryUpload';
 import type { ApiProductImage } from '@/types/product';
 
 const MAX_IMAGES = 8;
@@ -15,7 +15,6 @@ type ProductImageUploaderProps = {
 export function ProductImageUploader({ images, onChange }: ProductImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const configured = isCloudinaryConfigured();
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
@@ -105,7 +104,7 @@ export function ProductImageUploader({ images, onChange }: ProductImageUploaderP
         {images.length < MAX_IMAGES && (
           <button
             type="button"
-            disabled={!configured || isUploading}
+            disabled={isUploading}
             onClick={() => inputRef.current?.click()}
             className="grid aspect-square place-items-center rounded-xl border border-dashed text-muted-foreground transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -114,11 +113,6 @@ export function ProductImageUploader({ images, onChange }: ProductImageUploaderP
         )}
       </div>
       <input ref={inputRef} type="file" accept="image/*" multiple hidden onChange={handleFileChange} />
-      {!configured && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Image uploads aren't configured for this site yet (missing Cloudinary cloud name / upload preset).
-        </p>
-      )}
       <p className="mt-2 text-xs text-muted-foreground">
         The first image is used as the product's cover photo. Up to {MAX_IMAGES} images.
       </p>

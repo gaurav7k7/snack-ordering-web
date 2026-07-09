@@ -13,6 +13,7 @@ export const ROUTES = {
   wishlist: '/wishlist',
   adminDashboard: '/admin/dashboard',
   adminOrders: '/admin/orders',
+  adminOrderDetail: (id: string) => `/admin/orders/${id}`,
   adminCoupons: '/admin/coupons',
   adminProducts: '/admin/products',
   adminProductNew: '/admin/products/new',

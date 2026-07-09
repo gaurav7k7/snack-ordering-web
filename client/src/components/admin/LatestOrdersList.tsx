@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
+import { ROUTES } from '@/constants/routes';
 import type { OrderStatus } from '@/types/order';
 import { formatCurrency } from '@/utils/formatCurrency';
 
@@ -34,7 +35,7 @@ export function LatestOrdersList({ orders }: { orders: LatestOrder[] }) {
           {orders.map((order) => (
             <tr key={order._id} className="border-b border-border/40 last:border-0">
               <td className="py-2.5 pr-3">
-                <Link to={`/admin/orders?highlight=${order._id}`} className="font-semibold hover:text-primary">
+                <Link to={ROUTES.adminOrderDetail(order._id)} className="font-semibold hover:text-primary">
                   {order.orderNumber}
                 </Link>
                 <p className="text-xs text-muted-foreground">

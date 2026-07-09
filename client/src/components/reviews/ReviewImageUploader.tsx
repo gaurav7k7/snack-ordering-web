@@ -2,7 +2,7 @@ import { ImagePlus, Loader2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
-import { isCloudinaryConfigured, uploadImageToCloudinary } from '@/services/cloudinaryUpload';
+import { uploadImageToCloudinary } from '@/services/cloudinaryUpload';
 import type { ReviewImage } from '@/types/review';
 
 const MAX_IMAGES = 4;
@@ -16,7 +16,6 @@ export function ReviewImageUploader({
 }) {
   const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const configured = isCloudinaryConfigured();
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -58,7 +57,7 @@ export function ReviewImageUploader({
         {images.length < MAX_IMAGES && (
           <button
             type="button"
-            disabled={!configured || isUploading}
+            disabled={isUploading}
             onClick={() => inputRef.current?.click()}
             className="grid h-20 w-20 place-items-center rounded-lg border border-dashed text-muted-foreground transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -71,11 +70,6 @@ export function ReviewImageUploader({
         )}
       </div>
       <input ref={inputRef} type="file" accept="image/*" hidden onChange={handleFileChange} />
-      {!configured && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Image uploads aren't configured for this site yet.
-        </p>
-      )}
     </div>
   );
 }

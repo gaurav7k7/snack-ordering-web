@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { OrderStatusBadge, STATUS_LABELS } from '@/components/orders/OrderStatusBadge';
 import { SearchPagination } from '@/components/customer/SearchPagination';
+import { ROUTES } from '@/constants/routes';
 import { useGetAllOrdersForAdminQuery, useUpdateOrderStatusMutation } from '@/redux/api/ordersApi';
 import type { OrderStatus } from '@/types/order';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -30,10 +31,18 @@ export default function AdminOrdersPage() {
   const highlightId = searchParams.get('highlight');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
 
-  const { data, isLoading, isFetching } = useGetAllOrdersForAdminQuery({ status: statusFilter, page });
+  const { data, isLoading, isFetching } = useGetAllOrdersForAdminQuery({ status: statusFilter, search, page });
   const [updateStatus, { isLoading: isUpdating }] = useUpdateOrderStatusMutation();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const handleSearchSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setSearch(searchInput.trim());
+    setPage(1);
+  };
 
   const orders = data?.data?.orders ?? [];
   const pagination = data?.data?.pagination ?? { page: 1, limit: 20, total: 0, totalPages: 1 };
@@ -62,6 +71,21 @@ export default function AdminOrdersPage() {
           {pagination.total} order{pagination.total === 1 ? '' : 's'} across the store.
         </p>
       </div>
+
+      <form onSubmit={handleSearchSubmit} className="flex max-w-md gap-2">
+        <input
+          value={searchInput}
+          onChange={(event) => setSearchInput(event.target.value)}
+          placeholder="Search by order number, customer name, email, or phone…"
+          className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary"
+        />
+        <button
+          type="submit"
+          className="rounded-lg border border-input bg-background px-4 text-sm font-semibold hover:bg-accent"
+        >
+          Search
+        </button>
+      </form>
 
       <div className="flex flex-wrap gap-2">
         {STATUS_FILTERS.map((filter) => (
@@ -117,7 +141,9 @@ export default function AdminOrdersPage() {
                   }`}
                 >
                   <td className="px-4 py-3">
-                    <p className="font-semibold">{order.orderNumber}</p>
+                    <Link to={ROUTES.adminOrderDetail(order._id)} className="font-semibold hover:text-primary hover:underline">
+                      {order.orderNumber}
+                    </Link>
                     <p className="text-xs text-muted-foreground">
                       {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>

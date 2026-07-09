@@ -92,11 +92,15 @@ export const ordersApi = baseApi.injectEndpoints({
         { type: 'Order' as const, id: 'LIST' },
       ],
     }),
-    getAllOrdersForAdmin: builder.query<OrdersListResponse, { page?: number; status?: string } | void>({
+    getAllOrdersForAdmin: builder.query<
+      OrdersListResponse,
+      { page?: number; status?: string; search?: string } | void
+    >({
       query: (params) => ({
         url: '/orders/admin',
         params: {
           ...(params?.status ? { status: params.status } : {}),
+          ...(params?.search ? { search: params.search } : {}),
           ...(params?.page ? { page: params.page } : {}),
         },
       }),
@@ -108,6 +112,10 @@ export const ordersApi = baseApi.injectEndpoints({
             ]
           : [{ type: 'Order' as const, id: 'LIST' }],
     }),
+    getOrderByIdForAdmin: builder.query<OrderResponse, string>({
+      query: (id) => `/orders/admin/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'Order' as const, id }],
+    }),
     updateOrderStatus: builder.mutation<OrderResponse, { id: string; status: string; note?: string }>({
       query: ({ id, ...body }) => ({ url: `/orders/${id}/status`, method: 'PATCH', body }),
       invalidatesTags: (_result, _error, { id }) => [
@@ -115,6 +123,29 @@ export const ordersApi = baseApi.injectEndpoints({
         { type: 'Order' as const, id: 'LIST' },
         'Dashboard',
       ],
+    }),
+    adminCancelOrder: builder.mutation<OrderResponse, { id: string; reason: string }>({
+      query: ({ id, reason }) => ({ url: `/orders/admin/${id}/cancel`, method: 'POST', body: { reason } }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Order' as const, id },
+        { type: 'Order' as const, id: 'LIST' },
+        'Dashboard',
+      ],
+    }),
+    refundOrder: builder.mutation<OrderResponse, { id: string; amount?: number; reason?: string }>({
+      query: ({ id, ...body }) => ({ url: `/orders/admin/${id}/refund`, method: 'POST', body }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Order' as const, id },
+        { type: 'Order' as const, id: 'LIST' },
+        'Dashboard',
+      ],
+    }),
+    assignDelivery: builder.mutation<
+      OrderResponse,
+      { id: string; name?: string; phone?: string; notes?: string; clear?: boolean }
+    >({
+      query: ({ id, ...body }) => ({ url: `/orders/admin/${id}/assign-delivery`, method: 'PATCH', body }),
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Order' as const, id }],
     }),
   }),
 });
@@ -127,5 +158,9 @@ export const {
   useCancelOrderMutation,
   useRequestReturnMutation,
   useGetAllOrdersForAdminQuery,
+  useGetOrderByIdForAdminQuery,
   useUpdateOrderStatusMutation,
+  useAdminCancelOrderMutation,
+  useRefundOrderMutation,
+  useAssignDeliveryMutation,
 } = ordersApi;
