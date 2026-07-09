@@ -354,19 +354,33 @@ export default function ProfilePage() {
           </section>
 
           <section className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Heart className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-black">Wishlist</h2>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Heart className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-black">Wishlist</h2>
+              </div>
+              <Link to={ROUTES.wishlist} className="text-sm font-semibold text-primary hover:underline">
+                View all
+              </Link>
             </div>
             <div className="mt-4 space-y-3">
               {wishlist.length ? (
-                wishlist.slice(0, 4).map((item: any, index: number) => (
-                  <div
-                    key={`${item.name ?? 'wish'}-${index}`}
-                    className="rounded-2xl border border-border/70 bg-background p-4 text-sm"
+                wishlist.slice(0, 4).map((item: any) => (
+                  <Link
+                    key={item._id}
+                    to={`/products/${item.slug}`}
+                    className="flex items-center gap-3 rounded-2xl border border-border/70 bg-background p-3 text-sm transition hover:border-primary/50"
                   >
-                    {item.name ?? 'Saved snack'}
-                  </div>
+                    <img
+                      src={item.images?.[0]?.url}
+                      alt={item.name}
+                      className="h-12 w-12 rounded-lg object-cover"
+                    />
+                    <div>
+                      <p className="font-semibold">{item.name}</p>
+                      <p className="text-muted-foreground">{formatCurrency(item.offerPrice ?? 0)}</p>
+                    </div>
+                  </Link>
                 ))
               ) : (
                 <p className="rounded-2xl border border-dashed border-border/70 bg-background p-4 text-sm text-muted-foreground">

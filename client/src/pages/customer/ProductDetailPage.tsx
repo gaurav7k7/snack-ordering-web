@@ -14,17 +14,19 @@ import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch } from '@/hooks/redux';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useWishlist } from '@/hooks/useWishlist';
 import { useGetProductBySlugQuery, useSearchProductsQuery } from '@/redux/api/productsApi';
 import { addItem } from '@/redux/slices/cartSlice';
 import { mapApiProductCardToHomeProduct, mapApiProductToHomeProduct } from '@/utils/mapProduct';
+import { cn } from '@/utils/cn';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { isWishlisted, toggleWishlist, isMutating: isWishlistMutating } = useWishlist();
 
   const { data, isLoading } = useGetProductBySlugQuery(slug ?? '', { skip: !slug });
   const apiProduct = data?.data?.product;
@@ -212,13 +214,13 @@ export default function ProductDetailPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  setIsWishlisted((current) => !current);
-                  toast.success(isWishlisted ? 'Removed from wishlist.' : 'Added to wishlist.');
-                }}
+                disabled={isWishlistMutating}
+                onClick={() => toggleWishlist(product.id)}
               >
-                <Heart className={isWishlisted ? 'mr-2 h-4 w-4 fill-current' : 'mr-2 h-4 w-4'} />
-                Wishlist
+                <Heart
+                  className={cn('mr-2 h-4 w-4', isWishlisted(product.id) && 'fill-destructive text-destructive')}
+                />
+                {isWishlisted(product.id) ? 'Wishlisted' : 'Wishlist'}
               </Button>
               <Button type="button" variant="outline" onClick={shareProduct}>
                 <Share2 className="mr-2 h-4 w-4" />

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAppSelector } from '@/hooks/redux';
+import { useWishlist } from '@/hooks/useWishlist';
 
 import { Button } from '@/components/ui/button';
 import { MiniCart } from '@/components/shared/MiniCart';
@@ -26,6 +27,7 @@ export function SiteHeader() {
   const cartItemCount = useAppSelector((state) =>
     state.cart.items.reduce((total, item) => total + item.quantity, 0),
   );
+  const { count: wishlistCount } = useWishlist();
 
   const handleSearchSubmit = (query: string) => {
     const trimmedQuery = query.trim();
@@ -92,8 +94,15 @@ export function SiteHeader() {
 
           <div className="ml-auto flex items-center gap-1 md:ml-0">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" aria-label="Wishlist">
-              <Heart className="h-5 w-5" />
+            <Button asChild variant="ghost" size="icon" aria-label="Wishlist" className="relative">
+              <Link to={isAuthenticated ? ROUTES.wishlist : ROUTES.login}>
+                <Heart className="h-5 w-5" />
+                {wishlistCount > 0 ? (
+                  <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                    {wishlistCount}
+                  </span>
+                ) : null}
+              </Link>
             </Button>
             <Button
               variant="ghost"

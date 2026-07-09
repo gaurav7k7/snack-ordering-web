@@ -16,7 +16,7 @@ export type SearchProductsParams = {
   ids?: string;
 };
 
-const PRODUCT_CARD_FIELDS =
+export const PRODUCT_CARD_FIELDS =
   'name slug images offerPrice mrp discount averageRating reviewCount category isFeatured isTrending isBestSeller availableQuantity brand subCategory stock';
 
 const SORT_MAP: Record<string, Record<string, 1 | -1>> = {

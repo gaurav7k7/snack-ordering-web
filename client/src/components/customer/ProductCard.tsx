@@ -2,13 +2,19 @@ import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
+import { useWishlist } from '@/hooks/useWishlist';
 import type { HomeProduct } from '@/types/home';
 import type { SearchProduct } from '@/types/product';
+import { cn } from '@/utils/cn';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 type ProductCardProps = {
   product: HomeProduct | SearchProduct;
 };
+
+function getProductId(product: HomeProduct | SearchProduct) {
+  return product.id ?? (product as SearchProduct)._id ?? '';
+}
 
 function getProductImage(product: HomeProduct | SearchProduct) {
   return product.image || product.images?.[0]?.url || product.images?.[0]?.url || '';
@@ -45,12 +51,15 @@ function getBadge(product: HomeProduct | SearchProduct) {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const productId = getProductId(product);
   const imageUrl = getProductImage(product);
   const price = getProductPrice(product);
   const compareAtPrice = getCompareAtPrice(product);
   const rating = getProductRating(product);
   const reviews = getProductReviews(product);
   const badge = getBadge(product);
+  const { isWishlisted, toggleWishlist, isMutating } = useWishlist();
+  const wishlisted = isWishlisted(productId);
 
   return (
     <article className="group overflow-hidden rounded-lg border bg-card text-card-foreground transition duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -73,9 +82,17 @@ export function ProductCard({ product }: ProductCardProps) {
           size="icon"
           variant="secondary"
           className="absolute right-3 top-3 rounded-full"
-          aria-label={`Add ${product.name} to wishlist`}
+          aria-label={wishlisted ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+          disabled={isMutating}
+          onClick={(event) => {
+            event.preventDefault();
+            toggleWishlist(productId);
+          }}
         >
-          <Heart className="h-4 w-4" aria-hidden="true" />
+          <Heart
+            className={cn('h-4 w-4', wishlisted && 'fill-destructive text-destructive')}
+            aria-hidden="true"
+          />
         </Button>
       </div>
       <div className="space-y-3 p-4">

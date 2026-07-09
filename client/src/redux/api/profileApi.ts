@@ -1,5 +1,6 @@
 import { baseApi } from '@/redux/api/baseApi';
 import type { User } from '@/types/auth';
+import type { ApiProductCard } from '@/types/product';
 
 type ApiResponse<T> = {
   success: boolean;
@@ -9,7 +10,7 @@ type ApiResponse<T> = {
 
 type ProfileResponse = ApiResponse<{ user: User }>;
 type OrdersResponse = ApiResponse<{ orders: any[] }>;
-type WishlistResponse = ApiResponse<{ wishlist: any[] }>;
+type WishlistResponse = ApiResponse<{ wishlist: ApiProductCard[] }>;
 type WalletResponse = ApiResponse<{ wallet: { balance: number; currency: string } }>;
 type NotificationsResponse = ApiResponse<{ notifications: any[] }>;
 type TicketsResponse = ApiResponse<{ supportTickets: any[] }>;
@@ -42,9 +43,15 @@ export const profileApi = baseApi.injectEndpoints({
     }),
     getWishlist: builder.query<WishlistResponse, void>({
       query: () => '/profile/wishlist',
+      providesTags: ['Wishlist'],
     }),
-    updateWishlist: builder.mutation<WishlistResponse, { wishlist: any[] }>({
-      query: (body) => ({ url: '/profile/wishlist', method: 'PUT', body }),
+    addToWishlist: builder.mutation<WishlistResponse, string>({
+      query: (productId) => ({ url: `/profile/wishlist/${productId}`, method: 'POST' }),
+      invalidatesTags: ['Wishlist'],
+    }),
+    removeFromWishlist: builder.mutation<WishlistResponse, string>({
+      query: (productId) => ({ url: `/profile/wishlist/${productId}`, method: 'DELETE' }),
+      invalidatesTags: ['Wishlist'],
     }),
     getWallet: builder.query<WalletResponse, void>({
       query: () => '/profile/wallet',
@@ -80,7 +87,8 @@ export const {
   useUpdateAddressesMutation,
   useGetOrderHistoryQuery,
   useGetWishlistQuery,
-  useUpdateWishlistMutation,
+  useAddToWishlistMutation,
+  useRemoveFromWishlistMutation,
   useGetWalletQuery,
   useGetNotificationsQuery,
   useChangePasswordMutation,

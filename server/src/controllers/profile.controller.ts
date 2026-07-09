@@ -1,8 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
+import mongoose from 'mongoose';
 
 import { OrderModel } from '../models/Order.model.js';
 import { ProductModel } from '../models/Product.model.js';
 import { UserModel } from '../models/User.model.js';
+import { PRODUCT_CARD_FIELDS } from '../services/product.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
@@ -76,7 +78,7 @@ export const getOrderHistory = asyncHandler(async (req, res) => {
 });
 
 export const getWishlist = asyncHandler(async (req, res) => {
-  const user = await UserModel.findById(req.user?.userId);
+  const user = await UserModel.findById(req.user?.userId).populate('wishlist', PRODUCT_CARD_FIELDS);
   if (!user) throw new AppError('User not found.', StatusCodes.NOT_FOUND);
 
   res
@@ -84,15 +86,43 @@ export const getWishlist = asyncHandler(async (req, res) => {
     .json(createApiResponse('Wishlist retrieved.', { wishlist: user.wishlist ?? [] }));
 });
 
-export const updateWishlist = asyncHandler(async (req, res) => {
-  const user = await UserModel.findById(req.user?.userId);
+export const addToWishlist = asyncHandler(async (req, res) => {
+  const { productId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(productId)) {
+    throw new AppError('Invalid product.', StatusCodes.BAD_REQUEST);
+  }
+
+  const product = await ProductModel.findOne({ _id: productId, isActive: true }).select('_id');
+  if (!product) {
+    throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
+  }
+
+  const user = await UserModel.findByIdAndUpdate(
+    req.user?.userId,
+    { $addToSet: { wishlist: productId } },
+    { new: true },
+  ).populate('wishlist', PRODUCT_CARD_FIELDS);
   if (!user) throw new AppError('User not found.', StatusCodes.NOT_FOUND);
 
-  user.wishlist = req.body.wishlist ?? [];
-  await user.save();
   res
     .status(StatusCodes.OK)
-    .json(createApiResponse('Wishlist updated.', { wishlist: user.wishlist ?? [] }));
+    .json(createApiResponse('Added to wishlist.', { wishlist: user.wishlist ?? [] }));
+});
+
+export const removeFromWishlist = asyncHandler(async (req, res) => {
+  const { productId } = req.params;
+
+  const user = await UserModel.findByIdAndUpdate(
+    req.user?.userId,
+    { $pull: { wishlist: productId } },
+    { new: true },
+  ).populate('wishlist', PRODUCT_CARD_FIELDS);
+  if (!user) throw new AppError('User not found.', StatusCodes.NOT_FOUND);
+
+  res
+    .status(StatusCodes.OK)
+    .json(createApiResponse('Removed from wishlist.', { wishlist: user.wishlist ?? [] }));
 });
 
 export const getWallet = asyncHandler(async (req, res) => {

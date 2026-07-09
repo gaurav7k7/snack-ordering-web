@@ -15,7 +15,7 @@ const userSchema = new Schema(
     avatar: { type: String },
     phone: { type: String },
     addresses: { type: Array, default: [] },
-    wishlist: { type: Array, default: [] },
+    wishlist: { type: [Schema.Types.ObjectId], ref: 'Product', default: [] },
     coupons: { type: Array, default: [] },
     wallet: { type: Object, default: { balance: 0, currency: 'INR' } },
     notifications: { type: Array, default: [] },

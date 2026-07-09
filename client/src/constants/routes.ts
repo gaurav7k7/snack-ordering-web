@@ -10,5 +10,6 @@ export const ROUTES = {
   checkout: '/checkout',
   orders: '/orders',
   orderDetail: (id: string) => `/orders/${id}`,
+  wishlist: '/wishlist',
   adminDashboard: '/admin/dashboard',
 } as const;

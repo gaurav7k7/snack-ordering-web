@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import {
+  addToWishlist,
   changePassword,
   deleteAccount,
   getNotifications,
@@ -11,9 +12,9 @@ import {
   getSupportTickets,
   getWallet,
   getWishlist,
+  removeFromWishlist,
   updateAddresses,
   updateProfile,
-  updateWishlist,
   uploadProfilePicture,
 } from '../controllers/profile.controller.js';
 import { authenticate } from '../middleware/authMiddleware.js';
@@ -27,7 +28,8 @@ profileRoutes.post('/avatar', uploadProfilePicture);
 profileRoutes.put('/addresses', updateAddresses);
 profileRoutes.get('/orders', getOrderHistory);
 profileRoutes.get('/wishlist', getWishlist);
-profileRoutes.put('/wishlist', updateWishlist);
+profileRoutes.post('/wishlist/:productId', addToWishlist);
+profileRoutes.delete('/wishlist/:productId', removeFromWishlist);
 profileRoutes.get('/wallet', getWallet);
 profileRoutes.get('/notifications', getNotifications);
 profileRoutes.post('/change-password', changePassword);
