@@ -1,5 +1,5 @@
 import { baseApi } from '@/redux/api/baseApi';
-import type { AdminCoupon, AppliedCoupon, AutomaticOffer, CouponFormInput } from '@/types/coupon';
+import type { AdminCoupon, AppliedCoupon, AutomaticOffer, CouponFormInput, CouponUsage } from '@/types/coupon';
 
 type ApiResponse<T> = {
   success: boolean;
@@ -49,6 +49,10 @@ export const couponsApi = baseApi.injectEndpoints({
         { type: 'Coupon' as const, id: 'LIST' },
       ],
     }),
+    getCouponUsageAdmin: builder.query<ApiResponse<CouponUsage>, { id: string; page?: number }>({
+      query: ({ id, page }) => ({ url: `/coupons/${id}/usage`, params: page ? { page } : undefined }),
+      providesTags: (_result, _error, { id }) => [{ type: 'Coupon' as const, id: `${id}-USAGE` }],
+    }),
   }),
 });
 
@@ -59,4 +63,5 @@ export const {
   useCreateCouponAdminMutation,
   useUpdateCouponAdminMutation,
   useDeleteCouponAdminMutation,
+  useGetCouponUsageAdminQuery,
 } = couponsApi;

@@ -87,21 +87,31 @@ export async function findBestAutomaticOffer(ctx: EvalContext) {
 
 export async function redeemCoupon(
   coupon: CouponDocument,
-  { userId, guestEmail, orderId }: { userId?: string; guestEmail?: string; orderId: string },
+  {
+    userId,
+    guestEmail,
+    orderId,
+    discountAmount,
+  }: { userId?: string; guestEmail?: string; orderId: string; discountAmount: number },
 ) {
   coupon.usageCount += 1;
   coupon.redemptions = [
     ...(coupon.redemptions ?? []),
-    { user: userId, guestEmail, order: orderId, redeemedAt: new Date() },
+    { user: userId, guestEmail, order: orderId, discountAmount, redeemedAt: new Date() },
   ] as never;
   await coupon.save();
 }
 
 export async function redeemCouponByCode(
   code: string,
-  { userId, guestEmail, orderId }: { userId?: string; guestEmail?: string; orderId: string },
+  {
+    userId,
+    guestEmail,
+    orderId,
+    discountAmount,
+  }: { userId?: string; guestEmail?: string; orderId: string; discountAmount: number },
 ) {
   const coupon = (await CouponModel.findOne({ code: code.trim().toUpperCase() })) as CouponDocument | null;
   if (!coupon) return;
-  await redeemCoupon(coupon, { userId, guestEmail, orderId });
+  await redeemCoupon(coupon, { userId, guestEmail, orderId, discountAmount });
 }

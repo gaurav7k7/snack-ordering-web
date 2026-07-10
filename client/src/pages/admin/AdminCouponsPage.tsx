@@ -1,8 +1,9 @@
-import { Plus, Trash2, X, Zap } from 'lucide-react';
+import { BarChart3, Pencil, Plus, Power, PowerOff, Trash2, X, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 
+import { CouponUsageModal } from '@/components/admin/CouponUsageModal';
 import { Button } from '@/components/ui/button';
 import {
   useCreateCouponAdminMutation,
@@ -10,7 +11,7 @@ import {
   useListCouponsAdminQuery,
   useUpdateCouponAdminMutation,
 } from '@/redux/api/couponsApi';
-import type { CouponFormInput } from '@/types/coupon';
+import type { AdminCoupon, CouponFormInput } from '@/types/coupon';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 const EMPTY_FORM: CouponFormInput = {
@@ -28,26 +29,67 @@ const EMPTY_FORM: CouponFormInput = {
   isActive: true,
 };
 
+function toFormInput(coupon: AdminCoupon): CouponFormInput {
+  return {
+    code: coupon.code,
+    description: coupon.description,
+    discountType: coupon.discountType,
+    discountValue: coupon.discountValue,
+    maxDiscountAmount: coupon.maxDiscountAmount,
+    minOrderValue: coupon.minOrderValue,
+    validFrom: coupon.validFrom.slice(0, 10),
+    validUntil: coupon.validUntil.slice(0, 10),
+    usageLimit: coupon.usageLimit,
+    perUserLimit: coupon.perUserLimit,
+    isAutomatic: coupon.isAutomatic,
+    isActive: coupon.isActive,
+  };
+}
+
 export default function AdminCouponsPage() {
   const { data, isLoading } = useListCouponsAdminQuery();
   const [createCoupon, { isLoading: isCreating }] = useCreateCouponAdminMutation();
-  const [updateCoupon] = useUpdateCouponAdminMutation();
+  const [updateCoupon, { isLoading: isUpdating }] = useUpdateCouponAdminMutation();
   const [deleteCoupon] = useDeleteCouponAdminMutation();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<CouponFormInput>(EMPTY_FORM);
+  const [usageCouponId, setUsageCouponId] = useState<string | null>(null);
 
   const coupons = data?.data?.coupons ?? [];
 
-  const handleCreate = async (event: React.FormEvent) => {
+  const openCreateForm = () => {
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+    setIsFormOpen(true);
+  };
+
+  const openEditForm = (coupon: AdminCoupon) => {
+    setEditingId(coupon._id);
+    setForm(toFormInput(coupon));
+    setIsFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      await createCoupon(form).unwrap();
-      toast.success('Coupon created.');
-      setForm(EMPTY_FORM);
-      setIsFormOpen(false);
+      if (editingId) {
+        await updateCoupon({ id: editingId, ...form }).unwrap();
+        toast.success('Coupon updated.');
+      } else {
+        await createCoupon(form).unwrap();
+        toast.success('Coupon created.');
+      }
+      closeForm();
     } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to create coupon.');
+      toast.error(error?.data?.message ?? 'Unable to save coupon.');
     }
   };
 
@@ -84,14 +126,17 @@ export default function AdminCouponsPage() {
             offers, and usage limits.
           </p>
         </div>
-        <Button onClick={() => setIsFormOpen((current) => !current)}>
+        <Button onClick={() => (isFormOpen ? closeForm() : openCreateForm())}>
           {isFormOpen ? <X className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
           {isFormOpen ? 'Cancel' : 'New coupon'}
         </Button>
       </div>
 
       {isFormOpen && (
-        <form onSubmit={handleCreate} className="grid gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+        <form onSubmit={handleSubmit} className="grid gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-3">
+          <p className="text-sm font-black sm:col-span-2 lg:col-span-3">
+            {editingId ? `Editing ${form.code || 'coupon'}` : 'New coupon'}
+          </p>
           <label className="grid gap-1.5 text-sm">
             <span className="font-semibold">Code</span>
             <input
@@ -214,9 +259,12 @@ export default function AdminCouponsPage() {
             />
             <span className="font-semibold">Apply automatically (no code needed)</span>
           </label>
-          <div className="sm:col-span-2 lg:col-span-3">
-            <Button type="submit" disabled={isCreating}>
-              {isCreating ? 'Creating…' : 'Create coupon'}
+          <div className="flex gap-3 sm:col-span-2 lg:col-span-3">
+            <Button type="submit" disabled={isCreating || isUpdating}>
+              {isCreating || isUpdating ? 'Saving…' : editingId ? 'Save changes' : 'Create coupon'}
+            </Button>
+            <Button type="button" variant="outline" onClick={closeForm}>
+              Cancel
             </Button>
           </div>
         </form>
@@ -273,28 +321,60 @@ export default function AdminCouponsPage() {
                     {new Date(coupon.validUntil).toLocaleDateString('en-IN')}
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleActive(coupon._id, coupon.isActive)}
-                      className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
                         coupon.isActive
-                          ? 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
-                          : 'bg-muted text-muted-foreground hover:bg-accent'
+                          ? 'bg-emerald-500/10 text-emerald-600'
+                          : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       {coupon.isActive ? 'Active' : 'Inactive'}
-                    </button>
+                    </span>
                   </td>
                   <td className="px-4 py-3">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive"
-                      onClick={() => handleDelete(coupon._id, coupon.code)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex flex-wrap gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        title={coupon.isActive ? 'Deactivate' : 'Activate'}
+                        onClick={() => handleToggleActive(coupon._id, coupon.isActive)}
+                      >
+                        {coupon.isActive ? (
+                          <PowerOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Power className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        title="Usage tracking"
+                        onClick={() => setUsageCouponId(coupon._id)}
+                      >
+                        <BarChart3 className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        title="Edit"
+                        onClick={() => openEditForm(coupon)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        title="Delete"
+                        className="text-destructive"
+                        onClick={() => handleDelete(coupon._id, coupon.code)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -302,6 +382,8 @@ export default function AdminCouponsPage() {
           </tbody>
         </table>
       </div>
+
+      {usageCouponId && <CouponUsageModal couponId={usageCouponId} onClose={() => setUsageCouponId(null)} />}
     </section>
   );
 }

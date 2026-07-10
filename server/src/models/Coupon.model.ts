@@ -5,6 +5,7 @@ const redemptionSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     guestEmail: { type: String },
     order: { type: Schema.Types.ObjectId, ref: 'Order', required: true },
+    discountAmount: { type: Number, default: 0, min: 0 },
     redeemedAt: { type: Date, default: Date.now },
   },
   { _id: false },

@@ -98,6 +98,8 @@ async function performCancellation(order: InstanceType<typeof OrderModel>, reaso
 async function redeemOrderCoupons(order: {
   couponCode?: string | null;
   automaticOfferCode?: string | null;
+  couponDiscount?: number | null;
+  automaticDiscount?: number | null;
   user?: unknown;
   guestEmail?: string | null;
   _id: unknown;
@@ -107,9 +109,12 @@ async function redeemOrderCoupons(order: {
   const orderId = String(order._id);
 
   await Promise.all(
-    [order.couponCode, order.automaticOfferCode]
-      .filter((code): code is string => Boolean(code))
-      .map((code) => redeemCouponByCode(code, { userId, guestEmail, orderId })),
+    [
+      { code: order.couponCode, discountAmount: order.couponDiscount ?? 0 },
+      { code: order.automaticOfferCode, discountAmount: order.automaticDiscount ?? 0 },
+    ]
+      .filter((entry): entry is { code: string; discountAmount: number } => Boolean(entry.code))
+      .map((entry) => redeemCouponByCode(entry.code, { userId, guestEmail, orderId, discountAmount: entry.discountAmount })),
   );
 }
 

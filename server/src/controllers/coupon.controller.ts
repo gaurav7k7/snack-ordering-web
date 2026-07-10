@@ -190,3 +190,57 @@ export const deleteCoupon = asyncHandler(async (req, res) => {
   if (!coupon) throw new AppError('Coupon not found.', StatusCodes.NOT_FOUND);
   res.status(StatusCodes.OK).json(createApiResponse('Coupon deleted.'));
 });
+
+export const getCouponUsage = asyncHandler(async (req, res) => {
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+
+  const coupon = await CouponModel.findById(req.params.id)
+    .populate('redemptions.user', 'name email')
+    .populate('redemptions.order', 'orderNumber total status');
+
+  if (!coupon) {
+    throw new AppError('Coupon not found.', StatusCodes.NOT_FOUND);
+  }
+
+  const redemptions = [...(coupon.redemptions ?? [])].sort(
+    (a: any, b: any) => new Date(b.redeemedAt).getTime() - new Date(a.redeemedAt).getTime(),
+  );
+
+  const totalDiscountGiven = redemptions.reduce((sum: number, redemption: any) => sum + (redemption.discountAmount ?? 0), 0);
+  const uniqueCustomers = new Set(
+    redemptions.map((redemption: any) => redemption.user?._id?.toString() ?? redemption.guestEmail ?? 'unknown'),
+  ).size;
+
+  const total = redemptions.length;
+  const paged = redemptions.slice((page - 1) * limit, page * limit);
+
+  res.status(StatusCodes.OK).json(
+    createApiResponse('Coupon usage retrieved.', {
+      code: coupon.code,
+      summary: {
+        totalRedemptions: total,
+        usageLimit: coupon.usageLimit ?? null,
+        totalDiscountGiven,
+        uniqueCustomers,
+      },
+      redemptions: paged.map((redemption: any) => ({
+        user: redemption.user
+          ? { _id: redemption.user._id, name: redemption.user.name, email: redemption.user.email }
+          : null,
+        guestEmail: redemption.guestEmail ?? null,
+        order: redemption.order
+          ? {
+              _id: redemption.order._id,
+              orderNumber: redemption.order.orderNumber,
+              total: redemption.order.total,
+              status: redemption.order.status,
+            }
+          : null,
+        discountAmount: redemption.discountAmount ?? 0,
+        redeemedAt: redemption.redeemedAt,
+      })),
+      pagination: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) },
+    }),
+  );
+});
