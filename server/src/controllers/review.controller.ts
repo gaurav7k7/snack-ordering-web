@@ -265,6 +265,39 @@ export const toggleHelpfulVote = asyncHandler(async (req, res) => {
     .json(createApiResponse('Vote recorded.', { helpfulCount: voters.length, hasVoted }));
 });
 
+export const reportReview = asyncHandler(async (req, res) => {
+  const userId = req.user?.userId;
+  const { reason } = req.body ?? {};
+
+  if (typeof reason !== 'string' || !reason.trim()) {
+    throw new AppError('Please provide a reason for reporting this review.', StatusCodes.BAD_REQUEST);
+  }
+
+  const product = await ProductModel.findById(req.params.productId);
+  if (!product) {
+    throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
+  }
+
+  const review = (product.reviews as any).id(req.params.reviewId);
+  if (!review) {
+    throw new AppError('Review not found.', StatusCodes.NOT_FOUND);
+  }
+  if (review.user?.toString() === userId) {
+    throw new AppError('You cannot report your own review.', StatusCodes.BAD_REQUEST);
+  }
+
+  const reports: any[] = review.reports ?? [];
+  if (reports.some((report) => report.user?.toString() === userId)) {
+    throw new AppError('You have already reported this review.', StatusCodes.CONFLICT);
+  }
+
+  reports.push({ user: userId, reason: reason.trim() });
+  review.reports = reports;
+  await product.save();
+
+  res.status(StatusCodes.OK).json(createApiResponse('Review reported. Our team will take a look.'));
+});
+
 export const moderateReview = asyncHandler(async (req, res) => {
   const { status } = req.body ?? {};
   if (status !== 'approved' && status !== 'rejected') {

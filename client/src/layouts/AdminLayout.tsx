@@ -6,6 +6,7 @@ import {
   Menu,
   Package,
   ShoppingBag,
+  Star,
   Tag,
   Users,
   X,
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { label: 'Orders', href: ROUTES.adminOrders, icon: ShoppingBag },
   { label: 'Coupons', href: ROUTES.adminCoupons, icon: Tag },
   { label: 'Customers', href: ROUTES.adminCustomers, icon: Users },
+  { label: 'Reviews', href: ROUTES.adminReviews, icon: Star },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {

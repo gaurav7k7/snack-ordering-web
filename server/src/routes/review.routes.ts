@@ -5,6 +5,7 @@ import {
   deleteReview,
   listProductReviews,
   moderateReview,
+  reportReview,
   toggleHelpfulVote,
   updateReview,
 } from '../controllers/review.controller.js';
@@ -17,4 +18,5 @@ reviewRoutes.post('/', authenticate, createReview);
 reviewRoutes.patch('/:reviewId', authenticate, updateReview);
 reviewRoutes.delete('/:reviewId', authenticate, deleteReview);
 reviewRoutes.post('/:reviewId/helpful', authenticate, toggleHelpfulVote);
+reviewRoutes.post('/:reviewId/report', authenticate, reportReview);
 reviewRoutes.patch('/:reviewId/moderate', authenticate, authorize('admin'), moderateReview);

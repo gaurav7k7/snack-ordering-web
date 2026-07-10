@@ -30,6 +30,15 @@ const reviewImageSchema = new Schema(
   { _id: false },
 );
 
+const reviewReportSchema = new Schema(
+  {
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    reason: { type: String, required: true, trim: true, maxlength: 300 },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: false },
+);
+
 const productReviewSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -41,6 +50,7 @@ const productReviewSchema = new Schema(
     isVerifiedPurchase: { type: Boolean, default: false },
     helpfulVoters: { type: [Schema.Types.ObjectId], ref: 'User', default: [] },
     status: { type: String, enum: ['approved', 'rejected'], default: 'approved' },
+    reports: { type: [reviewReportSchema], default: [] },
   },
   { timestamps: true },
 );

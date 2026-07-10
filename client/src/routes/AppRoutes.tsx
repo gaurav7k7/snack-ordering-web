@@ -31,6 +31,7 @@ const AdminInventoryPage = lazy(() => import('@/pages/admin/AdminInventoryPage')
 const AdminCategoriesPage = lazy(() => import('@/pages/admin/AdminCategoriesPage'));
 const AdminCustomersPage = lazy(() => import('@/pages/admin/AdminCustomersPage'));
 const AdminCustomerDetailPage = lazy(() => import('@/pages/admin/AdminCustomerDetailPage'));
+const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage'));
 const NotFoundPage = lazy(() => import('@/pages/shared/NotFoundPage'));
 
 export function AppRoutes() {
@@ -245,6 +246,14 @@ export function AppRoutes() {
               element={
                 <PageTransition>
                   <AdminCustomerDetailPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="reviews"
+              element={
+                <PageTransition>
+                  <AdminReviewsPage />
                 </PageTransition>
               }
             />

@@ -1,4 +1,4 @@
-import { BadgeCheck, Pencil, Star, ThumbsUp, Trash2 } from 'lucide-react';
+import { BadgeCheck, Flag, Pencil, Star, ThumbsUp, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import type { Review } from '@/types/review';
@@ -9,9 +9,10 @@ type ReviewListItemProps = {
   onEdit?: () => void;
   onDelete?: () => void;
   onToggleHelpful?: () => void;
+  onReport?: () => void;
 };
 
-export function ReviewListItem({ review, onEdit, onDelete, onToggleHelpful }: ReviewListItemProps) {
+export function ReviewListItem({ review, onEdit, onDelete, onToggleHelpful, onReport }: ReviewListItemProps) {
   return (
     <article className={cn('rounded-2xl border bg-background p-4', review.status === 'rejected' && 'opacity-60')}>
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -79,6 +80,11 @@ export function ReviewListItem({ review, onEdit, onDelete, onToggleHelpful }: Re
           {review.isOwner && onDelete && (
             <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={onDelete}>
               <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
+            </Button>
+          )}
+          {!review.isOwner && onReport && (
+            <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={onReport}>
+              <Flag className="mr-1.5 h-3.5 w-3.5" /> Report
             </Button>
           )}
         </div>

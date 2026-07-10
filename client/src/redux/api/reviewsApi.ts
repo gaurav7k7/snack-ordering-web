@@ -54,7 +54,10 @@ export const reviewsApi = baseApi.injectEndpoints({
         url: `/products/${productId}/reviews/${reviewId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (_result, _error, { productId }) => [{ type: 'Review' as const, id: productId }],
+      invalidatesTags: (_result, _error, { productId }) => [
+        { type: 'Review' as const, id: productId },
+        { type: 'Review' as const, id: 'ADMIN_LIST' },
+      ],
     }),
     toggleHelpfulVote: builder.mutation<
       ApiResponse<{ helpfulCount: number; hasVoted: boolean }>,
@@ -75,7 +78,17 @@ export const reviewsApi = baseApi.injectEndpoints({
         method: 'PATCH',
         body: { status },
       }),
-      invalidatesTags: (_result, _error, { productId }) => [{ type: 'Review' as const, id: productId }],
+      invalidatesTags: (_result, _error, { productId }) => [
+        { type: 'Review' as const, id: productId },
+        { type: 'Review' as const, id: 'ADMIN_LIST' },
+      ],
+    }),
+    reportReview: builder.mutation<ApiResponse<null>, { productId: string; reviewId: string; reason: string }>({
+      query: ({ productId, reviewId, reason }) => ({
+        url: `/products/${productId}/reviews/${reviewId}/report`,
+        method: 'POST',
+        body: { reason },
+      }),
     }),
   }),
 });
@@ -87,4 +100,5 @@ export const {
   useDeleteReviewMutation,
   useToggleHelpfulVoteMutation,
   useModerateReviewMutation,
+  useReportReviewMutation,
 } = reviewsApi;

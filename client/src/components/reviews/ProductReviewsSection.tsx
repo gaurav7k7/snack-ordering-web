@@ -14,6 +14,7 @@ import {
   useCreateReviewMutation,
   useDeleteReviewMutation,
   useGetProductReviewsQuery,
+  useReportReviewMutation,
   useToggleHelpfulVoteMutation,
   useUpdateReviewMutation,
 } from '@/redux/api/reviewsApi';
@@ -46,6 +47,7 @@ export function ProductReviewsSection({
   const [updateReview, { isLoading: isUpdating }] = useUpdateReviewMutation();
   const [deleteReview] = useDeleteReviewMutation();
   const [toggleHelpfulVote] = useToggleHelpfulVoteMutation();
+  const [reportReview] = useReportReviewMutation();
 
   const summary = data?.data;
   const reviews = summary?.reviews ?? [];
@@ -96,6 +98,21 @@ export function ProductReviewsSection({
       await toggleHelpfulVote({ productId, reviewId }).unwrap();
     } catch (error: any) {
       toast.error(error?.data?.message ?? 'Unable to record your vote.');
+    }
+  };
+
+  const handleReport = async (reviewId: string) => {
+    if (!isAuthenticated) {
+      toast.error('Sign in to report a review.');
+      return;
+    }
+    const reason = window.prompt('Why are you reporting this review?');
+    if (!reason || !reason.trim()) return;
+    try {
+      await reportReview({ productId, reviewId, reason: reason.trim() }).unwrap();
+      toast.success('Review reported. Our team will take a look.');
+    } catch (error: any) {
+      toast.error(error?.data?.message ?? 'Unable to report this review.');
     }
   };
 
@@ -190,6 +207,7 @@ export function ProductReviewsSection({
                   onToggleHelpful={
                     review.isOwner ? undefined : () => handleToggleHelpful(review._id)
                   }
+                  onReport={review.isOwner ? undefined : () => handleReport(review._id)}
                 />
               ))}
             </div>

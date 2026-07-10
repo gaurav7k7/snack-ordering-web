@@ -22,4 +22,5 @@ export const ROUTES = {
   adminCategories: '/admin/categories',
   adminCustomers: '/admin/customers',
   adminCustomerDetail: (id: string) => `/admin/customers/${id}`,
+  adminReviews: '/admin/reviews',
 } as const;
