@@ -92,7 +92,7 @@ export default function AdminReviewsPage() {
       </Helmet>
 
       <div>
-        <h1 className="text-3xl font-black">Review Management</h1>
+        <h1 className="text-3xl font-black sm:text-4xl">Review Management</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {pagination.total} review{pagination.total === 1 ? '' : 's'} across your catalog.
         </p>

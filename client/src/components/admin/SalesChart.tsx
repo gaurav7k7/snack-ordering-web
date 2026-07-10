@@ -71,6 +71,7 @@ export function SalesChart({ data }: SalesChartProps) {
           strokeWidth={2}
           fill="url(#salesFill)"
           activeDot={{ r: 4, stroke: '#fcfcfb', strokeWidth: 2 }}
+          isAnimationActive={false}
         />
       </AreaChart>
     </ResponsiveContainer>

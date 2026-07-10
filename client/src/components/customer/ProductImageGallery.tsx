@@ -78,7 +78,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
           type="button"
           size="icon"
           variant="secondary"
-          className="absolute bottom-4 right-4 rounded-full"
+          className="absolute bottom-4 right-4 hidden rounded-full md:inline-flex"
           aria-label="Image zoom enabled on hover"
         >
           <Maximize2 className="h-4 w-4" />

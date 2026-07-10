@@ -190,7 +190,7 @@ export default function CheckoutPage() {
       <Breadcrumbs items={[{ label: 'Cart', href: ROUTES.cart }, { label: 'Checkout' }]} />
       <section className="container py-10">
         <div className="mb-6 flex flex-col gap-2">
-          <h1 className="text-3xl font-black">Checkout</h1>
+          <h1 className="text-3xl font-black sm:text-4xl">Checkout</h1>
           <p className="text-sm text-muted-foreground">
             Choose how you want to receive your order and pay securely.
           </p>

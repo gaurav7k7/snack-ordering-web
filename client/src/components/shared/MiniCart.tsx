@@ -59,7 +59,7 @@ export function MiniCart({ isOpen, onClose }: MiniCartProps) {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
+                          className="h-10 w-10"
                           aria-label="Decrease item"
                           onClick={() =>
                             dispatch(
@@ -78,7 +78,7 @@ export function MiniCart({ isOpen, onClose }: MiniCartProps) {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
+                          className="h-10 w-10"
                           aria-label="Increase item"
                           onClick={() =>
                             dispatch(

@@ -52,7 +52,7 @@ export default function AdminDashboardPage() {
       </Helmet>
 
       <div>
-        <h1 className="text-3xl font-black">Dashboard</h1>
+        <h1 className="text-3xl font-black sm:text-4xl">Dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           A live snapshot of revenue, orders, customers, and catalog health.
         </p>

@@ -19,7 +19,7 @@ export function RefundModal({ orderTotal, isSubmitting, onCancel, onConfirm }: R
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-3xl border border-border/70 bg-card p-6 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border border-border/70 bg-card p-6 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-black">Refund this order</h2>

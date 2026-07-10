@@ -1,10 +1,12 @@
 import { ArrowRight } from 'lucide-react';
+import { useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Autoplay, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 import { Button } from '@/components/ui/button';
 import type { Slide } from '@/types/home';
+import { cldUrl } from '@/utils/cloudinaryImage';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -14,27 +16,29 @@ type HeroSliderProps = {
 };
 
 export function HeroSlider({ slides }: HeroSliderProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <section className="relative">
       <Swiper
         modules={[Autoplay, Pagination]}
-        autoplay={{ delay: 5200, disableOnInteraction: false }}
+        autoplay={prefersReducedMotion ? false : { delay: 5200, disableOnInteraction: false }}
         loop
         pagination={{ clickable: true }}
         className="hero-swiper"
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={slide.id}>
-            <div className="relative min-h-[calc(100vh-7rem)] overflow-hidden">
+            <div className="relative min-h-[calc(100dvh-7rem)] overflow-hidden">
               <img
-                src={slide.image}
+                src={cldUrl(slide.image, 'hero')}
                 alt=""
                 fetchPriority={index === 0 ? 'high' : 'auto'}
                 loading={index === 0 ? 'eager' : 'lazy'}
                 className="absolute inset-0 h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/10" />
-              <div className="container relative z-10 flex min-h-[calc(100vh-7rem)] items-center py-16 text-white">
+              <div className="container relative z-10 flex min-h-[calc(100dvh-7rem)] items-center py-16 text-white">
                 <div className="max-w-3xl">
                   <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">
                     {slide.eyebrow}

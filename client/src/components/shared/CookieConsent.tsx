@@ -1,21 +1,25 @@
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-
-const COOKIE_KEY = 'snackco-cookie-consent';
+import {
+  COOKIE_CONSENT_ACCEPTED_EVENT,
+  COOKIE_CONSENT_KEY,
+  isCookieConsentAccepted,
+} from '@/constants/cookieConsent';
 
 export function CookieConsent() {
   const [shouldShow, setShouldShow] = useState(false);
 
   useEffect(() => {
-    setShouldShow(localStorage.getItem(COOKIE_KEY) !== 'accepted');
+    setShouldShow(!isCookieConsentAccepted());
   }, []);
 
   if (!shouldShow) return null;
 
   const acceptCookies = () => {
-    localStorage.setItem(COOKIE_KEY, 'accepted');
+    localStorage.setItem(COOKIE_CONSENT_KEY, 'accepted');
     setShouldShow(false);
+    window.dispatchEvent(new Event(COOKIE_CONSENT_ACCEPTED_EVENT));
   };
 
   return (

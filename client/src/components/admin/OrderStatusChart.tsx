@@ -29,7 +29,7 @@ export function OrderStatusChart({ pending, delivered, cancelled, refunded }: Or
           tickLine={false}
           width={80}
         />
-        <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20}>
+        <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20} isAnimationActive={false}>
           {data.map((entry) => (
             <Cell key={entry.name} fill={entry.color} />
           ))}

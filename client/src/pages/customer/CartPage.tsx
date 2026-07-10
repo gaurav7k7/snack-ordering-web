@@ -59,7 +59,7 @@ export default function CartPage() {
       <section className="container py-10">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-3xl font-black">Your cart</h1>
+            <h1 className="text-3xl font-black sm:text-4xl">Your cart</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Review your order, save favorites for later, and apply coupons before checkout.
             </p>
@@ -121,7 +121,7 @@ export default function CartPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-10 w-10"
                               aria-label="Decrease quantity"
                               onClick={() =>
                                 dispatch(
@@ -140,7 +140,7 @@ export default function CartPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-10 w-10"
                               aria-label="Increase quantity"
                               onClick={() =>
                                 dispatch(

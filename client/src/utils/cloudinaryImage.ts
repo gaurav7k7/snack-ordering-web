@@ -33,6 +33,7 @@ export const IMAGE_PRESETS = {
   thumbnail: { width: 120, height: 120 },
   card: { width: 480, height: 480 },
   gallery: { width: 900, height: 900 },
+  hero: { width: 1920, crop: 'scale' },
 } satisfies Record<string, TransformOptions>;
 
 export function cldUrl(url: string | undefined | null, preset: keyof typeof IMAGE_PRESETS) {
