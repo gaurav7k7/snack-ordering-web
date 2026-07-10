@@ -72,8 +72,15 @@ export const updateAddresses = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(createApiResponse('Addresses updated.', { user: mapUser(user) }));
 });
 
+// This only ever backs the profile page's "recent orders" preview (which
+// slices to 4 client-side) — the full paginated history lives behind
+// getMyOrders/OrdersPage, so there's no reason to load a customer's entire
+// order history here.
 export const getOrderHistory = asyncHandler(async (req, res) => {
-  const orders = await OrderModel.find({ user: req.user?.userId }).sort({ createdAt: -1 }).lean();
+  const orders = await OrderModel.find({ user: req.user?.userId })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
   res.status(StatusCodes.OK).json(createApiResponse('Orders retrieved.', { orders }));
 });
 
@@ -200,28 +207,31 @@ export const getRecentlyViewed = asyncHandler(async (req, res) => {
 
 export const getReviewHistory = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
-  const products = await ProductModel.find({ 'reviews.user': userId })
-    .select('name slug images reviews')
-    .lean();
+  const userObjectId = new mongoose.Types.ObjectId(userId);
 
-  const reviews = products
-    .flatMap((product: any) =>
-      (product.reviews ?? [])
-        .filter((review: any) => review.user?.toString() === userId)
-        .map((review: any) => ({
-          _id: review._id,
-          productId: product._id,
-          productName: product.name,
-          productSlug: product.slug,
-          productImage: product.images?.[0]?.url,
-          rating: review.rating,
-          title: review.title,
-          comment: review.comment,
-          status: review.status,
-          createdAt: review.createdAt,
-        })),
-    )
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // Same aggregation shape as adminUser.controller.ts's getCustomerReviews —
+  // filters at the DB level instead of loading every matching product's
+  // full reviews array into Node and filtering in JS.
+  const reviews = await ProductModel.aggregate([
+    { $match: { 'reviews.user': userObjectId } },
+    { $unwind: '$reviews' },
+    { $match: { 'reviews.user': userObjectId } },
+    { $sort: { 'reviews.createdAt': -1 } },
+    {
+      $project: {
+        _id: '$reviews._id',
+        productId: '$_id',
+        productName: '$name',
+        productSlug: '$slug',
+        productImage: { $arrayElemAt: ['$images.url', 0] },
+        rating: '$reviews.rating',
+        title: '$reviews.title',
+        comment: '$reviews.comment',
+        status: '$reviews.status',
+        createdAt: '$reviews.createdAt',
+      },
+    },
+  ]);
 
   res.status(StatusCodes.OK).json(createApiResponse('Review history retrieved.', { reviews }));
 });

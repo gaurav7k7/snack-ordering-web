@@ -143,8 +143,14 @@ function validateCouponPayload(body: Record<string, unknown>, { partial }: { par
   return result;
 }
 
+// No pagination UI exists for this list today and coupon counts are small
+// in practice, but an unbounded find() with no cap at all is one bad import
+// away from loading the entire collection into memory — a sane ceiling
+// costs nothing and buys real pagination time if this ever needs it.
+const MAX_COUPONS_RETURNED = 200;
+
 export const listCoupons = asyncHandler(async (_req, res) => {
-  const coupons = await CouponModel.find().sort({ createdAt: -1 });
+  const coupons = await CouponModel.find().sort({ createdAt: -1 }).limit(MAX_COUPONS_RETURNED);
   res.status(StatusCodes.OK).json(createApiResponse('Coupons retrieved.', { coupons }));
 });
 

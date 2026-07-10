@@ -4,6 +4,9 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
+import { AdminSearchForm } from '@/components/admin/AdminSearchForm';
+import { StatusPill } from '@/components/admin/StatusPill';
+import { RefreshingIndicator, TableStateRow } from '@/components/admin/TableStateRow';
 import { SearchPagination } from '@/components/customer/SearchPagination';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
@@ -13,6 +16,7 @@ import {
   useGetAllCustomersQuery,
   useUnblockCustomerMutation,
 } from '@/redux/api/adminUsersApi';
+import { cldUrl } from '@/utils/cloudinaryImage';
 
 const STATUS_FILTERS: Array<{ label: string; value?: 'active' | 'blocked' }> = [
   { label: 'All' },
@@ -82,20 +86,12 @@ export default function AdminCustomersPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="flex max-w-md gap-2">
-        <input
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search by name, email, or phone…"
-          className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary"
-        />
-        <button
-          type="submit"
-          className="rounded-lg border border-input bg-background px-4 text-sm font-semibold hover:bg-accent"
-        >
-          Search
-        </button>
-      </form>
+      <AdminSearchForm
+        value={searchInput}
+        onChange={setSearchInput}
+        onSubmit={handleSearchSubmit}
+        placeholder="Search by name, email, or phone…"
+      />
 
       <div className="flex gap-2">
         {STATUS_FILTERS.map((filter) => (
@@ -130,17 +126,9 @@ export default function AdminCustomersPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  Loading customers…
-                </td>
-              </tr>
+              <TableStateRow colSpan={5}>Loading customers…</TableStateRow>
             ) : customers.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  No customers match this filter.
-                </td>
-              </tr>
+              <TableStateRow colSpan={5}>No customers match this filter.</TableStateRow>
             ) : (
               customers.map((customer) => (
                 <tr key={customer._id} className="border-b border-border/40 last:border-0">
@@ -151,7 +139,7 @@ export default function AdminCustomersPage() {
                     >
                       <div className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary/10 text-xs font-bold text-primary">
                         {customer.avatar ? (
-                          <img src={customer.avatar} alt="" className="h-full w-full object-cover" />
+                          <img src={cldUrl(customer.avatar, 'avatar')} alt="" loading="lazy" className="h-full w-full object-cover" />
                         ) : (
                           customer.name.charAt(0).toUpperCase()
                         )}
@@ -167,16 +155,9 @@ export default function AdminCustomersPage() {
                     {new Date(customer.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        customer.isActive
-                          ? 'bg-emerald-500/10 text-emerald-600'
-                          : 'bg-red-500/10 text-red-600'
-                      }`}
-                      title={customer.blockedReason}
-                    >
+                    <StatusPill tone={customer.isActive ? 'success' : 'danger'} title={customer.blockedReason}>
                       {customer.isActive ? 'Active' : 'Blocked'}
-                    </span>
+                    </StatusPill>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
@@ -205,11 +186,7 @@ export default function AdminCustomersPage() {
             )}
           </tbody>
         </table>
-        {isFetching && !isLoading && (
-          <p className="border-t border-border/70 px-4 py-2 text-center text-xs text-muted-foreground">
-            Refreshing…
-          </p>
-        )}
+        {isFetching && !isLoading && <RefreshingIndicator />}
       </div>
 
       {pagination.totalPages > 1 && (

@@ -1,5 +1,6 @@
 import { Trophy } from 'lucide-react';
 
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 type TopProduct = {
@@ -22,7 +23,7 @@ export function TopSellingProducts({ products }: { products: TopProduct[] }) {
           <div className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
             {index === 0 ? <Trophy className="h-3.5 w-3.5 text-amber-500" /> : index + 1}
           </div>
-          <img src={product.image} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+          <img src={cldUrl(product.image, 'avatar')} alt="" loading="lazy" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{product.name}</p>
             <p className="text-xs text-muted-foreground">{product.totalQuantity} sold</p>

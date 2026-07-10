@@ -2,6 +2,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import type { CategoryTile as CategoryTileType } from '@/types/home';
+import { cldUrl } from '@/utils/cloudinaryImage';
 
 type CategoryTileProps = {
   category: CategoryTileType;
@@ -14,7 +15,7 @@ export function CategoryTile({ category }: CategoryTileProps) {
       className="group relative isolate block overflow-hidden rounded-lg border bg-card"
     >
       <img
-        src={category.image}
+        src={cldUrl(category.image, 'card')}
         alt={category.name}
         loading="lazy"
         className="aspect-[5/4] w-full object-cover transition duration-500 group-hover:scale-105"

@@ -4,10 +4,14 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
+import { AdminSearchForm } from '@/components/admin/AdminSearchForm';
+import { StatusPill } from '@/components/admin/StatusPill';
+import { RefreshingIndicator } from '@/components/admin/TableStateRow';
 import { SearchPagination } from '@/components/customer/SearchPagination';
 import { Button } from '@/components/ui/button';
 import { useDeleteReviewMutation, useModerateReviewMutation } from '@/redux/api/reviewsApi';
 import { useDismissReportsMutation, useGetAllReviewsForAdminQuery } from '@/redux/api/reviewAdminApi';
+import { cldUrl } from '@/utils/cloudinaryImage';
 
 const FILTERS: Array<{ label: string; status?: 'approved' | 'rejected'; reported?: boolean }> = [
   { label: 'All' },
@@ -94,20 +98,12 @@ export default function AdminReviewsPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="flex max-w-md gap-2">
-        <input
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search by product, reviewer, or comment…"
-          className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary"
-        />
-        <button
-          type="submit"
-          className="rounded-lg border border-input bg-background px-4 text-sm font-semibold hover:bg-accent"
-        >
-          Search
-        </button>
-      </form>
+      <AdminSearchForm
+        value={searchInput}
+        onChange={setSearchInput}
+        onSubmit={handleSearchSubmit}
+        placeholder="Search by product, reviewer, or comment…"
+      />
 
       <div className="flex gap-2">
         {FILTERS.map((item, index) => (
@@ -145,7 +141,12 @@ export default function AdminReviewsPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   {review.productImage && (
-                    <img src={review.productImage} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+                    <img
+                      src={cldUrl(review.productImage, 'avatar')}
+                      alt=""
+                      loading="lazy"
+                      className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                    />
                   )}
                   <div>
                     <Link
@@ -164,25 +165,15 @@ export default function AdminReviewsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      review.status === 'approved'
-                        ? 'bg-emerald-500/10 text-emerald-600'
-                        : 'bg-red-500/10 text-red-600'
-                    }`}
-                  >
+                  <StatusPill tone={review.status === 'approved' ? 'success' : 'danger'}>
                     {review.status}
-                  </span>
+                  </StatusPill>
                   {review.reportCount > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-600">
+                    <StatusPill tone="warning">
                       <Flag className="h-3 w-3" /> {review.reportCount} report{review.reportCount === 1 ? '' : 's'}
-                    </span>
+                    </StatusPill>
                   )}
-                  {review.isVerifiedPurchase && (
-                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                      Verified
-                    </span>
-                  )}
+                  {review.isVerifiedPurchase && <StatusPill tone="neutral" className="bg-primary/10 text-primary">Verified</StatusPill>}
                 </div>
               </div>
 
@@ -192,7 +183,13 @@ export default function AdminReviewsPage() {
               {review.images.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {review.images.map((image) => (
-                    <img key={image.publicId} src={image.url} alt="" className="h-14 w-14 rounded-lg border object-cover" />
+                    <img
+                      key={image.publicId}
+                      src={cldUrl(image.url, 'thumbnail')}
+                      alt=""
+                      loading="lazy"
+                      className="h-14 w-14 rounded-lg border object-cover"
+                    />
                   ))}
                 </div>
               )}
@@ -254,9 +251,7 @@ export default function AdminReviewsPage() {
             </article>
           ))
         )}
-        {isFetching && !isLoading && (
-          <p className="text-center text-xs text-muted-foreground">Refreshing…</p>
-        )}
+        {isFetching && !isLoading && <RefreshingIndicator />}
       </div>
 
       {pagination.totalPages > 1 && (

@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { Link, useSearchParams } from 'react-router-dom';
 
+import { AdminSearchForm } from '@/components/admin/AdminSearchForm';
+import { RefreshingIndicator, TableStateRow } from '@/components/admin/TableStateRow';
 import { OrderStatusBadge, STATUS_LABELS } from '@/components/orders/OrderStatusBadge';
 import { SearchPagination } from '@/components/customer/SearchPagination';
 import { ROUTES } from '@/constants/routes';
@@ -72,20 +74,12 @@ export default function AdminOrdersPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="flex max-w-md gap-2">
-        <input
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search by order number, customer name, email, or phone…"
-          className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-primary"
-        />
-        <button
-          type="submit"
-          className="rounded-lg border border-input bg-background px-4 text-sm font-semibold hover:bg-accent"
-        >
-          Search
-        </button>
-      </form>
+      <AdminSearchForm
+        value={searchInput}
+        onChange={setSearchInput}
+        onSubmit={handleSearchSubmit}
+        placeholder="Search by order number, customer name, email, or phone…"
+      />
 
       <div className="flex flex-wrap gap-2">
         {STATUS_FILTERS.map((filter) => (
@@ -121,17 +115,9 @@ export default function AdminOrdersPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  Loading orders…
-                </td>
-              </tr>
+              <TableStateRow colSpan={6}>Loading orders…</TableStateRow>
             ) : orders.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  No orders match this filter.
-                </td>
-              </tr>
+              <TableStateRow colSpan={6}>No orders match this filter.</TableStateRow>
             ) : (
               orders.map((order: any) => (
                 <tr
@@ -173,11 +159,7 @@ export default function AdminOrdersPage() {
             )}
           </tbody>
         </table>
-        {isFetching && !isLoading && (
-          <p className="border-t border-border/70 px-4 py-2 text-center text-xs text-muted-foreground">
-            Refreshing…
-          </p>
-        )}
+        {isFetching && !isLoading && <RefreshingIndicator />}
       </div>
 
       {pagination.totalPages > 1 && (

@@ -35,6 +35,7 @@ import {
   useUploadProfilePictureMutation,
 } from '@/redux/api/profileApi';
 import { setUser } from '@/redux/slices/authSlice';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function ProfilePage() {
@@ -155,7 +156,7 @@ export default function ProfilePage() {
               <div className="grid h-16 w-16 place-items-center rounded-full bg-primary/10 text-primary">
                 {profile?.avatar ? (
                   <img
-                    src={profile.avatar}
+                    src={cldUrl(profile.avatar, 'avatar')}
                     alt={profile.name}
                     className="h-16 w-16 rounded-full object-cover"
                   />
@@ -372,8 +373,9 @@ export default function ProfilePage() {
                     className="flex items-center gap-3 rounded-2xl border border-border/70 bg-background p-3 text-sm transition hover:border-primary/50"
                   >
                     <img
-                      src={item.images?.[0]?.url}
+                      src={cldUrl(item.images?.[0]?.url, 'avatar')}
                       alt={item.name}
+                      loading="lazy"
                       className="h-12 w-12 rounded-lg object-cover"
                     />
                     <div>

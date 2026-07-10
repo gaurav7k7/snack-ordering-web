@@ -26,6 +26,9 @@ export const listCategories = asyncHandler(async (req, res) => {
   const filter = includeInactive ? {} : { isActive: true };
   const categories = await CategoryModel.find(filter).sort({ name: 1 });
 
+  // Categories change rarely (admin CRUD only) — a short public cache lets
+  // browsers/CDNs skip the round trip for repeat visits within the window.
+  res.set('Cache-Control', 'public, max-age=60');
   res.status(StatusCodes.OK).json(createApiResponse('Categories retrieved.', { categories }));
 });
 

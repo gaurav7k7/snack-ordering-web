@@ -13,6 +13,8 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
+import { StatusPill } from '@/components/admin/StatusPill';
+import { RefreshingIndicator, TableStateRow } from '@/components/admin/TableStateRow';
 import { SearchPagination } from '@/components/customer/SearchPagination';
 import { Button } from '@/components/ui/button';
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
@@ -24,6 +26,7 @@ import {
   useBulkImportProductsMutation,
 } from '@/redux/api/adminProductsApi';
 import type { BulkImportResult } from '@/redux/api/adminProductsApi';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { cn } from '@/utils/cn';
 import { downloadCsv } from '@/utils/csv';
 import { exportProductsToCsv, generateProductCsvTemplate, parseProductsCsv } from '@/utils/productCsv';
@@ -229,17 +232,9 @@ export default function AdminProductsPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                  Loading products…
-                </td>
-              </tr>
+              <TableStateRow colSpan={7}>Loading products…</TableStateRow>
             ) : products.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                  No products match this filter.
-                </td>
-              </tr>
+              <TableStateRow colSpan={7}>No products match this filter.</TableStateRow>
             ) : (
               products.map((product) => {
                 const isOutOfStock = product.availableQuantity <= 0;
@@ -252,8 +247,9 @@ export default function AdminProductsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={product.images?.[0]?.url}
+                          src={cldUrl(product.images?.[0]?.url, 'avatar')}
                           alt=""
+                          loading="lazy"
                           className="h-10 w-10 shrink-0 rounded-lg object-cover"
                         />
                         <div className="min-w-0">
@@ -270,19 +266,10 @@ export default function AdminProductsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={cn(
-                          'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
-                          isOutOfStock
-                            ? 'bg-red-500/10 text-red-600'
-                            : isLowStock
-                              ? 'bg-amber-500/10 text-amber-600'
-                              : 'bg-emerald-500/10 text-emerald-600',
-                        )}
-                      >
+                      <StatusPill tone={isOutOfStock ? 'danger' : isLowStock ? 'warning' : 'success'}>
                         {isOutOfStock && <AlertTriangle className="h-3 w-3" />}
                         {product.availableQuantity}
-                      </span>
+                      </StatusPill>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1.5">
@@ -311,18 +298,12 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        type="button"
+                      <StatusPill
+                        tone={product.isActive ? 'success' : 'neutral'}
                         onClick={() => handleToggle(product._id, 'isActive', product.isActive)}
-                        className={cn(
-                          'rounded-full px-3 py-1 text-xs font-semibold transition',
-                          product.isActive
-                            ? 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
-                            : 'bg-muted text-muted-foreground hover:bg-accent',
-                        )}
                       >
                         {product.isActive ? 'Active' : 'Inactive'}
-                      </button>
+                      </StatusPill>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1">
@@ -348,11 +329,7 @@ export default function AdminProductsPage() {
             )}
           </tbody>
         </table>
-        {isFetching && !isLoading && (
-          <p className="border-t border-border/70 px-4 py-2 text-center text-xs text-muted-foreground">
-            Refreshing…
-          </p>
-        )}
+        {isFetching && !isLoading && <RefreshingIndicator />}
       </div>
 
       {pagination.totalPages > 1 && (

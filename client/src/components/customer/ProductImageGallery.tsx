@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import type { ProductImage } from '@/types/home';
+import { cldUrl, optimizeImageUrl } from '@/utils/cloudinaryImage';
 
 type ProductImageGalleryProps = {
   images: ProductImage[];
@@ -33,7 +34,12 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             data-active={activeImage.id === image.id}
             aria-label={`View ${image.alt}`}
           >
-            <img src={image.url} alt={image.alt} className="h-full w-full object-cover" />
+            <img
+              src={cldUrl(image.url, 'thumbnail')}
+              alt={image.alt}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
           </button>
         ))}
       </div>
@@ -51,14 +57,15 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
         onMouseLeave={() => setIsZooming(false)}
       >
         <img
-          src={activeImage.url}
+          src={cldUrl(activeImage.url, 'gallery')}
           alt={activeImage.alt || productName}
+          fetchPriority="high"
           className="aspect-square w-full object-cover"
         />
         <div
           className="pointer-events-none absolute inset-0 hidden bg-no-repeat opacity-0 transition md:block"
           style={{
-            backgroundImage: `url(${activeImage.url})`,
+            backgroundImage: `url(${optimizeImageUrl(activeImage.url, { width: 1400, height: 1400 })})`,
             backgroundSize: '190%',
             backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
             opacity: isZooming ? 1 : 0,

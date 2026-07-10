@@ -19,6 +19,7 @@ import {
 } from '@/redux/api/ordersApi';
 import { addItem } from '@/redux/slices/cartSlice';
 import { CANCELLABLE_ORDER_STATUSES, RETURN_WINDOW_DAYS, TERMINAL_ORDER_STATUSES } from '@/types/order';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 const CANCEL_REASONS = [
@@ -172,8 +173,9 @@ export default function OrderDetailPage() {
                     className="flex items-center gap-4 rounded-2xl border border-border/70 bg-background p-4"
                   >
                     <img
-                      src={item.image}
+                      src={cldUrl(item.image, 'thumbnail')}
                       alt={item.name}
+                      loading="lazy"
                       className="h-16 w-16 rounded-xl object-cover"
                     />
                     <div className="flex-1">

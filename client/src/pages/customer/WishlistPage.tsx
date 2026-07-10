@@ -9,6 +9,7 @@ import { useAppDispatch } from '@/hooks/redux';
 import { useWishlist } from '@/hooks/useWishlist';
 import { addItem } from '@/redux/slices/cartSlice';
 import type { ApiProductCard } from '@/types/product';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function WishlistPage() {
@@ -81,8 +82,9 @@ export default function WishlistPage() {
                 >
                   <Link to={`/products/${product.slug}`} className="block aspect-[4/3] overflow-hidden bg-muted">
                     <img
-                      src={product.images?.[0]?.url}
+                      src={cldUrl(product.images?.[0]?.url, 'card')}
                       alt={product.name}
+                      loading="lazy"
                       className="h-full w-full object-cover"
                     />
                   </Link>

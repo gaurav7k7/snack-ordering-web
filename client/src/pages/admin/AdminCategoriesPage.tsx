@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 
+import { StatusPill } from '@/components/admin/StatusPill';
+import { TableStateRow } from '@/components/admin/TableStateRow';
 import { Button } from '@/components/ui/button';
 import {
   useCreateCategoryMutation,
@@ -30,22 +32,6 @@ type Tab = (typeof TABS)[number];
 
 const inputClass =
   'w-56 rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary';
-
-function StatusPill({ isActive, onClick }: { isActive: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-        isActive
-          ? 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
-          : 'bg-muted text-muted-foreground hover:bg-accent'
-      }`}
-    >
-      {isActive ? 'Active' : 'Inactive'}
-    </button>
-  );
-}
 
 function CategoriesTab() {
   const { data, isLoading } = useGetCategoriesQuery({ includeInactive: true });
@@ -134,9 +120,9 @@ function CategoriesTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Loading categories…</td></tr>
+              <TableStateRow colSpan={5}>Loading categories…</TableStateRow>
             ) : categories.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No categories yet. Add your first one above.</td></tr>
+              <TableStateRow colSpan={5}>No categories yet. Add your first one above.</TableStateRow>
             ) : (
               categories.map((category) => (
                 <tr key={category._id} className="border-b border-border/40 last:border-0">
@@ -144,7 +130,12 @@ function CategoriesTab() {
                   <td className="px-4 py-3 text-muted-foreground">{category.slug}</td>
                   <td className="px-4 py-3 text-muted-foreground">{category.description || '—'}</td>
                   <td className="px-4 py-3">
-                    <StatusPill isActive={category.isActive} onClick={() => handleToggleActive(category._id, category.isActive)} />
+                    <StatusPill
+                      tone={category.isActive ? 'success' : 'neutral'}
+                      onClick={() => handleToggleActive(category._id, category.isActive)}
+                    >
+                      {category.isActive ? 'Active' : 'Inactive'}
+                    </StatusPill>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
@@ -255,9 +246,9 @@ function SubCategoriesTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Loading subcategories…</td></tr>
+              <TableStateRow colSpan={5}>Loading subcategories…</TableStateRow>
             ) : subCategories.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No subcategories yet. Add your first one above.</td></tr>
+              <TableStateRow colSpan={5}>No subcategories yet. Add your first one above.</TableStateRow>
             ) : (
               subCategories.map((subCategory) => (
                 <tr key={subCategory._id} className="border-b border-border/40 last:border-0">
@@ -267,7 +258,12 @@ function SubCategoriesTab() {
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{subCategory.slug}</td>
                   <td className="px-4 py-3">
-                    <StatusPill isActive={subCategory.isActive} onClick={() => handleToggleActive(subCategory._id, subCategory.isActive)} />
+                    <StatusPill
+                      tone={subCategory.isActive ? 'success' : 'neutral'}
+                      onClick={() => handleToggleActive(subCategory._id, subCategory.isActive)}
+                    >
+                      {subCategory.isActive ? 'Active' : 'Inactive'}
+                    </StatusPill>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
@@ -376,9 +372,9 @@ function BrandsTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Loading brands…</td></tr>
+              <TableStateRow colSpan={5}>Loading brands…</TableStateRow>
             ) : brands.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No brands yet. Add your first one above.</td></tr>
+              <TableStateRow colSpan={5}>No brands yet. Add your first one above.</TableStateRow>
             ) : (
               brands.map((brand) => (
                 <tr key={brand._id} className="border-b border-border/40 last:border-0">
@@ -386,7 +382,12 @@ function BrandsTab() {
                   <td className="px-4 py-3 text-muted-foreground">{brand.slug}</td>
                   <td className="px-4 py-3 text-muted-foreground">{brand.description || '—'}</td>
                   <td className="px-4 py-3">
-                    <StatusPill isActive={brand.isActive} onClick={() => handleToggleActive(brand._id, brand.isActive)} />
+                    <StatusPill
+                      tone={brand.isActive ? 'success' : 'neutral'}
+                      onClick={() => handleToggleActive(brand._id, brand.isActive)}
+                    >
+                      {brand.isActive ? 'Active' : 'Inactive'}
+                    </StatusPill>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
@@ -483,16 +484,21 @@ function TagsTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Loading tags…</td></tr>
+              <TableStateRow colSpan={4}>Loading tags…</TableStateRow>
             ) : tags.length === 0 ? (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">No tags yet. Add your first one above.</td></tr>
+              <TableStateRow colSpan={4}>No tags yet. Add your first one above.</TableStateRow>
             ) : (
               tags.map((tag) => (
                 <tr key={tag._id} className="border-b border-border/40 last:border-0">
                   <td className="px-4 py-3 font-semibold">{tag.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{tag.slug}</td>
                   <td className="px-4 py-3">
-                    <StatusPill isActive={tag.isActive} onClick={() => handleToggleActive(tag._id, tag.isActive)} />
+                    <StatusPill
+                      tone={tag.isActive ? 'success' : 'neutral'}
+                      onClick={() => handleToggleActive(tag._id, tag.isActive)}
+                    >
+                      {tag.isActive ? 'Active' : 'Inactive'}
+                    </StatusPill>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">

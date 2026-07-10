@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useGetMyOrdersQuery } from '@/redux/api/ordersApi';
 import type { OrderStatus } from '@/types/order';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 const FILTERS: Array<{ label: string; value?: OrderStatus }> = [
@@ -83,8 +84,9 @@ export default function OrdersPage() {
                     {order.items.slice(0, 4).map((item, index) => (
                       <img
                         key={`${item.name}-${index}`}
-                        src={item.image}
+                        src={cldUrl(item.image, 'avatar')}
                         alt={item.name}
+                        loading="lazy"
                         className="h-12 w-12 rounded-xl border-2 border-card object-cover"
                       />
                     ))}

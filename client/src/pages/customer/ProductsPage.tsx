@@ -9,6 +9,7 @@ import { SearchPagination } from '@/components/customer/SearchPagination';
 import { SearchSuggestions } from '@/components/customer/SearchSuggestions';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { SectionHeader } from '@/components/shared/SectionHeader';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useSearchProductsQuery, useSearchSuggestionsQuery } from '@/redux/api/productsApi';
 import type { SearchProduct } from '@/types/product';
 
@@ -57,7 +58,8 @@ export default function ProductsPage() {
   );
 
   const { data, isFetching } = useSearchProductsQuery(queryParams);
-  const suggestionsQuery = searchQuery.trim();
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
+  const suggestionsQuery = debouncedSearchQuery.trim();
   const { data: suggestionsData } = useSearchSuggestionsQuery(suggestionsQuery);
 
   const products = data?.data?.products ?? [];

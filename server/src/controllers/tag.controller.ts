@@ -26,6 +26,7 @@ export const listTags = asyncHandler(async (req, res) => {
   const filter = includeInactive ? {} : { isActive: true };
   const tags = await TagModel.find(filter).sort({ name: 1 });
 
+  res.set('Cache-Control', 'public, max-age=60');
   res.status(StatusCodes.OK).json(createApiResponse('Tags retrieved.', { tags }));
 });
 

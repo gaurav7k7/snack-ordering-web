@@ -26,6 +26,7 @@ export const listBrands = asyncHandler(async (req, res) => {
   const filter = includeInactive ? {} : { isActive: true };
   const brands = await BrandModel.find(filter).sort({ name: 1 });
 
+  res.set('Cache-Control', 'public, max-age=60');
   res.status(StatusCodes.OK).json(createApiResponse('Brands retrieved.', { brands }));
 });
 

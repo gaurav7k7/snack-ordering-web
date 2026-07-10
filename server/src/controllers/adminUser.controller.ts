@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import mongoose from 'mongoose';
 
 import { env } from '../config/env.js';
 import { USER_ROLES } from '../constants/roles.js';
@@ -64,28 +65,34 @@ export const getCustomerById = asyncHandler(async (req, res) => {
 
 export const getCustomerReviews = asyncHandler(async (req, res) => {
   const customerId = req.params.id;
-  const products = await ProductModel.find({ 'reviews.user': customerId })
-    .select('name slug images reviews')
-    .lean();
+  if (!mongoose.Types.ObjectId.isValid(customerId)) {
+    throw new AppError('Invalid customer id.', StatusCodes.BAD_REQUEST);
+  }
+  const customerObjectId = new mongoose.Types.ObjectId(customerId);
 
-  const reviews = products
-    .flatMap((product: any) =>
-      (product.reviews ?? [])
-        .filter((review: any) => review.user?.toString() === customerId)
-        .map((review: any) => ({
-          _id: review._id,
-          productId: product._id,
-          productName: product.name,
-          productSlug: product.slug,
-          productImage: product.images?.[0]?.url,
-          rating: review.rating,
-          title: review.title,
-          comment: review.comment,
-          status: review.status,
-          createdAt: review.createdAt,
-        })),
-    )
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // Filtering/sorting happens in the aggregation pipeline (both $match
+  // stages) rather than loading every matching product's full reviews
+  // array into Node and filtering in JS.
+  const reviews = await ProductModel.aggregate([
+    { $match: { 'reviews.user': customerObjectId } },
+    { $unwind: '$reviews' },
+    { $match: { 'reviews.user': customerObjectId } },
+    { $sort: { 'reviews.createdAt': -1 } },
+    {
+      $project: {
+        _id: '$reviews._id',
+        productId: '$_id',
+        productName: '$name',
+        productSlug: '$slug',
+        productImage: { $arrayElemAt: ['$images.url', 0] },
+        rating: '$reviews.rating',
+        title: '$reviews.title',
+        comment: '$reviews.comment',
+        status: '$reviews.status',
+        createdAt: '$reviews.createdAt',
+      },
+    },
+  ]);
 
   res.status(StatusCodes.OK).json(createApiResponse('Customer reviews retrieved.', { reviews }));
 });

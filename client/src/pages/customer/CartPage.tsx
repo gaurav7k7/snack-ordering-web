@@ -1,5 +1,5 @@
 import { ArrowRight, Minus, Plus, Sparkles, Tag, Trash2, Heart, X, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ import {
   setCouponCode,
   updateQuantity,
 } from '@/redux/slices/cartSlice';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function CartPage() {
@@ -23,7 +24,10 @@ export default function CartPage() {
   const { items, savedItems, couponCode } = useAppSelector((state) => state.cart);
   const [couponInput, setCouponInput] = useState(couponCode);
 
-  const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
+  const subtotal = useMemo(
+    () => items.reduce((total, item) => total + item.price * item.quantity, 0),
+    [items],
+  );
   const {
     appliedCoupon,
     couponErrorMessage,
@@ -102,8 +106,9 @@ export default function CartPage() {
                       className="grid gap-4 rounded-2xl border bg-background p-4 md:grid-cols-[96px_1fr_auto]"
                     >
                       <img
-                        src={item.image}
+                        src={cldUrl(item.image, 'thumbnail')}
                         alt={item.name}
+                        loading="lazy"
                         className="h-24 w-full rounded-xl object-cover"
                       />
                       <div>
@@ -188,8 +193,9 @@ export default function CartPage() {
                     >
                       <div className="flex items-center gap-3">
                         <img
-                          src={item.image}
+                          src={cldUrl(item.image, 'thumbnail')}
                           alt={item.name}
+                          loading="lazy"
                           className="h-14 w-14 rounded-lg object-cover"
                         />
                         <div>

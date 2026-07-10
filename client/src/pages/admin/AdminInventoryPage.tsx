@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 
 import { SearchPagination } from '@/components/customer/SearchPagination';
 import { useGetAllProductsForAdminQuery, useUpdateProductMutation } from '@/redux/api/adminProductsApi';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { cn } from '@/utils/cn';
 import { formatCurrency } from '@/utils/formatCurrency';
 
@@ -120,7 +121,7 @@ export default function AdminInventoryPage() {
                   <tr key={product._id} className="border-b border-border/40 last:border-0">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <img src={product.images?.[0]?.url} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                        <img src={cldUrl(product.images?.[0]?.url, 'avatar')} alt="" loading="lazy" className="h-10 w-10 rounded-lg object-cover" />
                         <p className="font-semibold">{product.name}</p>
                       </div>
                     </td>

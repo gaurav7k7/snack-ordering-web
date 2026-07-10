@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { removeItem, updateQuantity } from '@/redux/slices/cartSlice';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 type MiniCartProps = {
@@ -43,8 +44,9 @@ export function MiniCart({ isOpen, onClose }: MiniCartProps) {
               items.map((item) => (
                 <article key={item.productId} className="grid grid-cols-[84px_1fr] gap-4">
                   <img
-                    src={item.image}
+                    src={cldUrl(item.image, 'thumbnail')}
                     alt={item.name}
+                    loading="lazy"
                     className="aspect-square rounded-md object-cover"
                   />
                   <div className="min-w-0">

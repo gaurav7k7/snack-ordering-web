@@ -14,6 +14,7 @@ import {
   products,
   reviews,
 } from '@/constants/homeContent';
+import { cldUrl } from '@/utils/cloudinaryImage';
 
 export default function HomePage() {
   const featuredProducts = products.slice(0, 4);
@@ -100,7 +101,12 @@ export default function HomePage() {
           <div className="grid gap-4 sm:grid-cols-2">
             {todaysDeals.slice(0, 2).map((product) => (
               <div key={product.id} className="grid grid-cols-[96px_1fr] gap-4 rounded-lg bg-background p-3 text-foreground">
-                <img src={product.image} alt={product.name} className="aspect-square rounded-md object-cover" />
+                <img
+                  src={cldUrl(product.image, 'thumbnail')}
+                  alt={product.name}
+                  loading="lazy"
+                  className="aspect-square rounded-md object-cover"
+                />
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">{product.badge}</p>
                   <h3 className="mt-1 font-semibold">{product.name}</h3>
@@ -132,6 +138,7 @@ export default function HomePage() {
             <img
               src="https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?auto=format&fit=crop&w=1200&q=85"
               alt="Combo snack offer with nachos and dips"
+              loading="lazy"
               className="aspect-[4/3] w-full object-cover"
             />
           </div>

@@ -1,10 +1,12 @@
 import { Heart, ShoppingBag, Star } from 'lucide-react';
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { useWishlist } from '@/hooks/useWishlist';
 import type { HomeProduct } from '@/types/home';
 import type { SearchProduct } from '@/types/product';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { cn } from '@/utils/cn';
 import { formatCurrency } from '@/utils/formatCurrency';
 
@@ -50,7 +52,7 @@ function getBadge(product: HomeProduct | SearchProduct) {
   );
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   const productId = getProductId(product);
   const imageUrl = getProductImage(product);
   const price = getProductPrice(product);
@@ -66,7 +68,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <Link to={`/products/${product.slug}`} className="block h-full">
           <img
-            src={imageUrl}
+            src={cldUrl(imageUrl, 'card')}
             alt={product.name}
             loading="lazy"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
@@ -127,4 +129,4 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
     </article>
   );
-}
+});

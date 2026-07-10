@@ -15,6 +15,7 @@ import {
   useUnblockCustomerMutation,
 } from '@/redux/api/adminUsersApi';
 import { useGetAllOrdersForAdminQuery } from '@/redux/api/ordersApi';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 export default function AdminCustomerDetailPage() {
@@ -107,7 +108,7 @@ export default function AdminCustomerDetailPage() {
             <div className="flex items-center gap-4">
               <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-primary/10 text-xl font-black text-primary">
                 {customer.avatar ? (
-                  <img src={customer.avatar} alt="" className="h-full w-full object-cover" />
+                  <img src={cldUrl(customer.avatar, 'avatar')} alt="" className="h-full w-full object-cover" />
                 ) : (
                   customer.name.charAt(0).toUpperCase()
                 )}
@@ -208,7 +209,7 @@ export default function AdminCustomerDetailPage() {
                     className="flex gap-4 rounded-2xl border border-border/70 bg-background p-4 hover:border-primary/50"
                   >
                     {review.productImage && (
-                      <img src={review.productImage} alt="" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+                      <img src={cldUrl(review.productImage, 'thumbnail')} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">

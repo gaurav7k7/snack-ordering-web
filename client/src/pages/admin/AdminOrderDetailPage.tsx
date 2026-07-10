@@ -19,6 +19,7 @@ import {
   useUpdateOrderStatusMutation,
 } from '@/redux/api/ordersApi';
 import { CANCELLABLE_ORDER_STATUSES, type OrderStatus } from '@/types/order';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 const ALL_STATUSES = Object.keys(STATUS_LABELS) as OrderStatus[];
@@ -181,7 +182,7 @@ export default function AdminOrderDetailPage() {
                   key={`${item.product}-${index}`}
                   className="flex items-center gap-4 rounded-2xl border border-border/70 bg-background p-4"
                 >
-                  <img src={item.image} alt={item.name} className="h-16 w-16 rounded-xl object-cover" />
+                  <img src={cldUrl(item.image, 'thumbnail')} alt={item.name} loading="lazy" className="h-16 w-16 rounded-xl object-cover" />
                   <div className="flex-1">
                     <p className="font-semibold">{item.name}</p>
                     <p className="text-sm text-muted-foreground">

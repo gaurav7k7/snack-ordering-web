@@ -23,10 +23,16 @@ export function HeroSlider({ slides }: HeroSliderProps) {
         pagination={{ clickable: true }}
         className="hero-swiper"
       >
-        {slides.map((slide) => (
+        {slides.map((slide, index) => (
           <SwiperSlide key={slide.id}>
             <div className="relative min-h-[calc(100vh-7rem)] overflow-hidden">
-              <img src={slide.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              <img
+                src={slide.image}
+                alt=""
+                fetchPriority={index === 0 ? 'high' : 'auto'}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/10" />
               <div className="container relative z-10 flex min-h-[calc(100vh-7rem)] items-center py-16 text-white">
                 <div className="max-w-3xl">

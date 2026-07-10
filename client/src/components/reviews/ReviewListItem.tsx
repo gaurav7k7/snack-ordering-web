@@ -2,6 +2,7 @@ import { BadgeCheck, Flag, Pencil, Star, ThumbsUp, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import type { Review } from '@/types/review';
+import { cldUrl } from '@/utils/cloudinaryImage';
 import { cn } from '@/utils/cn';
 
 type ReviewListItemProps = {
@@ -41,8 +42,9 @@ export function ReviewListItem({ review, onEdit, onDelete, onToggleHelpful, onRe
           {review.images.map((image) => (
             <img
               key={image.publicId}
-              src={image.url}
+              src={cldUrl(image.url, 'thumbnail')}
               alt=""
+              loading="lazy"
               className="h-16 w-16 rounded-lg border object-cover"
             />
           ))}
