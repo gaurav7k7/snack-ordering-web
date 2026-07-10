@@ -5,7 +5,9 @@ import { CANCELLABLE_STATUSES, ORDER_STATUS, RETURN_WINDOW_DAYS } from '../const
 import { env } from '../config/env.js';
 import { evaluateCouponByCode, findBestAutomaticOffer, redeemCouponByCode } from '../services/coupon.service.js';
 import { sendEmail } from '../services/email.service.js';
+import { decrementStockAndAlert } from '../services/inventory.service.js';
 import { generateInvoicePdf } from '../services/invoice.service.js';
+import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '../services/orderNotification.service.js';
 import {
   createRazorpayOrder,
   refundPayment,
@@ -18,6 +20,7 @@ import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { escapeRegex } from '../utils/escapeRegex.js';
+import { renderEmailHtml } from '../utils/emailTemplates.js';
 
 async function loadOwnedOrder(orderId: string, userId?: string) {
   const order = await OrderModel.findById(orderId);
@@ -88,11 +91,18 @@ async function performCancellation(order: InstanceType<typeof OrderModel>, reaso
       to: order.guestEmail,
       subject: `Your SnackCo order ${order.orderNumber} was cancelled`,
       text: `Hi, your order ${order.orderNumber} has been cancelled. Reason: ${cancellationReason}.`,
-      html: `<p>Your order <strong>${order.orderNumber}</strong> has been cancelled.</p><p>Reason: ${cancellationReason}</p>`,
+      html: renderEmailHtml(
+        'Order cancelled',
+        `<p>Your order <strong>${order.orderNumber}</strong> has been cancelled.</p><p>Reason: ${cancellationReason}</p>`,
+      ),
     });
   }
 
   return order;
+}
+
+function toStockItems(items: Array<{ product: unknown; quantity: number }>) {
+  return items.map((item) => ({ productId: item.product, quantity: item.quantity }));
 }
 
 async function redeemOrderCoupons(order: {
@@ -252,12 +262,8 @@ export const createOrder = asyncHandler(async (req, res) => {
     );
   }
 
-  await sendEmail({
-    to: effectiveEmail,
-    subject: 'Your SnackCo order confirmation',
-    text: `Hi ${effectiveName}, your order ${order.orderNumber} is confirmed. Total: ₹${total}.`,
-    html: `<p>Hi ${effectiveName},</p><p>Your order <strong>${order.orderNumber}</strong> is confirmed.</p><p>Total: ₹${total}</p>`,
-  });
+  await decrementStockAndAlert(toStockItems(order.items as never));
+  await sendOrderConfirmationEmail(order);
 
   res.status(StatusCodes.CREATED).json(createApiResponse('Order placed successfully.', { order }));
 });
@@ -302,6 +308,8 @@ export const verifyPayment = asyncHandler(async (req, res) => {
 
   if (!wasAlreadyConfirmed) {
     await redeemOrderCoupons(order);
+    await decrementStockAndAlert(toStockItems(order.items as never));
+    await sendOrderConfirmationEmail(order);
   }
 
   res.status(StatusCodes.OK).json(createApiResponse('Payment verified successfully.', { order }));
@@ -341,6 +349,8 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
 
     if (!wasAlreadyConfirmed) {
       await redeemOrderCoupons(order);
+      await decrementStockAndAlert(toStockItems(order.items as never));
+      await sendOrderConfirmationEmail(order);
     }
   }
 
@@ -463,7 +473,10 @@ export const requestReturn = asyncHandler(async (req, res) => {
       to: order.guestEmail,
       subject: `Return request received for order ${order.orderNumber}`,
       text: `We've received your return request for order ${order.orderNumber}. Our team will review it within 24-48 hours.`,
-      html: `<p>We've received your return request for order <strong>${order.orderNumber}</strong>.</p><p>Our team will review it within 24-48 hours.</p>`,
+      html: renderEmailHtml(
+        'Return request received',
+        `<p>We've received your return request for order <strong>${order.orderNumber}</strong>.</p><p>Our team will review it within 24-48 hours.</p>`,
+      ),
     });
   }
 
@@ -510,9 +523,14 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     order.returnRequest = { ...order.returnRequest, status: 'approved', resolvedAt: new Date() } as never;
   }
 
+  const previousStatus = order.status;
   order.status = status;
   (order as unknown as { _statusNote?: string })._statusNote = typeof note === 'string' ? note : '';
   await order.save();
+
+  if (status !== previousStatus) {
+    await sendOrderStatusEmail(order, status);
+  }
 
   res.status(StatusCodes.OK).json(createApiResponse('Order status updated.', { order }));
 });
@@ -601,7 +619,10 @@ export const refundOrder = asyncHandler(async (req, res) => {
       to: order.guestEmail,
       subject: `Refund processed for order ${order.orderNumber}`,
       text: `Hi, a refund of ₹${refundAmount} has been processed for your order ${order.orderNumber}.`,
-      html: `<p>A refund of <strong>₹${refundAmount}</strong> has been processed for your order <strong>${order.orderNumber}</strong>.</p>`,
+      html: renderEmailHtml(
+        'Refund processed',
+        `<p>A refund of <strong>₹${refundAmount}</strong> has been processed for your order <strong>${order.orderNumber}</strong>.</p>`,
+      ),
     });
   }
 

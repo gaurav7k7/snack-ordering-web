@@ -15,6 +15,7 @@ import { sendEmail } from '../services/email.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
+import { renderEmailHtml } from '../utils/emailTemplates.js';
 
 const cookieOptions = getCookieOptions();
 
@@ -78,7 +79,10 @@ export const register = asyncHandler(async (req, res) => {
   await sendEmail({
     to: email,
     subject: 'Verify your SnackCo email',
-    html: `<p>Hi ${name},</p><p>Click <a href="${verificationUrl}">here</a> to verify your email address.</p>`,
+    html: renderEmailHtml(
+      'Verify your email',
+      `<p>Hi ${name},</p><p>Click <a href="${verificationUrl}">here</a> to verify your email address.</p>`,
+    ),
     text: `Hi ${name}, verify your email: ${verificationUrl}`,
   });
 
@@ -205,7 +209,10 @@ export const resendVerificationEmail = asyncHandler(async (req, res) => {
   await sendEmail({
     to: email,
     subject: 'Verify your SnackCo email',
-    html: `<p>Click <a href="${verificationUrl}">here</a> to verify your email address.</p>`,
+    html: renderEmailHtml(
+      'Verify your email',
+      `<p>Click <a href="${verificationUrl}">here</a> to verify your email address.</p>`,
+    ),
     text: `Verify your email: ${verificationUrl}`,
   });
 
@@ -228,7 +235,10 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   await sendEmail({
     to: email,
     subject: 'Reset your SnackCo password',
-    html: `<p>Reset your password by visiting <a href="${resetUrl}">this link</a>.</p>`,
+    html: renderEmailHtml(
+      'Reset your password',
+      `<p>Reset your password by visiting <a href="${resetUrl}">this link</a>. This link expires in 1 hour.</p>`,
+    ),
     text: `Reset your password: ${resetUrl}`,
   });
 
@@ -285,7 +295,10 @@ export const requestOtp = asyncHandler(async (req, res) => {
   await sendEmail({
     to: email,
     subject: 'Your SnackCo login code',
-    html: `<p>Your one-time login code is <strong>${otp}</strong>.</p>`,
+    html: renderEmailHtml(
+      'Your login code',
+      `<p>Your one-time login code is:</p><p style="font-size:28px;font-weight:800;letter-spacing:0.1em;">${otp}</p><p>This code expires in 10 minutes.</p>`,
+    ),
     text: `Your one-time login code is ${otp}`,
   });
 

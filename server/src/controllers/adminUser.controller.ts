@@ -10,6 +10,7 @@ import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { escapeRegex } from '../utils/escapeRegex.js';
+import { renderEmailHtml } from '../utils/emailTemplates.js';
 
 function assertManageable(target: { _id: unknown; role?: string | null }, requestingUserId?: string) {
   if (target._id?.toString() === requestingUserId) {
@@ -146,7 +147,10 @@ export const resetCustomerPassword = asyncHandler(async (req, res) => {
   await sendEmail({
     to: customer.email,
     subject: 'Reset your SnackCo password',
-    html: `<p>An administrator has requested a password reset for your account.</p><p>Reset your password by visiting <a href="${resetUrl}">this link</a>. This link expires in 1 hour.</p><p>If you did not expect this, please contact support.</p>`,
+    html: renderEmailHtml(
+      'Reset your password',
+      `<p>An administrator has requested a password reset for your account.</p><p>Reset your password by visiting <a href="${resetUrl}">this link</a>. This link expires in 1 hour.</p><p>If you did not expect this, please contact support.</p>`,
+    ),
     text: `An administrator has requested a password reset for your account. Reset your password: ${resetUrl}`,
   });
 
