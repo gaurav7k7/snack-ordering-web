@@ -6,6 +6,7 @@ import { ProductModel } from '../models/Product.model.js';
 import { UserModel } from '../models/User.model.js';
 import { generateToken, hashToken } from '../services/auth.service.js';
 import { sendEmail } from '../services/email.service.js';
+import { revokeAllUserSessions } from '../services/refreshToken.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
@@ -101,6 +102,7 @@ export const blockCustomer = asyncHandler(async (req, res) => {
   customer.blockedAt = new Date();
   customer.blockedReason = reason || 'Blocked by admin';
   await customer.save();
+  await revokeAllUserSessions(customer._id.toString());
 
   res.status(StatusCodes.OK).json(createApiResponse('Customer blocked.', { customer }));
 });

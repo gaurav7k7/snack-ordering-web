@@ -11,6 +11,10 @@ type TokenPayload = {
   rememberMe?: boolean;
 };
 
+type RefreshTokenPayload = TokenPayload & {
+  family: string;
+};
+
 export function generateToken(length = 32) {
   return crypto.randomBytes(length).toString('hex');
 }
@@ -29,10 +33,10 @@ export function signAccessToken(payload: TokenPayload) {
   } satisfies SignOptions);
 }
 
-export function signRefreshToken(payload: TokenPayload, rememberMe = false) {
+export function signRefreshToken(payload: RefreshTokenPayload, rememberMe = false) {
   const expiresIn = rememberMe ? env.jwtRefreshRememberMeExpiresIn : env.jwtRefreshExpiresIn;
 
-  return jwt.sign(payload, env.jwtRefreshSecret, {
+  return jwt.sign({ ...payload, rememberMe }, env.jwtRefreshSecret, {
     expiresIn: expiresIn as StringValue,
   } satisfies SignOptions);
 }
@@ -42,7 +46,7 @@ export function verifyAccessToken(token: string) {
 }
 
 export function verifyRefreshToken(token: string) {
-  return jwt.verify(token, env.jwtRefreshSecret) as TokenPayload;
+  return jwt.verify(token, env.jwtRefreshSecret) as RefreshTokenPayload;
 }
 
 export function getCookieOptions() {

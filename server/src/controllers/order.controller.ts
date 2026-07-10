@@ -20,7 +20,7 @@ import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { escapeRegex } from '../utils/escapeRegex.js';
-import { renderEmailHtml } from '../utils/emailTemplates.js';
+import { escapeHtml, renderEmailHtml } from '../utils/emailTemplates.js';
 
 async function loadOwnedOrder(orderId: string, userId?: string) {
   const order = await OrderModel.findById(orderId);
@@ -93,7 +93,7 @@ async function performCancellation(order: InstanceType<typeof OrderModel>, reaso
       text: `Hi, your order ${order.orderNumber} has been cancelled. Reason: ${cancellationReason}.`,
       html: renderEmailHtml(
         'Order cancelled',
-        `<p>Your order <strong>${order.orderNumber}</strong> has been cancelled.</p><p>Reason: ${cancellationReason}</p>`,
+        `<p>Your order <strong>${order.orderNumber}</strong> has been cancelled.</p><p>Reason: ${escapeHtml(cancellationReason)}</p>`,
       ),
     });
   }

@@ -8,14 +8,14 @@ import {
   getCookieOptions,
   hashToken,
   signAccessToken,
-  signRefreshToken,
   verifyRefreshToken,
 } from '../services/auth.service.js';
 import { sendEmail } from '../services/email.service.js';
+import { issueRefreshSession, revokeRefreshToken, rotateRefreshSession } from '../services/refreshToken.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
-import { renderEmailHtml } from '../utils/emailTemplates.js';
+import { escapeHtml, renderEmailHtml } from '../utils/emailTemplates.js';
 
 const cookieOptions = getCookieOptions();
 
@@ -69,10 +69,7 @@ export const register = asyncHandler(async (req, res) => {
   });
 
   const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
-  const refreshToken = signRefreshToken(
-    { userId: user._id.toString(), role: user.role },
-    rememberMe,
-  );
+  const refreshToken = await issueRefreshSession(user._id.toString(), user.role, rememberMe);
   createAuthCookies(res, accessToken, refreshToken, rememberMe);
 
   const verificationUrl = `${env.clientUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
@@ -81,7 +78,7 @@ export const register = asyncHandler(async (req, res) => {
     subject: 'Verify your SnackCo email',
     html: renderEmailHtml(
       'Verify your email',
-      `<p>Hi ${name},</p><p>Click <a href="${verificationUrl}">here</a> to verify your email address.</p>`,
+      `<p>Hi ${escapeHtml(name)},</p><p>Click <a href="${verificationUrl}">here</a> to verify your email address.</p>`,
     ),
     text: `Hi ${name}, verify your email: ${verificationUrl}`,
   });
@@ -116,16 +113,18 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
-  const refreshToken = signRefreshToken(
-    { userId: user._id.toString(), role: user.role },
-    rememberMe,
-  );
+  const refreshToken = await issueRefreshSession(user._id.toString(), user.role, rememberMe);
   createAuthCookies(res, accessToken, refreshToken, rememberMe);
 
   res.status(StatusCodes.OK).json(createApiResponse('Login successful.', { user: mapUser(user) }));
 });
 
-export const logout = asyncHandler(async (_req, res) => {
+export const logout = asyncHandler(async (req, res) => {
+  const refreshToken =
+    req.cookies?.refreshToken ?? req.headers.authorization?.replace('Bearer ', '');
+  if (refreshToken) {
+    await revokeRefreshToken(refreshToken);
+  }
   clearAuthCookies(res);
   res.status(StatusCodes.OK).json(createApiResponse('Logged out successfully.'));
 });
@@ -137,7 +136,13 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new AppError('Refresh token is required.', StatusCodes.UNAUTHORIZED);
   }
 
-  const payload = verifyRefreshToken(refreshToken);
+  let payload;
+  try {
+    payload = verifyRefreshToken(refreshToken);
+  } catch {
+    clearAuthCookies(res);
+    throw new AppError('Invalid or expired session. Please log in again.', StatusCodes.UNAUTHORIZED);
+  }
 
   const user = await UserModel.findById(payload.userId);
   if (!user) {
@@ -148,9 +153,24 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new AppError('Your account has been blocked.', StatusCodes.FORBIDDEN);
   }
 
+  const rotation = await rotateRefreshSession(
+    refreshToken,
+    payload.userId,
+    payload.role,
+    payload.family,
+    payload.rememberMe,
+  );
+
+  if ('reused' in rotation) {
+    clearAuthCookies(res);
+    throw new AppError(
+      'This session was already used elsewhere. Please log in again for your security.',
+      StatusCodes.UNAUTHORIZED,
+    );
+  }
+
   const accessToken = signAccessToken({ userId: payload.userId, role: payload.role });
-  const nextRefreshToken = signRefreshToken({ userId: payload.userId, role: payload.role });
-  createAuthCookies(res, accessToken, nextRefreshToken);
+  createAuthCookies(res, accessToken, rotation.token, payload.rememberMe);
 
   res.status(StatusCodes.OK).json(createApiResponse('Token refreshed successfully.'));
 });
@@ -265,10 +285,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   await user.save();
 
   const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
-  const refreshToken = signRefreshToken(
-    { userId: user._id.toString(), role: user.role },
-    rememberMe,
-  );
+  const refreshToken = await issueRefreshSession(user._id.toString(), user.role, rememberMe);
   createAuthCookies(res, accessToken, refreshToken, rememberMe);
 
   res
@@ -328,10 +345,7 @@ export const verifyOtp = asyncHandler(async (req, res) => {
   await user.save();
 
   const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
-  const refreshToken = signRefreshToken(
-    { userId: user._id.toString(), role: user.role },
-    rememberMe,
-  );
+  const refreshToken = await issueRefreshSession(user._id.toString(), user.role, rememberMe);
   createAuthCookies(res, accessToken, refreshToken, rememberMe);
 
   res
@@ -351,7 +365,7 @@ export const googleAuthCallback = asyncHandler(async (req, res) => {
   }
 
   const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
-  const refreshToken = signRefreshToken({ userId: user._id.toString(), role: user.role });
+  const refreshToken = await issueRefreshSession(user._id.toString(), user.role);
   createAuthCookies(res, accessToken, refreshToken);
   res.redirect(`${env.clientUrl}/?auth=google-success`);
 });

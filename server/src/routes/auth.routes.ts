@@ -16,6 +16,13 @@ import {
   verifyOtp,
 } from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/authMiddleware.js';
+import {
+  loginLimiter,
+  otpRequestLimiter,
+  otpVerifyLimiter,
+  passwordResetLimiter,
+  registerLimiter,
+} from '../middleware/rateLimiters.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 import {
   forgotPasswordSchema,
@@ -30,8 +37,8 @@ import {
 
 export const authRoutes = Router();
 
-authRoutes.post('/register', validateRequest({ body: registerSchema }), register);
-authRoutes.post('/login', validateRequest({ body: loginSchema }), login);
+authRoutes.post('/register', registerLimiter, validateRequest({ body: registerSchema }), register);
+authRoutes.post('/login', loginLimiter, validateRequest({ body: loginSchema }), login);
 authRoutes.post('/logout', logout);
 authRoutes.post('/refresh', refreshAccessToken);
 authRoutes.get('/me', authenticate, getCurrentUser);
@@ -43,12 +50,13 @@ authRoutes.post(
 );
 authRoutes.post(
   '/forgot-password',
+  passwordResetLimiter,
   validateRequest({ body: forgotPasswordSchema }),
   forgotPassword,
 );
 authRoutes.post('/reset-password', validateRequest({ body: resetPasswordSchema }), resetPassword);
-authRoutes.post('/otp/request', validateRequest({ body: requestOtpSchema }), requestOtp);
-authRoutes.post('/otp/verify', validateRequest({ body: verifyOtpSchema }), verifyOtp);
+authRoutes.post('/otp/request', otpRequestLimiter, validateRequest({ body: requestOtpSchema }), requestOtp);
+authRoutes.post('/otp/verify', otpVerifyLimiter, validateRequest({ body: verifyOtpSchema }), verifyOtp);
 authRoutes.get(
   '/google',
   passport.authenticate('google', { scope: ['profile', 'email'], session: false }),

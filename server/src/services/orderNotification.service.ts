@@ -1,5 +1,5 @@
 import type { OrderStatus } from '../constants/orderStatus.js';
-import { renderEmailHtml } from '../utils/emailTemplates.js';
+import { escapeHtml, renderEmailHtml } from '../utils/emailTemplates.js';
 import { sendEmail } from './email.service.js';
 
 type NotifiableOrder = {
@@ -20,7 +20,7 @@ export async function sendOrderConfirmationEmail(order: NotifiableOrder) {
     text: `Hi ${name}, your order ${order.orderNumber} is confirmed. Total: ₹${order.total}.`,
     html: renderEmailHtml(
       'Order confirmed',
-      `<p>Hi ${name},</p><p>Your order <strong>${order.orderNumber}</strong> is confirmed and being prepared.</p><p>Total: <strong>₹${order.total}</strong></p>`,
+      `<p>Hi ${escapeHtml(name)},</p><p>Your order <strong>${order.orderNumber}</strong> is confirmed and being prepared.</p><p>Total: <strong>₹${order.total}</strong></p>`,
     ),
   });
 }

@@ -14,7 +14,7 @@ const userSchema = new Schema(
     password: { type: String, select: false },
     avatar: { type: String },
     phone: { type: String },
-    addresses: { type: Array, default: [] },
+    addresses: { type: [String], default: [] },
     wishlist: { type: [Schema.Types.ObjectId], ref: 'Product', default: [] },
     coupons: { type: Array, default: [] },
     wallet: { type: Object, default: { balance: 0, currency: 'INR' } },
