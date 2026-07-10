@@ -19,6 +19,9 @@ export const baseApi = createApi({
     'Wishlist',
     'Coupon',
     'Category',
+    'SubCategory',
+    'Brand',
+    'Tag',
   ],
   endpoints: () => ({}),
 });

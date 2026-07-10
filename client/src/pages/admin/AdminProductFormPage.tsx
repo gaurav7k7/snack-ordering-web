@@ -12,6 +12,7 @@ import {
   useGetProductByIdForAdminQuery,
   useUpdateProductMutation,
 } from '@/redux/api/adminProductsApi';
+import { useGetBrandsQuery, useGetSubCategoriesQuery, useGetTagsQuery } from '@/redux/api/taxonomyApi';
 import type { ProductFormInput } from '@/types/product';
 
 const EMPTY_FORM: ProductFormInput = {
@@ -72,6 +73,12 @@ export default function AdminProductFormPage() {
   const { data: categoriesData } = useGetCategoriesQuery({ includeInactive: true });
   const categories = categoriesData?.data?.categories ?? [];
 
+  const { data: brandsData } = useGetBrandsQuery({ includeInactive: true });
+  const brands = brandsData?.data?.brands ?? [];
+
+  const { data: tagsData } = useGetTagsQuery({ includeInactive: true });
+  const tags = tagsData?.data?.tags ?? [];
+
   const { data: existingData, isLoading: isLoadingExisting } = useGetProductByIdForAdminQuery(id ?? '', {
     skip: !isEditMode,
   });
@@ -83,6 +90,12 @@ export default function AdminProductFormPage() {
   const [slugTouched, setSlugTouched] = useState(false);
   const [ingredientsInput, setIngredientsInput] = useState('');
   const [tagsInput, setTagsInput] = useState('');
+
+  const { data: subCategoriesData } = useGetSubCategoriesQuery(
+    { category: form.category, includeInactive: true },
+    { skip: !form.category },
+  );
+  const subCategories = subCategoriesData?.data?.subCategories ?? [];
 
   useEffect(() => {
     const product = existingData?.data?.product;
@@ -218,12 +231,25 @@ export default function AdminProductFormPage() {
             </label>
             <label className="grid gap-1.5">
               <FieldLabel>Brand</FieldLabel>
-              <input
+              <select
                 required
                 value={form.brand}
                 onChange={(event) => setForm((current) => ({ ...current, brand: event.target.value }))}
                 className={inputClass}
-              />
+              >
+                <option value="">Select a brand</option>
+                {form.brand && !brands.some((brand) => brand.name === form.brand) && (
+                  <option value={form.brand}>{form.brand} (not in brand list)</option>
+                )}
+                {brands.map((brand) => (
+                  <option key={brand._id} value={brand.name}>
+                    {brand.name}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-muted-foreground">
+                Manage brands under Categories → Brands.
+              </span>
             </label>
             <label className="grid gap-1.5">
               <FieldLabel>SKU</FieldLabel>
@@ -239,7 +265,9 @@ export default function AdminProductFormPage() {
               <select
                 required
                 value={form.category}
-                onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, category: event.target.value, subCategory: '' }))
+                }
                 className={inputClass}
               >
                 <option value="">Select a category</option>
@@ -252,12 +280,26 @@ export default function AdminProductFormPage() {
             </label>
             <label className="grid gap-1.5">
               <FieldLabel>Sub-category</FieldLabel>
-              <input
+              <select
                 required
+                disabled={!form.category}
                 value={form.subCategory}
                 onChange={(event) => setForm((current) => ({ ...current, subCategory: event.target.value }))}
                 className={inputClass}
-              />
+              >
+                <option value="">{form.category ? 'Select a subcategory' : 'Select a category first'}</option>
+                {form.subCategory && !subCategories.some((sub) => sub.name === form.subCategory) && (
+                  <option value={form.subCategory}>{form.subCategory} (not in subcategory list)</option>
+                )}
+                {subCategories.map((subCategory) => (
+                  <option key={subCategory._id} value={subCategory.name}>
+                    {subCategory.name}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-muted-foreground">
+                Manage subcategories under Categories → Subcategories.
+              </span>
             </label>
           </div>
           <label className="mt-4 grid gap-1.5">
@@ -284,11 +326,20 @@ export default function AdminProductFormPage() {
             <label className="grid gap-1.5">
               <FieldLabel>Tags (comma-separated)</FieldLabel>
               <input
+                list="taxonomy-tag-options"
                 value={tagsInput}
                 onChange={(event) => setTagsInput(event.target.value)}
                 placeholder="chips, spicy, best seller"
                 className={inputClass}
               />
+              <datalist id="taxonomy-tag-options">
+                {tags.map((tag) => (
+                  <option key={tag._id} value={tag.name} />
+                ))}
+              </datalist>
+              <span className="text-xs text-muted-foreground">
+                Manage tags under Categories → Tags.
+              </span>
             </label>
           </div>
         </div>
