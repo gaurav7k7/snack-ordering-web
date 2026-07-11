@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { AdminSearchForm } from '@/components/admin/AdminSearchForm';
 import { StatusPill } from '@/components/admin/StatusPill';
 import { RefreshingIndicator, TableStateRow } from '@/components/admin/TableStateRow';
+import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
 import { SearchPagination } from '@/components/customer/SearchPagination';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
@@ -126,12 +127,12 @@ export default function AdminCustomersPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <TableStateRow colSpan={5}>Loading customers…</TableStateRow>
+              <TableSkeletonRows columns={5} />
             ) : customers.length === 0 ? (
               <TableStateRow colSpan={5}>No customers match this filter.</TableStateRow>
             ) : (
               customers.map((customer) => (
-                <tr key={customer._id} className="border-b border-border/40 last:border-0">
+                <tr key={customer._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
                   <td className="px-4 py-3">
                     <Link
                       to={ROUTES.adminCustomerDetail(customer._id)}

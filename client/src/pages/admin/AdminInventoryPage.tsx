@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 
+import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
 import { SearchPagination } from '@/components/customer/SearchPagination';
 import { useGetAllProductsForAdminQuery, useUpdateProductMutation } from '@/redux/api/adminProductsApi';
 import { cldUrl } from '@/utils/cloudinaryImage';
@@ -101,11 +102,7 @@ export default function AdminInventoryPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  Loading inventory…
-                </td>
-              </tr>
+              <TableSkeletonRows columns={5} />
             ) : products.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
@@ -118,7 +115,7 @@ export default function AdminInventoryPage() {
                 const isLowStock = !isOutOfStock && product.availableQuantity <= 10;
 
                 return (
-                  <tr key={product._id} className="border-b border-border/40 last:border-0">
+                  <tr key={product._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img src={cldUrl(product.images?.[0]?.url, 'avatar')} alt="" loading="lazy" className="h-10 w-10 rounded-lg object-cover" />

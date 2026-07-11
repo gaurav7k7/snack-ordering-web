@@ -13,7 +13,9 @@ const REVENUE_EXCLUDED_STATUSES: string[] = [
   ORDER_STATUS.refunded,
 ];
 const RECENT_LIST_LIMIT = 8;
-const SALES_GRAPH_DAYS = 30;
+export const SALES_GRAPH_DAY_OPTIONS = [7, 30, 90] as const;
+export type SalesGraphDays = (typeof SALES_GRAPH_DAY_OPTIONS)[number];
+const DEFAULT_SALES_GRAPH_DAYS: SalesGraphDays = 30;
 const TOP_PRODUCTS_LIMIT = 5;
 
 // All "start of X" boundaries are computed in UTC to match how order
@@ -48,14 +50,14 @@ async function sumRevenue(createdAfter?: Date) {
   return result[0]?.total ?? 0;
 }
 
-async function getSalesGraph() {
+async function getSalesGraph(salesGraphDays: SalesGraphDays) {
   // MongoDB's $dateToString buckets by UTC calendar date by default, so every
   // boundary here must be computed in UTC too (Date.UTC / getUTC*) — mixing in
   // local-time Date methods (setDate/setHours) shifts the whole window by a day
   // whenever the server's local timezone isn't UTC.
   const now = new Date();
   const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  const startUtc = todayUtc - (SALES_GRAPH_DAYS - 1) * 86_400_000;
+  const startUtc = todayUtc - (salesGraphDays - 1) * 86_400_000;
 
   const results = await OrderModel.aggregate([
     { $match: { createdAt: { $gte: new Date(startUtc) }, status: { $nin: REVENUE_EXCLUDED_STATUSES } } },
@@ -71,7 +73,7 @@ async function getSalesGraph() {
   const byDate = new Map(results.map((entry) => [entry._id, entry]));
   const days: Array<{ date: string; revenue: number; orders: number }> = [];
 
-  for (let i = 0; i < SALES_GRAPH_DAYS; i += 1) {
+  for (let i = 0; i < salesGraphDays; i += 1) {
     const key = new Date(startUtc + i * 86_400_000).toISOString().slice(0, 10);
     const entry = byDate.get(key);
     days.push({ date: key, revenue: entry?.revenue ?? 0, orders: entry?.orders ?? 0 });
@@ -137,7 +139,7 @@ function buildNotifications(context: {
   return notifications;
 }
 
-export async function getDashboardStats() {
+export async function getDashboardStats(salesGraphDays: SalesGraphDays = DEFAULT_SALES_GRAPH_DAYS) {
   const today = startOfToday();
   const monthStart = startOfMonth();
   const yearStart = startOfYear();
@@ -197,7 +199,7 @@ export async function getDashboardStats() {
         },
       },
     ]),
-    getSalesGraph(),
+    getSalesGraph(salesGraphDays),
     getTopSellingProducts(),
     OrderModel.find()
       .sort({ createdAt: -1 })

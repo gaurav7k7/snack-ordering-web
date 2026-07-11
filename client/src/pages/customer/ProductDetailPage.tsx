@@ -1,9 +1,11 @@
 import { Heart, Share2, ShieldCheck, ShoppingBag, Star, Zap } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import toast from 'react-hot-toast';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
+import { FloatingAddToCartBar } from '@/components/customer/FloatingAddToCartBar';
+import { ProductDetailSkeleton } from '@/components/customer/ProductDetailSkeleton';
 import { ProductImageGallery } from '@/components/customer/ProductImageGallery';
 import { ProductInfoPanels } from '@/components/customer/ProductInfoPanels';
 import { ProductShelf } from '@/components/customer/ProductShelf';
@@ -24,6 +26,8 @@ import { formatCurrency } from '@/utils/formatCurrency';
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
+  const [isPriceCardVisible, setIsPriceCardVisible] = useState(true);
+  const priceCardRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { isWishlisted, toggleWishlist, isMutating: isWishlistMutating } = useWishlist();
@@ -31,6 +35,18 @@ export default function ProductDetailPage() {
   const { data, isLoading } = useGetProductBySlugQuery(slug ?? '', { skip: !slug });
   const apiProduct = data?.data?.product;
   const product = useMemo(() => (apiProduct ? mapApiProductToHomeProduct(apiProduct) : null), [apiProduct]);
+
+  useEffect(() => {
+    const target = priceCardRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(([entry]) => setIsPriceCardVisible(entry.isIntersecting), {
+      rootMargin: '-64px 0px 0px 0px',
+    });
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [product]);
 
   const recentlyViewedIds = useRecentlyViewed(product?.id ?? '');
   const { data: recentlyViewedData } = useSearchProductsQuery(
@@ -55,7 +71,11 @@ export default function ProductDetailPage() {
   }
 
   if (isLoading) {
-    return <main className="container py-24 text-center text-sm text-muted-foreground">Loading product…</main>;
+    return (
+      <main>
+        <ProductDetailSkeleton />
+      </main>
+    );
   }
 
   if (!product) {
@@ -172,7 +192,7 @@ export default function ProductDetailPage() {
             <span className="text-sm text-muted-foreground">SKU: {product.sku}</span>
           </div>
 
-          <div className="mt-6 rounded-lg border bg-card p-5">
+          <div ref={priceCardRef} className="mt-6 rounded-lg border bg-card p-5">
             <div className="flex flex-wrap items-end gap-3">
               <span className="text-4xl font-black">{formatCurrency(product.offerPrice)}</span>
               <span className="pb-1 text-lg text-muted-foreground line-through">
@@ -287,6 +307,15 @@ export default function ProductDetailPage() {
           products={recentlyViewedProducts}
         />
       ) : null}
+
+      <FloatingAddToCartBar
+        isVisible={!isPriceCardVisible && !isOutOfStock}
+        name={product.name}
+        image={product.image}
+        price={product.offerPrice}
+        disabled={isOutOfStock}
+        onAddToCart={handleAddToCart}
+      />
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -16,18 +17,29 @@ export function MiniCart({ isOpen, onClose }: MiniCartProps) {
   const dispatch = useAppDispatch();
   const items = useAppSelector((state) => state.cart.items);
   const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
-
-  if (!isOpen) return null;
+  const prefersReducedMotion = useReducedMotion();
 
   return (
-    <div className="fixed inset-0 z-50">
-      <button
-        type="button"
-        className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
-        aria-label="Close mini cart"
-        onClick={onClose}
-      />
-      <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-background shadow-2xl">
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50">
+          <motion.button
+            type="button"
+            className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
+            aria-label="Close mini cart"
+            onClick={onClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
+          <motion.aside
+            className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-background shadow-2xl"
+            initial={prefersReducedMotion ? { opacity: 0 } : { x: '100%' }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { x: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { x: '100%' }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          >
         <div className="flex items-center justify-between border-b p-5">
           <div className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5" />
@@ -112,16 +124,18 @@ export function MiniCart({ isOpen, onClose }: MiniCartProps) {
           </div>
         </div>
 
-        <div className="border-t p-5">
-          <div className="mb-4 flex items-center justify-between font-semibold">
-            <span>Subtotal</span>
-            <span>{formatCurrency(subtotal)}</span>
-          </div>
-          <Button asChild className="w-full" size="lg" onClick={onClose}>
-            <Link to="/cart">Checkout</Link>
-          </Button>
+            <div className="border-t p-5">
+              <div className="mb-4 flex items-center justify-between font-semibold">
+                <span>Subtotal</span>
+                <span>{formatCurrency(subtotal)}</span>
+              </div>
+              <Button asChild className="w-full" size="lg" onClick={onClose}>
+                <Link to="/cart">Checkout</Link>
+              </Button>
+            </div>
+          </motion.aside>
         </div>
-      </aside>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }

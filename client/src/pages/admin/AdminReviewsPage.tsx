@@ -8,6 +8,7 @@ import { AdminSearchForm } from '@/components/admin/AdminSearchForm';
 import { StatusPill } from '@/components/admin/StatusPill';
 import { RefreshingIndicator } from '@/components/admin/TableStateRow';
 import { SearchPagination } from '@/components/customer/SearchPagination';
+import { Skeleton } from '@/components/shared/Skeleton';
 import { Button } from '@/components/ui/button';
 import { useDeleteReviewMutation, useModerateReviewMutation } from '@/redux/api/reviewsApi';
 import { useDismissReportsMutation, useGetAllReviewsForAdminQuery } from '@/redux/api/reviewAdminApi';
@@ -128,9 +129,20 @@ export default function AdminReviewsPage() {
 
       <div className="space-y-4">
         {isLoading ? (
-          <p className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-            Loading reviews…
-          </p>
+          Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-12 w-12 shrink-0 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-40" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+              <Skeleton className="mt-4 h-4 w-2/3" />
+              <Skeleton className="mt-2 h-3 w-full" />
+              <Skeleton className="mt-1.5 h-3 w-5/6" />
+            </div>
+          ))
         ) : reviews.length === 0 ? (
           <p className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
             No reviews match this filter.

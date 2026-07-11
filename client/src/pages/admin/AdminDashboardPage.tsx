@@ -19,6 +19,7 @@ import {
   Users,
   XCircle,
 } from 'lucide-react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 import { DashboardCard } from '@/components/admin/DashboardCard';
@@ -28,7 +29,8 @@ import { OrderStatusChart } from '@/components/admin/OrderStatusChart';
 import { QuickActions } from '@/components/admin/QuickActions';
 import { RecentCustomersList } from '@/components/admin/RecentCustomersList';
 import { SalesChart } from '@/components/admin/SalesChart';
-import { StatCard } from '@/components/admin/StatCard';
+import { StatCard, StatCardSkeleton } from '@/components/admin/StatCard';
+import { Skeleton } from '@/components/shared/Skeleton';
 import { TopSellingProducts } from '@/components/admin/TopSellingProducts';
 import { TrafficPlaceholder } from '@/components/admin/TrafficPlaceholder';
 import { useGetDashboardQuery } from '@/redux/api/dashboardApi';
@@ -41,8 +43,11 @@ function SectionLabel({ children }: { children: string }) {
   );
 }
 
+const SALES_RANGE_OPTIONS = [7, 30, 90] as const;
+
 export default function AdminDashboardPage() {
-  const { data, isLoading, isError } = useGetDashboardQuery();
+  const [salesRangeDays, setSalesRangeDays] = useState<(typeof SALES_RANGE_OPTIONS)[number]>(30);
+  const { data, isLoading, isError } = useGetDashboardQuery({ days: salesRangeDays });
   const stats = data?.data;
 
   return (
@@ -59,7 +64,17 @@ export default function AdminDashboardPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading dashboard…</p>
+        <div className="space-y-8">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <StatCardSkeleton key={index} />
+            ))}
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Skeleton className="h-72 rounded-2xl" />
+            <Skeleton className="h-72 rounded-2xl" />
+          </div>
+        </div>
       ) : isError || !stats ? (
         <p className="text-sm text-destructive">Unable to load dashboard data.</p>
       ) : (
@@ -131,9 +146,27 @@ export default function AdminDashboardPage() {
 
           <div className="grid gap-6 xl:grid-cols-3">
             <DashboardCard
-              title="Sales, last 30 days"
+              title={`Sales, last ${salesRangeDays} days`}
               description="Revenue and order volume for eligible (non-cancelled, non-refunded) orders"
               className="xl:col-span-2"
+              action={
+                <div className="flex gap-1 rounded-full border border-border/70 bg-background p-1">
+                  {SALES_RANGE_OPTIONS.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setSalesRangeDays(option)}
+                      className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                        salesRangeDays === option
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {option}D
+                    </button>
+                  ))}
+                </div>
+              }
             >
               <SalesChart data={stats.salesGraph} />
             </DashboardCard>

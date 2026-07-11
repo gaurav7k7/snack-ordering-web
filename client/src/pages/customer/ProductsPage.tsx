@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router-dom';
@@ -24,6 +25,7 @@ function getUniqueValues(items: SearchProduct[], field: keyof SearchProduct) {
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
+  const prefersReducedMotion = useReducedMotion();
 
   const selectedCategory = searchParams.get('category') ?? '';
   const selectedBrand = searchParams.get('brand') ?? '';
@@ -208,11 +210,7 @@ export default function ProductsPage() {
 
           <div>
             {isFetching ? (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <ProductGridSkeleton key={index} />
-                ))}
-              </div>
+              <ProductGridSkeleton />
             ) : products.length === 0 ? (
               <div className="rounded-lg border bg-card p-8 text-center">
                 <p className="text-lg font-semibold">No products match your filters.</p>
@@ -221,11 +219,29 @@ export default function ProductsPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <motion.div
+                key={`${pagination.page}-${products.length}`}
+                initial="hidden"
+                animate="show"
+                variants={{
+                  hidden: {},
+                  show: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.05 } },
+                }}
+                className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              >
                 {products.map((product) => (
-                  <ProductCard key={product.slug} product={product} />
+                  <motion.div
+                    key={product.slug}
+                    variants={{
+                      hidden: { opacity: 0, y: 16 },
+                      show: { opacity: 1, y: 0 },
+                    }}
+                    transition={{ duration: prefersReducedMotion ? 0 : 0.35, ease: 'easeOut' }}
+                  >
+                    <ProductCard product={product} />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
 
             <SearchPagination

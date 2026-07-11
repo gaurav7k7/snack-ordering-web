@@ -49,6 +49,18 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        soft: '0 2px 8px -2px rgb(0 0 0 / 0.06), 0 8px 30px -12px rgb(0 0 0 / 0.12)',
+        'soft-lg': '0 4px 16px -4px rgb(0 0 0 / 0.08), 0 16px 40px -16px rgb(0 0 0 / 0.18)',
+        glow: '0 0 0 1px hsl(var(--primary) / 0.15), 0 8px 24px -8px hsl(var(--primary) / 0.35)',
+      },
+      backgroundImage: {
+        'gradient-brand': 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))',
+        'gradient-brand-soft': 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--secondary) / 0.12))',
+      },
     },
   },
   plugins: [animate],

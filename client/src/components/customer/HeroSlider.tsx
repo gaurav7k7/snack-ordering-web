@@ -50,7 +50,7 @@ export function HeroSlider({ slides }: HeroSliderProps) {
                     {slide.description}
                   </p>
                   <div className="mt-8 flex flex-wrap gap-3">
-                    <Button asChild size="lg">
+                    <Button asChild size="lg" variant="gradient">
                       <Link to={slide.href}>
                         {slide.ctaLabel}
                         <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />

@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 
 import { AdminSearchForm } from '@/components/admin/AdminSearchForm';
 import { RefreshingIndicator, TableStateRow } from '@/components/admin/TableStateRow';
+import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
 import { OrderStatusBadge, STATUS_LABELS } from '@/components/orders/OrderStatusBadge';
 import { SearchPagination } from '@/components/customer/SearchPagination';
 import { ROUTES } from '@/constants/routes';
@@ -115,14 +116,14 @@ export default function AdminOrdersPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <TableStateRow colSpan={6}>Loading orders…</TableStateRow>
+              <TableSkeletonRows columns={6} />
             ) : orders.length === 0 ? (
               <TableStateRow colSpan={6}>No orders match this filter.</TableStateRow>
             ) : (
               orders.map((order: any) => (
                 <tr
                   key={order._id}
-                  className={`border-b border-border/40 last:border-0 ${
+                  className={`border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50 ${
                     order._id === highlightId ? 'bg-primary/5' : ''
                   }`}
                 >

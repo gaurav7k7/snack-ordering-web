@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 
 import { CouponUsageModal } from '@/components/admin/CouponUsageModal';
+import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
 import { Button } from '@/components/ui/button';
 import {
   useCreateCouponAdminMutation,
@@ -285,11 +286,7 @@ export default function AdminCouponsPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                  Loading coupons…
-                </td>
-              </tr>
+              <TableSkeletonRows columns={7} />
             ) : coupons.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
@@ -298,7 +295,7 @@ export default function AdminCouponsPage() {
               </tr>
             ) : (
               coupons.map((coupon) => (
-                <tr key={coupon._id} className="border-b border-border/40 last:border-0">
+                <tr key={coupon._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
                   <td className="px-4 py-3">
                     <p className="flex items-center gap-1.5 font-semibold">
                       {coupon.code}

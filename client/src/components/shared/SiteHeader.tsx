@@ -1,14 +1,16 @@
 import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAppSelector } from '@/hooks/redux';
 import { useWishlist } from '@/hooks/useWishlist';
 
 import { Button } from '@/components/ui/button';
+import { CountBadge } from '@/components/shared/CountBadge';
 import { MiniCart } from '@/components/shared/MiniCart';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { ROUTES } from '@/constants/routes';
+import { cn } from '@/utils/cn';
 
 const navItems = [
   { label: 'Shop', href: ROUTES.products },
@@ -22,7 +24,15 @@ export function SiteHeader() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileSearchQuery, setMobileSearchQuery] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const cartItemCount = useAppSelector((state) =>
     state.cart.items.reduce((total, item) => total + item.quantity, 0),
@@ -37,7 +47,12 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-xl">
+      <header
+        className={cn(
+          'sticky top-0 z-40 border-b backdrop-blur-xl transition-shadow duration-300',
+          isScrolled ? 'bg-background/95 shadow-soft' : 'bg-background/90 shadow-none',
+        )}
+      >
         <div className="border-b bg-foreground py-2 text-xs font-medium text-background">
           <div className="container flex items-center justify-between gap-4">
             <span>Free delivery above INR 999</span>
@@ -97,11 +112,7 @@ export function SiteHeader() {
             <Button asChild variant="ghost" size="icon" aria-label="Wishlist" className="relative">
               <Link to={isAuthenticated ? ROUTES.wishlist : ROUTES.login}>
                 <Heart className="h-5 w-5" />
-                {wishlistCount > 0 ? (
-                  <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                    {wishlistCount}
-                  </span>
-                ) : null}
+                <CountBadge count={wishlistCount} />
               </Link>
             </Button>
             <Button
@@ -112,11 +123,7 @@ export function SiteHeader() {
               onClick={() => setIsCartOpen(true)}
             >
               <ShoppingBag className="h-5 w-5" />
-              {cartItemCount > 0 ? (
-                <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                  {cartItemCount}
-                </span>
-              ) : null}
+              <CountBadge count={cartItemCount} />
             </Button>
             <Button asChild variant="ghost" size="icon" aria-label="Profile">
               <Link to={isAuthenticated ? ROUTES.profile : ROUTES.login}>

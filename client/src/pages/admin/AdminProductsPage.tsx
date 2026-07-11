@@ -15,6 +15,7 @@ import { Link } from 'react-router-dom';
 
 import { StatusPill } from '@/components/admin/StatusPill';
 import { RefreshingIndicator, TableStateRow } from '@/components/admin/TableStateRow';
+import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
 import { SearchPagination } from '@/components/customer/SearchPagination';
 import { Button } from '@/components/ui/button';
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
@@ -232,7 +233,7 @@ export default function AdminProductsPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <TableStateRow colSpan={7}>Loading products…</TableStateRow>
+              <TableSkeletonRows columns={7} />
             ) : products.length === 0 ? (
               <TableStateRow colSpan={7}>No products match this filter.</TableStateRow>
             ) : (
@@ -243,7 +244,7 @@ export default function AdminProductsPage() {
                   typeof product.category === 'string' ? product.category : product.category?.name;
 
                 return (
-                  <tr key={product._id} className="border-b border-border/40 last:border-0">
+                  <tr key={product._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img

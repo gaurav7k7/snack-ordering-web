@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 
 import { StatusPill } from '@/components/admin/StatusPill';
 import { TableStateRow } from '@/components/admin/TableStateRow';
+import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
 import { Button } from '@/components/ui/button';
 import {
   useCreateCategoryMutation,
@@ -120,12 +121,12 @@ function CategoriesTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <TableStateRow colSpan={5}>Loading categories…</TableStateRow>
+              <TableSkeletonRows columns={5} />
             ) : categories.length === 0 ? (
               <TableStateRow colSpan={5}>No categories yet. Add your first one above.</TableStateRow>
             ) : (
               categories.map((category) => (
-                <tr key={category._id} className="border-b border-border/40 last:border-0">
+                <tr key={category._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
                   <td className="px-4 py-3 font-semibold">{category.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{category.slug}</td>
                   <td className="px-4 py-3 text-muted-foreground">{category.description || '—'}</td>
@@ -246,12 +247,12 @@ function SubCategoriesTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <TableStateRow colSpan={5}>Loading subcategories…</TableStateRow>
+              <TableSkeletonRows columns={5} />
             ) : subCategories.length === 0 ? (
               <TableStateRow colSpan={5}>No subcategories yet. Add your first one above.</TableStateRow>
             ) : (
               subCategories.map((subCategory) => (
-                <tr key={subCategory._id} className="border-b border-border/40 last:border-0">
+                <tr key={subCategory._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
                   <td className="px-4 py-3 font-semibold">{subCategory.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {typeof subCategory.category === 'object' ? subCategory.category.name : '—'}
@@ -372,12 +373,12 @@ function BrandsTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <TableStateRow colSpan={5}>Loading brands…</TableStateRow>
+              <TableSkeletonRows columns={5} />
             ) : brands.length === 0 ? (
               <TableStateRow colSpan={5}>No brands yet. Add your first one above.</TableStateRow>
             ) : (
               brands.map((brand) => (
-                <tr key={brand._id} className="border-b border-border/40 last:border-0">
+                <tr key={brand._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
                   <td className="px-4 py-3 font-semibold">{brand.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{brand.slug}</td>
                   <td className="px-4 py-3 text-muted-foreground">{brand.description || '—'}</td>
@@ -484,12 +485,12 @@ function TagsTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <TableStateRow colSpan={4}>Loading tags…</TableStateRow>
+              <TableSkeletonRows columns={4} />
             ) : tags.length === 0 ? (
               <TableStateRow colSpan={4}>No tags yet. Add your first one above.</TableStateRow>
             ) : (
               tags.map((tag) => (
-                <tr key={tag._id} className="border-b border-border/40 last:border-0">
+                <tr key={tag._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
                   <td className="px-4 py-3 font-semibold">{tag.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{tag.slug}</td>
                   <td className="px-4 py-3">
