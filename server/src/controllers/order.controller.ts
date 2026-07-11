@@ -141,29 +141,6 @@ export const createOrder = asyncHandler(async (req, res) => {
     isGuest = false,
   } = req.body;
 
-  if (!Array.isArray(items) || items.length === 0) {
-    throw new AppError('Your cart is empty.', StatusCodes.BAD_REQUEST);
-  }
-
-  const invalidItem = items.find(
-    (item: any) => !item?.productId || !mongoose.Types.ObjectId.isValid(item.productId),
-  );
-  if (invalidItem) {
-    throw new AppError(
-      `"${invalidItem?.name ?? 'An item'}" in your cart is out of date. Please remove it and add it again.`,
-      StatusCodes.BAD_REQUEST,
-    );
-  }
-
-  if (
-    !shippingAddress?.line1 ||
-    !shippingAddress?.city ||
-    !shippingAddress?.state ||
-    !shippingAddress?.postalCode
-  ) {
-    throw new AppError('Please provide a complete shipping address.', StatusCodes.BAD_REQUEST);
-  }
-
   const userId = req.user?.userId;
   const user = userId ? await UserModel.findById(userId) : null;
   const effectiveName = guestName || user?.name || 'Guest Customer';
@@ -434,7 +411,7 @@ export const getOrderById = asyncHandler(async (req, res) => {
 
 export const cancelOrder = asyncHandler(async (req, res) => {
   const order = await loadOwnedOrder(req.params.id, req.user?.userId);
-  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+  const reason = req.body.reason ?? '';
 
   await performCancellation(order, reason, 'customer');
 
@@ -443,14 +420,10 @@ export const cancelOrder = asyncHandler(async (req, res) => {
 
 export const requestReturn = asyncHandler(async (req, res) => {
   const order = await loadOwnedOrder(req.params.id, req.user?.userId);
-  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+  const { reason } = req.body;
 
   if (order.status !== ORDER_STATUS.delivered) {
     throw new AppError('Only delivered orders are eligible for a return.', StatusCodes.BAD_REQUEST);
-  }
-
-  if (!reason) {
-    throw new AppError('Please tell us why you want to return this order.', StatusCodes.BAD_REQUEST);
   }
 
   const deliveredAt = order.deliveredAt ?? order.updatedAt ?? order.createdAt;
@@ -483,14 +456,8 @@ export const requestReturn = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(createApiResponse('Return request submitted.', { order }));
 });
 
-const ADMIN_SETTABLE_STATUSES = new Set<string>(Object.values(ORDER_STATUS));
-
 export const updateOrderStatus = asyncHandler(async (req, res) => {
-  const { status, note } = req.body ?? {};
-
-  if (!status || !ADMIN_SETTABLE_STATUSES.has(status)) {
-    throw new AppError('A valid order status is required.', StatusCodes.BAD_REQUEST);
-  }
+  const { status, note } = req.body;
 
   const order = await OrderModel.findById(req.params.id);
   if (!order) {
@@ -569,7 +536,7 @@ export const getInvoiceForAdmin = asyncHandler(async (req, res) => {
 
 export const adminCancelOrder = asyncHandler(async (req, res) => {
   const order = await loadOrderById(req.params.id);
-  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+  const reason = req.body.reason ?? '';
 
   await performCancellation(order, reason, 'admin');
 
@@ -578,7 +545,7 @@ export const adminCancelOrder = asyncHandler(async (req, res) => {
 
 export const refundOrder = asyncHandler(async (req, res) => {
   const order = await loadOrderById(req.params.id);
-  const { amount, reason } = req.body ?? {};
+  const { amount, reason } = req.body;
 
   const payment = order.payment as OrderPayment | undefined;
 
@@ -592,7 +559,7 @@ export const refundOrder = asyncHandler(async (req, res) => {
     throw new AppError('This order has already been refunded.', StatusCodes.BAD_REQUEST);
   }
 
-  const refundAmount = Number(amount) > 0 ? Number(amount) : order.total;
+  const refundAmount = amount ?? order.total;
   if (refundAmount > order.total) {
     throw new AppError('Refund amount cannot exceed the order total.', StatusCodes.BAD_REQUEST);
   }
@@ -608,7 +575,7 @@ export const refundOrder = asyncHandler(async (req, res) => {
     );
   }
 
-  const refundReason = typeof reason === 'string' && reason.trim() ? reason.trim() : `Refund of ₹${refundAmount} processed by admin.`;
+  const refundReason = reason || `Refund of ₹${refundAmount} processed by admin.`;
   order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as never;
   order.status = ORDER_STATUS.refunded;
   (order as unknown as { _statusNote?: string })._statusNote = refundReason;
@@ -631,7 +598,7 @@ export const refundOrder = asyncHandler(async (req, res) => {
 
 export const assignDelivery = asyncHandler(async (req, res) => {
   const order = await loadOrderById(req.params.id);
-  const { name, phone, notes, clear } = req.body ?? {};
+  const { name, phone, notes, clear } = req.body;
 
   if (clear === true) {
     order.assignedDelivery = undefined;
@@ -640,14 +607,10 @@ export const assignDelivery = asyncHandler(async (req, res) => {
     return;
   }
 
-  if (typeof name !== 'string' || !name.trim()) {
-    throw new AppError('A delivery partner name is required.', StatusCodes.BAD_REQUEST);
-  }
-
   order.assignedDelivery = {
-    name: name.trim(),
-    phone: typeof phone === 'string' ? phone.trim() : '',
-    notes: typeof notes === 'string' ? notes.trim() : '',
+    name,
+    phone: phone ?? '',
+    notes: notes ?? '',
     assignedAt: new Date(),
   };
   await order.save();

@@ -29,45 +29,6 @@ function mapReview(review: any, requesterId?: string) {
   };
 }
 
-function validateReviewInput(body: Record<string, unknown>, { partial }: { partial: boolean }) {
-  const { rating, title, comment, images } = body;
-  const result: { rating?: number; title?: string; comment?: string; images?: unknown[] } = {};
-
-  if (rating !== undefined || !partial) {
-    const numericRating = Number(rating);
-    if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
-      throw new AppError('Rating must be a whole number between 1 and 5.', StatusCodes.BAD_REQUEST);
-    }
-    result.rating = numericRating;
-  }
-
-  if (title !== undefined || !partial) {
-    if (typeof title !== 'string' || !title.trim()) {
-      throw new AppError('Please provide a review title.', StatusCodes.BAD_REQUEST);
-    }
-    result.title = title.trim();
-  }
-
-  if (comment !== undefined || !partial) {
-    if (typeof comment !== 'string' || !comment.trim()) {
-      throw new AppError('Please provide a review comment.', StatusCodes.BAD_REQUEST);
-    }
-    result.comment = comment.trim();
-  }
-
-  if (images !== undefined) {
-    if (!Array.isArray(images) || images.length > 4) {
-      throw new AppError('You can attach up to 4 images.', StatusCodes.BAD_REQUEST);
-    }
-    if (images.some((image) => !image?.url || !image?.publicId)) {
-      throw new AppError('Each review image needs a url and publicId.', StatusCodes.BAD_REQUEST);
-    }
-    result.images = images;
-  }
-
-  return result;
-}
-
 export const listProductReviews = asyncHandler(async (req, res) => {
   const product = await ProductModel.findById(req.params.productId).select('reviews').lean();
 
@@ -138,7 +99,7 @@ export const createReview = asyncHandler(async (req, res) => {
     throw new AppError('Authentication required.', StatusCodes.UNAUTHORIZED);
   }
 
-  const { rating, title, comment, images } = validateReviewInput(req.body ?? {}, { partial: false });
+  const { rating, title, comment, images } = req.body;
 
   const product = await ProductModel.findById(req.params.productId);
   if (!product) {
@@ -182,7 +143,7 @@ export const createReview = asyncHandler(async (req, res) => {
 
 export const updateReview = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
-  const updates = validateReviewInput(req.body ?? {}, { partial: true });
+  const updates = req.body;
 
   const product = await ProductModel.findById(req.params.productId);
   if (!product) {
@@ -267,11 +228,7 @@ export const toggleHelpfulVote = asyncHandler(async (req, res) => {
 
 export const reportReview = asyncHandler(async (req, res) => {
   const userId = req.user?.userId;
-  const { reason } = req.body ?? {};
-
-  if (typeof reason !== 'string' || !reason.trim()) {
-    throw new AppError('Please provide a reason for reporting this review.', StatusCodes.BAD_REQUEST);
-  }
+  const { reason } = req.body;
 
   const product = await ProductModel.findById(req.params.productId);
   if (!product) {
@@ -291,7 +248,7 @@ export const reportReview = asyncHandler(async (req, res) => {
     throw new AppError('You have already reported this review.', StatusCodes.CONFLICT);
   }
 
-  reports.push({ user: userId, reason: reason.trim() });
+  reports.push({ user: userId, reason });
   review.reports = reports;
   await product.save();
 
@@ -299,10 +256,7 @@ export const reportReview = asyncHandler(async (req, res) => {
 });
 
 export const moderateReview = asyncHandler(async (req, res) => {
-  const { status } = req.body ?? {};
-  if (status !== 'approved' && status !== 'rejected') {
-    throw new AppError('Status must be "approved" or "rejected".', StatusCodes.BAD_REQUEST);
-  }
+  const { status } = req.body;
 
   const product = await ProductModel.findById(req.params.productId);
   if (!product) {

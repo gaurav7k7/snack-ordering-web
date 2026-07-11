@@ -13,6 +13,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { escapeRegex } from '../utils/escapeRegex.js';
 import { renderEmailHtml } from '../utils/emailTemplates.js';
+import { buildPaginationMeta, parsePagination } from '../utils/pagination.js';
 
 function assertManageable(target: { _id: unknown; role?: string | null }, requestingUserId?: string) {
   if (target._id?.toString() === requestingUserId) {
@@ -69,11 +70,12 @@ export const getCustomerReviews = asyncHandler(async (req, res) => {
     throw new AppError('Invalid customer id.', StatusCodes.BAD_REQUEST);
   }
   const customerObjectId = new mongoose.Types.ObjectId(customerId);
+  const pagination = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 
-  // Filtering/sorting happens in the aggregation pipeline (both $match
-  // stages) rather than loading every matching product's full reviews
-  // array into Node and filtering in JS.
-  const reviews = await ProductModel.aggregate([
+  // Filtering/sorting/paging happens in the aggregation pipeline (both
+  // $match stages plus a $facet for count+page) rather than loading every
+  // matching product's full reviews array into Node and filtering in JS.
+  const [result] = await ProductModel.aggregate([
     { $match: { 'reviews.user': customerObjectId } },
     { $unwind: '$reviews' },
     { $match: { 'reviews.user': customerObjectId } },
@@ -92,9 +94,22 @@ export const getCustomerReviews = asyncHandler(async (req, res) => {
         createdAt: '$reviews.createdAt',
       },
     },
+    {
+      $facet: {
+        reviews: [{ $skip: (pagination.page - 1) * pagination.limit }, { $limit: pagination.limit }],
+        totalCount: [{ $count: 'count' }],
+      },
+    },
   ]);
 
-  res.status(StatusCodes.OK).json(createApiResponse('Customer reviews retrieved.', { reviews }));
+  const total = result?.totalCount?.[0]?.count ?? 0;
+
+  res.status(StatusCodes.OK).json(
+    createApiResponse('Customer reviews retrieved.', {
+      reviews: result?.reviews ?? [],
+      pagination: buildPaginationMeta(total, pagination),
+    }),
+  );
 });
 
 export const blockCustomer = asyncHandler(async (req, res) => {
@@ -104,7 +119,7 @@ export const blockCustomer = asyncHandler(async (req, res) => {
   }
   assertManageable(customer, req.user?.userId);
 
-  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+  const reason = req.body.reason ?? '';
   customer.isActive = false;
   customer.blockedAt = new Date();
   customer.blockedReason = reason || 'Blocked by admin';

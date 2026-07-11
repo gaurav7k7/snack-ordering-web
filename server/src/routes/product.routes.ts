@@ -13,6 +13,8 @@ import {
   updateProduct,
 } from '../controllers/product.controller.js';
 import { authenticate, authorize } from '../middleware/authMiddleware.js';
+import { validateRequest } from '../middleware/validateRequest.js';
+import { createProductSchema, updateProductSchema } from '../validation/product.validation.js';
 import { reviewRoutes } from './review.routes.js';
 
 export const productRoutes = Router();
@@ -25,8 +27,20 @@ productRoutes.post('/admin/bulk-import', authenticate, authorize('admin'), bulkI
 productRoutes.get('/admin/:id', authenticate, authorize('admin'), getProductByIdForAdmin);
 productRoutes.get('/admin', authenticate, authorize('admin'), getAllProductsForAdmin);
 
-productRoutes.post('/', authenticate, authorize('admin'), createProduct);
-productRoutes.patch('/:id', authenticate, authorize('admin'), updateProduct);
+productRoutes.post(
+  '/',
+  authenticate,
+  authorize('admin'),
+  validateRequest({ body: createProductSchema }),
+  createProduct,
+);
+productRoutes.patch(
+  '/:id',
+  authenticate,
+  authorize('admin'),
+  validateRequest({ body: updateProductSchema }),
+  updateProduct,
+);
 productRoutes.delete('/:id', authenticate, authorize('admin'), deleteProduct);
 
 productRoutes.get('/:slug', getProduct);

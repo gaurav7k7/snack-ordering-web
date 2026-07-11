@@ -15,7 +15,7 @@ import { AppError } from '../utils/AppError.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { slugify } from '../utils/slugify.js';
-import { createProductSchema, updateProductSchema } from '../validation/product.validation.js';
+import { createProductSchema } from '../validation/product.validation.js';
 
 export const listProducts = asyncHandler(async (req, res) => {
   const response = await searchProducts(req.query);
@@ -53,18 +53,6 @@ export const getProductByIdForAdmin = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(createApiResponse('Product retrieved.', { product }));
 });
 
-function parseWithSchema<T>(schema: { parse: (input: unknown) => T }, body: unknown): T {
-  try {
-    return schema.parse(body);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      const message = error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
-      throw new AppError(message, StatusCodes.BAD_REQUEST);
-    }
-    throw error;
-  }
-}
-
 async function resolveCategoryId(value: string): Promise<string> {
   if (mongoose.Types.ObjectId.isValid(value)) {
     const exists = await CategoryModel.exists({ _id: value });
@@ -83,7 +71,7 @@ async function resolveCategoryId(value: string): Promise<string> {
 }
 
 export const createProduct = asyncHandler(async (req, res) => {
-  const parsed = parseWithSchema(createProductSchema, req.body);
+  const parsed = req.body;
 
   const existingSku = await ProductModel.exists({ sku: parsed.sku.toUpperCase() });
   if (existingSku) {
@@ -104,7 +92,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
     throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
   }
 
-  const parsed = parseWithSchema(updateProductSchema, req.body);
+  const parsed = req.body;
 
   if (parsed.sku && parsed.sku.toUpperCase() !== product.sku) {
     const existingSku = await ProductModel.exists({

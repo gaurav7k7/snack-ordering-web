@@ -21,3 +21,13 @@ export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required.'),
   newPassword: z.string().min(8).max(128),
 });
+
+export const uploadAvatarSchema = z
+  .object({
+    avatar: z.string().trim().url('Avatar must be a valid URL.').optional(),
+    image: z.string().trim().url('Avatar must be a valid URL.').optional(),
+  })
+  .refine((data) => Boolean(data.avatar || data.image), {
+    message: 'Avatar is required.',
+    path: ['avatar'],
+  });

@@ -31,13 +31,8 @@ export const listTags = asyncHandler(async (req, res) => {
 });
 
 export const createTag = asyncHandler(async (req, res) => {
-  const { name } = req.body ?? {};
+  const trimmedName = req.body.name.toLowerCase();
 
-  if (typeof name !== 'string' || !name.trim()) {
-    throw new AppError('Tag name is required.', StatusCodes.BAD_REQUEST);
-  }
-
-  const trimmedName = name.trim().toLowerCase();
   const existing = await TagModel.exists({ name: trimmedName });
   if (existing) {
     throw new AppError('This tag already exists.', StatusCodes.CONFLICT);
@@ -56,11 +51,11 @@ export const updateTag = asyncHandler(async (req, res) => {
     throw new AppError('Tag not found.', StatusCodes.NOT_FOUND);
   }
 
-  const { name, isActive } = req.body ?? {};
+  const { name, isActive } = req.body;
   const previousName = tag.name;
 
-  if (typeof name === 'string' && name.trim() && name.trim().toLowerCase() !== tag.name) {
-    const trimmedName = name.trim().toLowerCase();
+  if (name && name.toLowerCase() !== tag.name) {
+    const trimmedName = name.toLowerCase();
     const existing = await TagModel.exists({ name: trimmedName, _id: { $ne: tag._id } });
     if (existing) {
       throw new AppError('This tag already exists.', StatusCodes.CONFLICT);

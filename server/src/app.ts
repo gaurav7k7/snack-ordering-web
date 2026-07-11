@@ -16,6 +16,7 @@ import { csrfProtection } from './middleware/csrfMiddleware.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { maintenanceGate } from './middleware/maintenanceMode.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { docsRoutes } from './routes/docs.routes.js';
 import { apiRoutes } from './routes/index.js';
 import { sitemapRoutes } from './routes/sitemap.routes.js';
 
@@ -58,6 +59,7 @@ app.use(
 );
 
 app.use(sitemapRoutes);
+app.use(docsRoutes);
 app.use('/api/v1', maintenanceGate, apiRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);

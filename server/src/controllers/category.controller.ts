@@ -33,24 +33,19 @@ export const listCategories = asyncHandler(async (req, res) => {
 });
 
 export const createCategory = asyncHandler(async (req, res) => {
-  const { name, description, image } = req.body ?? {};
+  const { name, description, image } = req.body;
 
-  if (typeof name !== 'string' || !name.trim()) {
-    throw new AppError('Category name is required.', StatusCodes.BAD_REQUEST);
-  }
-
-  const trimmedName = name.trim();
-  const existing = await CategoryModel.exists({ name: trimmedName });
+  const existing = await CategoryModel.exists({ name });
   if (existing) {
     throw new AppError('A category with this name already exists.', StatusCodes.CONFLICT);
   }
 
-  const slug = await ensureUniqueSlug(slugify(trimmedName));
+  const slug = await ensureUniqueSlug(slugify(name));
 
   const category = await CategoryModel.create({
-    name: trimmedName,
+    name,
     slug,
-    description: typeof description === 'string' ? description.trim() : '',
+    description: description ?? '',
     image,
   });
 
@@ -63,18 +58,18 @@ export const updateCategory = asyncHandler(async (req, res) => {
     throw new AppError('Category not found.', StatusCodes.NOT_FOUND);
   }
 
-  const { name, description, image, isActive } = req.body ?? {};
+  const { name, description, image, isActive } = req.body;
 
-  if (typeof name === 'string' && name.trim() && name.trim() !== category.name) {
-    const existing = await CategoryModel.exists({ name: name.trim(), _id: { $ne: category._id } });
+  if (name && name !== category.name) {
+    const existing = await CategoryModel.exists({ name, _id: { $ne: category._id } });
     if (existing) {
       throw new AppError('A category with this name already exists.', StatusCodes.CONFLICT);
     }
-    category.name = name.trim();
-    category.slug = await ensureUniqueSlug(slugify(name.trim()), category._id.toString());
+    category.name = name;
+    category.slug = await ensureUniqueSlug(slugify(name), category._id.toString());
   }
 
-  if (typeof description === 'string') category.description = description.trim();
+  if (description !== undefined) category.description = description;
   if (image !== undefined) category.image = image;
   if (typeof isActive === 'boolean') category.isActive = isActive;
 

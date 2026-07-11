@@ -31,24 +31,19 @@ export const listBrands = asyncHandler(async (req, res) => {
 });
 
 export const createBrand = asyncHandler(async (req, res) => {
-  const { name, description, logo } = req.body ?? {};
+  const { name, description, logo } = req.body;
 
-  if (typeof name !== 'string' || !name.trim()) {
-    throw new AppError('Brand name is required.', StatusCodes.BAD_REQUEST);
-  }
-
-  const trimmedName = name.trim();
-  const existing = await BrandModel.exists({ name: trimmedName });
+  const existing = await BrandModel.exists({ name });
   if (existing) {
     throw new AppError('A brand with this name already exists.', StatusCodes.CONFLICT);
   }
 
-  const slug = await ensureUniqueSlug(slugify(trimmedName));
+  const slug = await ensureUniqueSlug(slugify(name));
 
   const brand = await BrandModel.create({
-    name: trimmedName,
+    name,
     slug,
-    description: typeof description === 'string' ? description.trim() : '',
+    description: description ?? '',
     logo,
   });
 
@@ -61,20 +56,19 @@ export const updateBrand = asyncHandler(async (req, res) => {
     throw new AppError('Brand not found.', StatusCodes.NOT_FOUND);
   }
 
-  const { name, description, logo, isActive } = req.body ?? {};
+  const { name, description, logo, isActive } = req.body;
   const previousName = brand.name;
 
-  if (typeof name === 'string' && name.trim() && name.trim() !== brand.name) {
-    const trimmedName = name.trim();
-    const existing = await BrandModel.exists({ name: trimmedName, _id: { $ne: brand._id } });
+  if (name && name !== brand.name) {
+    const existing = await BrandModel.exists({ name, _id: { $ne: brand._id } });
     if (existing) {
       throw new AppError('A brand with this name already exists.', StatusCodes.CONFLICT);
     }
-    brand.name = trimmedName;
-    brand.slug = await ensureUniqueSlug(slugify(trimmedName), brand._id.toString());
+    brand.name = name;
+    brand.slug = await ensureUniqueSlug(slugify(name), brand._id.toString());
   }
 
-  if (typeof description === 'string') brand.description = description.trim();
+  if (description !== undefined) brand.description = description;
   if (logo !== undefined) brand.logo = logo;
   if (typeof isActive === 'boolean') brand.isActive = isActive;
 

@@ -37,33 +37,25 @@ export const listSubCategories = asyncHandler(async (req, res) => {
 });
 
 export const createSubCategory = asyncHandler(async (req, res) => {
-  const { name, category, description } = req.body ?? {};
-
-  if (typeof name !== 'string' || !name.trim()) {
-    throw new AppError('Subcategory name is required.', StatusCodes.BAD_REQUEST);
-  }
-  if (typeof category !== 'string' || !category.trim()) {
-    throw new AppError('A parent category is required.', StatusCodes.BAD_REQUEST);
-  }
+  const { name, category, description } = req.body;
 
   const parentCategory = await CategoryModel.findById(category);
   if (!parentCategory) {
     throw new AppError('Parent category not found.', StatusCodes.NOT_FOUND);
   }
 
-  const trimmedName = name.trim();
-  const existing = await SubCategoryModel.exists({ name: trimmedName, category });
+  const existing = await SubCategoryModel.exists({ name, category });
   if (existing) {
     throw new AppError('This subcategory already exists under the selected category.', StatusCodes.CONFLICT);
   }
 
-  const slug = await ensureUniqueSlug(slugify(`${parentCategory.name}-${trimmedName}`));
+  const slug = await ensureUniqueSlug(slugify(`${parentCategory.name}-${name}`));
 
   const subCategory = await SubCategoryModel.create({
-    name: trimmedName,
+    name,
     slug,
     category,
-    description: typeof description === 'string' ? description.trim() : '',
+    description: description ?? '',
   });
 
   res.status(StatusCodes.CREATED).json(createApiResponse('Subcategory created.', { subCategory }));
@@ -75,23 +67,22 @@ export const updateSubCategory = asyncHandler(async (req, res) => {
     throw new AppError('Subcategory not found.', StatusCodes.NOT_FOUND);
   }
 
-  const { name, description, isActive } = req.body ?? {};
+  const { name, description, isActive } = req.body;
   const previousName = subCategory.name;
 
-  if (typeof name === 'string' && name.trim() && name.trim() !== subCategory.name) {
-    const trimmedName = name.trim();
+  if (name && name !== subCategory.name) {
     const existing = await SubCategoryModel.exists({
-      name: trimmedName,
+      name,
       category: subCategory.category,
       _id: { $ne: subCategory._id },
     });
     if (existing) {
       throw new AppError('This subcategory already exists under the selected category.', StatusCodes.CONFLICT);
     }
-    subCategory.name = trimmedName;
+    subCategory.name = name;
   }
 
-  if (typeof description === 'string') subCategory.description = description.trim();
+  if (description !== undefined) subCategory.description = description;
   if (typeof isActive === 'boolean') subCategory.isActive = isActive;
 
   await subCategory.save();

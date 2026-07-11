@@ -23,6 +23,7 @@ import {
   changePasswordSchema,
   updateAddressesSchema,
   updateProfileSchema,
+  uploadAvatarSchema,
 } from '../validation/profile.validation.js';
 
 export const profileRoutes = Router();
@@ -30,7 +31,7 @@ export const profileRoutes = Router();
 profileRoutes.use(authenticate);
 profileRoutes.get('/', getProfile);
 profileRoutes.patch('/', validateRequest({ body: updateProfileSchema }), updateProfile);
-profileRoutes.post('/avatar', uploadProfilePicture);
+profileRoutes.post('/avatar', validateRequest({ body: uploadAvatarSchema }), uploadProfilePicture);
 profileRoutes.put('/addresses', validateRequest({ body: updateAddressesSchema }), updateAddresses);
 profileRoutes.get('/orders', getOrderHistory);
 profileRoutes.get('/wishlist', getWishlist);
