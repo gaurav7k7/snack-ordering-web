@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazy, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -6,6 +6,7 @@ import { AdminLayout } from '@/layouts/AdminLayout';
 import { CustomerLayout } from '@/layouts/CustomerLayout';
 import { PageTransition } from '@/components/shared/PageTransition';
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
+import { initAnalytics, trackPageView } from '@/utils/analytics';
 
 const HomePage = lazy(() => import('@/pages/customer/HomePage'));
 const ProductsPage = lazy(() => import('@/pages/customer/ProductsPage'));
@@ -33,9 +34,27 @@ const AdminCustomersPage = lazy(() => import('@/pages/admin/AdminCustomersPage')
 const AdminCustomerDetailPage = lazy(() => import('@/pages/admin/AdminCustomerDetailPage'));
 const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage'));
 const NotFoundPage = lazy(() => import('@/pages/shared/NotFoundPage'));
+const AboutPage = lazy(() => import('@/pages/static/AboutPage'));
+const ContactPage = lazy(() => import('@/pages/static/ContactPage'));
+const FaqPage = lazy(() => import('@/pages/static/FaqPage'));
+const PrivacyPolicyPage = lazy(() => import('@/pages/static/PrivacyPolicyPage'));
+const TermsPage = lazy(() => import('@/pages/static/TermsPage'));
+const RefundPolicyPage = lazy(() => import('@/pages/static/RefundPolicyPage'));
+const ShippingPolicyPage = lazy(() => import('@/pages/static/ShippingPolicyPage'));
+const CareersPage = lazy(() => import('@/pages/static/CareersPage'));
+const BlogPage = lazy(() => import('@/pages/static/BlogPage'));
+const ComparePage = lazy(() => import('@/pages/customer/ComparePage'));
 
 export function AppRoutes() {
   const location = useLocation();
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location.pathname, location.search]);
 
   return (
     <AnimatePresence mode="wait">
@@ -86,6 +105,86 @@ export function AppRoutes() {
             element={
               <PageTransition>
                 <OrderConfirmationPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="compare"
+            element={
+              <PageTransition>
+                <ComparePage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="about"
+            element={
+              <PageTransition>
+                <AboutPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="contact"
+            element={
+              <PageTransition>
+                <ContactPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="faq"
+            element={
+              <PageTransition>
+                <FaqPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="privacy"
+            element={
+              <PageTransition>
+                <PrivacyPolicyPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="terms"
+            element={
+              <PageTransition>
+                <TermsPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="refund-policy"
+            element={
+              <PageTransition>
+                <RefundPolicyPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="shipping-policy"
+            element={
+              <PageTransition>
+                <ShippingPolicyPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="careers"
+            element={
+              <PageTransition>
+                <CareersPage />
+              </PageTransition>
+            }
+          />
+          <Route
+            path="blog"
+            element={
+              <PageTransition>
+                <BlogPage />
               </PageTransition>
             }
           />

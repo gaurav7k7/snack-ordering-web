@@ -1,4 +1,5 @@
 import { Heart, ShoppingBag, Trash2 } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
@@ -48,6 +49,11 @@ export default function WishlistPage() {
 
   return (
     <>
+      <Helmet>
+        <title>Your Wishlist | SnackCo</title>
+        <meta name="description" content="Snacks you've saved for later — pick up where you left off." />
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <Breadcrumbs items={[{ label: 'Wishlist' }]} />
       <section className="container py-10">
         <div>

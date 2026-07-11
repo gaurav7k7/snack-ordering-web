@@ -1,8 +1,9 @@
-import { Heart, ShoppingBag, Star } from 'lucide-react';
+import { GitCompareArrows, Heart, ShoppingBag, Star } from 'lucide-react';
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
+import { useCompare } from '@/hooks/useCompare';
 import { useWishlist } from '@/hooks/useWishlist';
 import type { HomeProduct } from '@/types/home';
 import type { SearchProduct } from '@/types/product';
@@ -62,6 +63,8 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
   const badge = getBadge(product);
   const { isWishlisted, toggleWishlist, isMutating } = useWishlist();
   const wishlisted = isWishlisted(productId);
+  const { isComparing, toggle: toggleCompareProduct } = useCompare();
+  const comparing = isComparing(productId);
 
   return (
     <article className="group overflow-hidden rounded-lg border bg-card text-card-foreground transition duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -79,23 +82,38 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             {badge}
           </span>
         ) : null}
-        <Button
-          type="button"
-          size="icon"
-          variant="secondary"
-          className="absolute right-3 top-3 rounded-full"
-          aria-label={wishlisted ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
-          disabled={isMutating}
-          onClick={(event) => {
-            event.preventDefault();
-            toggleWishlist(productId);
-          }}
-        >
-          <Heart
-            className={cn('h-4 w-4', wishlisted && 'fill-destructive text-destructive')}
-            aria-hidden="true"
-          />
-        </Button>
+        <div className="absolute right-3 top-3 flex flex-col gap-2">
+          <Button
+            type="button"
+            size="icon"
+            variant="secondary"
+            className="rounded-full"
+            aria-label={wishlisted ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+            disabled={isMutating}
+            onClick={(event) => {
+              event.preventDefault();
+              toggleWishlist(productId);
+            }}
+          >
+            <Heart
+              className={cn('h-4 w-4', wishlisted && 'fill-destructive text-destructive')}
+              aria-hidden="true"
+            />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="secondary"
+            className={cn('rounded-full', comparing && 'bg-primary text-primary-foreground hover:bg-primary/90')}
+            aria-label={comparing ? `Remove ${product.name} from compare` : `Add ${product.name} to compare`}
+            onClick={(event) => {
+              event.preventDefault();
+              toggleCompareProduct(productId);
+            }}
+          >
+            <GitCompareArrows className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        </div>
       </div>
       <div className="space-y-3 p-4">
         <div>

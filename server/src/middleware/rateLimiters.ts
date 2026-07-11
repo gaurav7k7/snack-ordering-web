@@ -52,3 +52,20 @@ export const passwordResetLimiter = rateLimit({
   legacyHeaders: false,
   message: TOO_MANY_REQUESTS_MESSAGE,
 });
+
+export const newsletterLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: TOO_MANY_REQUESTS_MESSAGE,
+});
+
+// Contact form also sends an email — same spam-relay concern as OTP request.
+export const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: TOO_MANY_REQUESTS_MESSAGE,
+});

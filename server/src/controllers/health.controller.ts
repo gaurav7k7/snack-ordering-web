@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
+import { env } from '../config/env.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
@@ -9,6 +10,7 @@ export const getHealth = asyncHandler(async (_req, res) => {
       service: 'snack-ordering-server',
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
+      maintenance: env.maintenanceMode,
     }),
   );
 });

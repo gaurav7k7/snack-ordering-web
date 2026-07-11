@@ -14,8 +14,10 @@ import { env } from './config/env.js';
 import { handleRazorpayWebhook } from './controllers/order.controller.js';
 import { csrfProtection } from './middleware/csrfMiddleware.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { maintenanceGate } from './middleware/maintenanceMode.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { apiRoutes } from './routes/index.js';
+import { sitemapRoutes } from './routes/sitemap.routes.js';
 
 export const app = express();
 
@@ -55,6 +57,7 @@ app.use(
   }),
 );
 
-app.use('/api/v1', apiRoutes);
+app.use(sitemapRoutes);
+app.use('/api/v1', maintenanceGate, apiRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -21,7 +21,9 @@ import { useGetProductBySlugQuery, useSearchProductsQuery } from '@/redux/api/pr
 import { addItem } from '@/redux/slices/cartSlice';
 import { mapApiProductCardToHomeProduct, mapApiProductToHomeProduct } from '@/utils/mapProduct';
 import { cn } from '@/utils/cn';
+import { env } from '@/config/env';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { buildBreadcrumbSchema, buildProductSchema } from '@/utils/structuredData';
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -140,9 +142,26 @@ export default function ProductDetailPage() {
       <Helmet>
         <title>{product.name} | SnackCo</title>
         <meta name="description" content={product.description} />
+        <link rel="canonical" href={`${env.siteUrl}/products/${product.slug}`} />
         <meta property="og:title" content={`${product.name} | SnackCo`} />
         <meta property="og:description" content={product.description} />
         <meta property="og:image" content={product.image} />
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={`${env.siteUrl}/products/${product.slug}`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${product.name} | SnackCo`} />
+        <meta name="twitter:description" content={product.description} />
+        <meta name="twitter:image" content={product.image} />
+        <script type="application/ld+json">{JSON.stringify(buildProductSchema(product))}</script>
+        <script type="application/ld+json">
+          {JSON.stringify(
+            buildBreadcrumbSchema([
+              { label: 'Shop snacks', href: '/products' },
+              { label: product.category, href: `/products?category=${product.category}` },
+              { label: product.name },
+            ]),
+          )}
+        </script>
       </Helmet>
 
       <Breadcrumbs

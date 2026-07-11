@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 
+import { AiRecommendationsTeaser } from '@/components/customer/AiRecommendationsTeaser';
 import { CategoryTile } from '@/components/customer/CategoryTile';
 import { HeroSlider } from '@/components/customer/HeroSlider';
 import { Newsletter } from '@/components/customer/Newsletter';
@@ -64,6 +65,8 @@ export default function HomePage() {
         description="Premium everyday favorites with polished flavors, giftable packs, and reliable shelf life."
         products={featuredProducts}
       />
+
+      <AiRecommendationsTeaser />
 
       <section className="bg-muted/50 py-12">
         <div className="container">

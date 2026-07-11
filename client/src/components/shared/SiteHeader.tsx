@@ -1,8 +1,9 @@
-import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Heart, Menu, Mic, Search, ShoppingBag, User, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useAppSelector } from '@/hooks/redux';
+import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useWishlist } from '@/hooks/useWishlist';
 
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,16 @@ export function SiteHeader() {
     if (!trimmedQuery) return;
     navigate(`${ROUTES.products}?q=${encodeURIComponent(trimmedQuery)}`);
   };
+
+  const handleVoiceResult = useCallback(
+    (transcript: string) => {
+      setSearchQuery(transcript);
+      const trimmedQuery = transcript.trim();
+      if (trimmedQuery) navigate(`${ROUTES.products}?q=${encodeURIComponent(trimmedQuery)}`);
+    },
+    [navigate],
+  );
+  const voiceSearch = useVoiceSearch(handleVoiceResult);
 
   return (
     <>
@@ -102,8 +113,24 @@ export function SiteHeader() {
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search popcorn, chips, combos..."
-                className="h-11 w-full rounded-md border bg-background pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className={cn(
+                  'h-11 w-full rounded-md border bg-background pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20',
+                  voiceSearch.isSupported && 'pr-10',
+                )}
               />
+              {voiceSearch.isSupported ? (
+                <button
+                  type="button"
+                  aria-label={voiceSearch.isListening ? 'Listening…' : 'Search by voice'}
+                  onClick={() => (voiceSearch.isListening ? voiceSearch.stop() : voiceSearch.start())}
+                  className={cn(
+                    'absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-primary',
+                    voiceSearch.isListening && 'animate-pulse text-primary',
+                  )}
+                >
+                  <Mic className="h-4 w-4" />
+                </button>
+              ) : null}
             </div>
           </form>
 

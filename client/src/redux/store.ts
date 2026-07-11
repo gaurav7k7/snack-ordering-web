@@ -4,6 +4,7 @@ import { baseApi } from '@/redux/api/baseApi';
 import { productsApi } from '@/redux/api/productsApi';
 import authReducer from '@/redux/slices/authSlice';
 import cartReducer, { CART_STORAGE_KEY } from '@/redux/slices/cartSlice';
+import compareReducer, { COMPARE_STORAGE_KEY } from '@/redux/slices/compareSlice';
 
 const persistCartMiddleware: Middleware = (store) => (next) => (action) => {
   const result = next(action);
@@ -15,9 +16,20 @@ const persistCartMiddleware: Middleware = (store) => (next) => (action) => {
   return result;
 };
 
+const persistCompareMiddleware: Middleware = (store) => (next) => (action) => {
+  const result = next(action);
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(store.getState().compare));
+  }
+
+  return result;
+};
+
 export const store = configureStore({
   reducer: {
     cart: cartReducer,
+    compare: compareReducer,
     auth: authReducer,
     [baseApi.reducerPath]: baseApi.reducer,
     [productsApi.reducerPath]: productsApi.reducer,
@@ -27,6 +39,7 @@ export const store = configureStore({
       baseApi.middleware,
       productsApi.middleware,
       persistCartMiddleware,
+      persistCompareMiddleware,
     ),
 });
 

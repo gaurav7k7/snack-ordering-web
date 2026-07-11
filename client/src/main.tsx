@@ -8,7 +8,10 @@ import { Toaster } from 'react-hot-toast';
 import { App } from '@/app/App';
 import { ThemeProvider } from '@/components/shared/ThemeProvider';
 import { store } from '@/redux/store';
+import { registerServiceWorker } from '@/utils/registerServiceWorker';
 import '@/styles/globals.css';
+
+registerServiceWorker();
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>

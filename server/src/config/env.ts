@@ -33,6 +33,9 @@ const envSchema = z
     CLOUDINARY_CLOUD_NAME: z.string().optional(),
     CLOUDINARY_API_KEY: z.string().optional(),
     CLOUDINARY_API_SECRET: z.string().optional(),
+    MAINTENANCE_MODE: z.coerce.boolean().default(false),
+    SITE_URL: z.string().url().default('http://localhost:5173'),
+    SUPPORT_EMAIL: z.string().email().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV !== 'production') return;
@@ -85,6 +88,9 @@ export const env = {
   cloudinaryCloudName: parsedEnv.data.CLOUDINARY_CLOUD_NAME,
   cloudinaryApiKey: parsedEnv.data.CLOUDINARY_API_KEY,
   cloudinaryApiSecret: parsedEnv.data.CLOUDINARY_API_SECRET,
+  maintenanceMode: parsedEnv.data.MAINTENANCE_MODE,
+  siteUrl: parsedEnv.data.SITE_URL,
+  supportEmail: parsedEnv.data.SUPPORT_EMAIL ?? parsedEnv.data.SMTP_USER,
 } as const;
 
 if (env.nodeEnv !== 'production' && (!parsedEnv.data.JWT_ACCESS_SECRET || !parsedEnv.data.JWT_REFRESH_SECRET || !parsedEnv.data.COOKIE_SECRET)) {

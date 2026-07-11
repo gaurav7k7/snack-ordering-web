@@ -19,6 +19,7 @@ import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch } from '@/hooks/redux';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import {
   useChangePasswordMutation,
   useDeleteAccountMutation,
@@ -53,6 +54,7 @@ export default function ProfilePage() {
   const [updateAddresses, { isLoading: isUpdatingAddresses }] = useUpdateAddressesMutation();
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
   const [deleteAccount] = useDeleteAccountMutation();
+  const pushNotifications = usePushNotifications();
 
   const profile = profileData?.data?.user;
   const orders = ordersData?.data?.orders ?? [];
@@ -406,6 +408,29 @@ export default function ProfilePage() {
                   {wallet ? `${wallet.currency} ${wallet.balance}` : '—'}
                 </p>
               </div>
+              {pushNotifications.isSupported ? (
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background p-4 text-sm">
+                  <div>
+                    <p className="font-semibold">Push notifications</p>
+                    <p className="text-muted-foreground">
+                      {pushNotifications.permission === 'granted'
+                        ? 'Enabled for this browser.'
+                        : pushNotifications.permission === 'denied'
+                          ? 'Blocked — enable in browser settings.'
+                          : 'Get order and offer alerts on this device.'}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={pushNotifications.permission !== 'default'}
+                    onClick={() => pushNotifications.requestPermission()}
+                  >
+                    {pushNotifications.permission === 'granted' ? 'Enabled' : 'Enable'}
+                  </Button>
+                </div>
+              ) : null}
               {notifications.length ? (
                 notifications.slice(0, 4).map((notification: any, index: number) => (
                   <div
