@@ -1,14 +1,15 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { ProductModel } from '../models/Product.model.js';
+import { getReviewsArray } from '../services/review.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { escapeRegex } from '../utils/escapeRegex.js';
+import { buildPaginationMeta, parsePagination } from '../utils/pagination.js';
 
 export const listAllReviewsForAdmin = asyncHandler(async (req, res) => {
-  const page = Math.max(Number(req.query.page) || 1, 1);
-  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+  const { page, limit } = parsePagination(req.query);
   const status = typeof req.query.status === 'string' ? req.query.status : undefined;
   const reportedOnly = req.query.reported === 'true';
   const rating = Number(req.query.rating) || 0;
@@ -76,7 +77,7 @@ export const listAllReviewsForAdmin = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(
     createApiResponse('Reviews retrieved.', {
       reviews,
-      pagination: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) },
+      pagination: buildPaginationMeta(total, { page, limit }),
     }),
   );
 });
@@ -89,7 +90,7 @@ export const dismissReports = asyncHandler(async (req, res) => {
     throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
   }
 
-  const review = (product.reviews as any).id(reviewId);
+  const review = getReviewsArray(product).id(reviewId);
   if (!review) {
     throw new AppError('Review not found.', StatusCodes.NOT_FOUND);
   }

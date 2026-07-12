@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import type { Review } from '@/types/review';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { cn } from '@/utils/cn';
+import { formatDate } from '@/utils/formatDate';
 
 type ReviewListItemProps = {
   review: Review;
@@ -59,7 +60,7 @@ export function ReviewListItem({ review, onEdit, onDelete, onToggleHelpful, onRe
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          {review.name} · {new Date(review.createdAt).toLocaleDateString('en-IN')}
+          {review.name} · {formatDate(review.createdAt)}
         </p>
         <div className="flex items-center gap-2">
           {onToggleHelpful && (

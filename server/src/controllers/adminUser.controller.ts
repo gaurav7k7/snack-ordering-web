@@ -25,8 +25,7 @@ function assertManageable(target: { _id: unknown; role?: string | null }, reques
 }
 
 export const getAllCustomers = asyncHandler(async (req, res) => {
-  const page = Math.max(Number(req.query.page) || 1, 1);
-  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+  const pagination = parsePagination(req.query);
   const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
   const status = typeof req.query.status === 'string' ? req.query.status : undefined;
 
@@ -42,8 +41,8 @@ export const getAllCustomers = asyncHandler(async (req, res) => {
     UserModel.find(filter)
       .select('name email phone avatar isActive isEmailVerified blockedAt blockedReason createdAt')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
+      .skip((pagination.page - 1) * pagination.limit)
+      .limit(pagination.limit)
       .lean(),
     UserModel.countDocuments(filter),
   ]);
@@ -51,7 +50,7 @@ export const getAllCustomers = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(
     createApiResponse('Customers retrieved.', {
       customers,
-      pagination: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) },
+      pagination: buildPaginationMeta(total, pagination),
     }),
   );
 });

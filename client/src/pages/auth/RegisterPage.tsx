@@ -6,10 +6,12 @@ import { toast } from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useRegisterMutation } from '@/redux/api/authApi';
 import { setUser } from '@/redux/slices/authSlice';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { registerSchema, type RegisterFormInput } from '@/validation/auth.schema';
 
 export default function RegisterPage() {
@@ -40,8 +42,7 @@ export default function RegisterPage() {
     }
 
     if (error) {
-      const message = (error as any)?.data?.message ?? 'Registration failed.';
-      toast.error(message);
+      toast.error(getErrorMessage(error, 'Registration failed.'));
     }
   }, [data, dispatch, error, isSuccess, navigate]);
 
@@ -69,41 +70,26 @@ export default function RegisterPage() {
         <form className="mt-8 grid gap-4" onSubmit={handleSubmit(onSubmit)}>
           <label className="grid gap-2 text-sm">
             <span>Name</span>
-            <input
-              {...registerField('name')}
-              className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
+            <Input {...registerField('name')} />
             {errors.name && <span className="text-sm text-destructive">{errors.name.message}</span>}
           </label>
           <label className="grid gap-2 text-sm">
             <span>Email address</span>
-            <input
-              type="email"
-              {...registerField('email')}
-              className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
+            <Input type="email" {...registerField('email')} />
             {errors.email && (
               <span className="text-sm text-destructive">{errors.email.message}</span>
             )}
           </label>
           <label className="grid gap-2 text-sm">
             <span>Password</span>
-            <input
-              type="password"
-              {...registerField('password')}
-              className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
+            <Input type="password" {...registerField('password')} />
             {errors.password && (
               <span className="text-sm text-destructive">{errors.password.message}</span>
             )}
           </label>
           <label className="grid gap-2 text-sm">
             <span>Confirm password</span>
-            <input
-              type="password"
-              {...registerField('confirmPassword')}
-              className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
+            <Input type="password" {...registerField('confirmPassword')} />
             {errors.confirmPassword && (
               <span className="text-sm text-destructive">{errors.confirmPassword.message}</span>
             )}

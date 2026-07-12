@@ -1,6 +1,7 @@
 import passport from 'passport';
 import { Router } from 'express';
 
+import { env } from '../config/env.js';
 import {
   forgotPassword,
   getCurrentUser,
@@ -65,7 +66,7 @@ authRoutes.get(
   '/google/callback',
   passport.authenticate('google', {
     session: false,
-    failureRedirect: `${process.env.CLIENT_URL ?? 'http://localhost:5173'}/login?error=google`,
+    failureRedirect: `${env.clientUrl}/login?error=google`,
   }),
   googleAuthCallback,
 );

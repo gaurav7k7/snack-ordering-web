@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { ProductGridSkeleton } from '@/components/customer/ProductGridSkeleton';
 import { SearchFilters } from '@/components/customer/SearchFilters';
-import { SearchPagination } from '@/components/customer/SearchPagination';
+import { SearchPagination } from '@/components/shared/SearchPagination';
 import { SearchSuggestions } from '@/components/customer/SearchSuggestions';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { SectionHeader } from '@/components/shared/SectionHeader';

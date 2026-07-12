@@ -1,6 +1,6 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { CHART_GRID_DARK, CHART_GRID_LIGHT, CHART_SEQUENTIAL } from '@/constants/chartPalette';
+import { CHART_AXIS_TEXT, CHART_GRID_DARK, CHART_GRID_LIGHT, CHART_SEQUENTIAL } from '@/constants/chartPalette';
 import { useTheme } from '@/hooks/useTheme';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatCompactNumber } from '@/utils/formatCompactNumber';
@@ -36,7 +36,7 @@ export function SalesChart({ data }: SalesChartProps) {
   const lineColor = isDark ? CHART_SEQUENTIAL.dark : CHART_SEQUENTIAL.light;
   const fillColor = isDark ? CHART_SEQUENTIAL.fillDark : CHART_SEQUENTIAL.fillLight;
   const gridColor = isDark ? CHART_GRID_DARK : CHART_GRID_LIGHT;
-  const tickColor = '#898781';
+  const tickColor = CHART_AXIS_TEXT;
 
   return (
     <ResponsiveContainer width="100%" height={280}>

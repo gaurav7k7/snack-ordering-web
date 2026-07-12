@@ -6,8 +6,10 @@ import { toast } from 'react-hot-toast';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ROUTES } from '@/constants/routes';
 import { useResetPasswordMutation } from '@/redux/api/authApi';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { resetPasswordSchema, type ResetPasswordFormInput } from '@/validation/auth.schema';
 
 export default function ResetPasswordPage() {
@@ -34,8 +36,7 @@ export default function ResetPasswordPage() {
       navigate(ROUTES.home, { replace: true });
     }
     if (error) {
-      const message = (error as any)?.data?.message ?? 'Unable to reset password.';
-      toast.error(message);
+      toast.error(getErrorMessage(error, 'Unable to reset password.'));
     }
   }, [error, isSuccess, navigate]);
 
@@ -55,23 +56,14 @@ export default function ResetPasswordPage() {
         >
           <label className="grid gap-2 text-sm">
             <span>Email address</span>
-            <input
-              type="email"
-              {...register('email')}
-              readOnly
-              className="rounded-xl border border-input bg-muted px-4 py-3 text-sm outline-none"
-            />
+            <Input type="email" {...register('email')} readOnly className="bg-muted" />
             {errors.email && (
               <span className="text-sm text-destructive">{errors.email.message}</span>
             )}
           </label>
           <label className="grid gap-2 text-sm">
             <span>New password</span>
-            <input
-              type="password"
-              {...register('password')}
-              className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
+            <Input type="password" {...register('password')} />
             {errors.password && (
               <span className="text-sm text-destructive">{errors.password.message}</span>
             )}

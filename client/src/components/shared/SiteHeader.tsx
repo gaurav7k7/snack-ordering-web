@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { CountBadge } from '@/components/shared/CountBadge';
 import { MiniCart } from '@/components/shared/MiniCart';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { FREE_SHIPPING_THRESHOLD } from '@/constants/pricing';
 import { ROUTES } from '@/constants/routes';
 import { cn } from '@/utils/cn';
 
@@ -66,7 +67,7 @@ export function SiteHeader() {
       >
         <div className="border-b bg-foreground py-2 text-xs font-medium text-background">
           <div className="container flex items-center justify-between gap-4">
-            <span>Free delivery above INR 999</span>
+            <span>Free delivery above INR {FREE_SHIPPING_THRESHOLD}</span>
             <span className="hidden sm:inline">Fresh batches shipped across India</span>
           </div>
         </div>

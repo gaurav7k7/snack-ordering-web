@@ -3,24 +3,11 @@ import { StatusCodes } from 'http-status-codes';
 import { CategoryModel } from '../models/Category.model.js';
 import { ProductModel } from '../models/Product.model.js';
 import { SubCategoryModel } from '../models/SubCategory.model.js';
+import { ensureUniqueSlug } from '../services/slug.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { slugify } from '../utils/slugify.js';
-
-async function ensureUniqueSlug(baseSlug: string, excludeId?: string) {
-  let slug = baseSlug;
-  let counter = 2;
-
-  while (
-    await SubCategoryModel.exists({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })
-  ) {
-    slug = `${baseSlug}-${counter}`;
-    counter += 1;
-  }
-
-  return slug;
-}
 
 export const listSubCategories = asyncHandler(async (req, res) => {
   const includeInactive = req.query.includeInactive === 'true';
@@ -49,7 +36,7 @@ export const createSubCategory = asyncHandler(async (req, res) => {
     throw new AppError('This subcategory already exists under the selected category.', StatusCodes.CONFLICT);
   }
 
-  const slug = await ensureUniqueSlug(slugify(`${parentCategory.name}-${name}`));
+  const slug = await ensureUniqueSlug(SubCategoryModel, slugify(`${parentCategory.name}-${name}`));
 
   const subCategory = await SubCategoryModel.create({
     name,

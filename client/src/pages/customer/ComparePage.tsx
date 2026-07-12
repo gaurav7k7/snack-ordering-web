@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch } from '@/hooks/redux';
@@ -90,15 +91,12 @@ export default function ComparePage() {
         {isLoading ? (
           <p className="mt-8 text-sm text-muted-foreground">Loading comparison…</p>
         ) : products.length === 0 ? (
-          <div className="mt-8 rounded-2xl border border-dashed p-10 text-center">
-            <p className="text-lg font-semibold">Nothing to compare yet.</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Tap the compare icon on any product card to add it here — up to 4 at a time.
-            </p>
-            <Button asChild className="mt-6">
-              <Link to={ROUTES.products}>Browse products</Link>
-            </Button>
-          </div>
+          <EmptyState
+            className="mt-8"
+            title="Nothing to compare yet."
+            description="Tap the compare icon on any product card to add it here — up to 4 at a time."
+            action={{ label: 'Browse products', to: ROUTES.products }}
+          />
         ) : (
           <div className="mt-8 overflow-x-auto rounded-2xl border border-border/70 bg-card shadow-sm">
             <table className="w-full min-w-[640px] text-sm">

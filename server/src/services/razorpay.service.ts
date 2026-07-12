@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import Razorpay from 'razorpay';
 
 import { env } from '../config/env.js';
+import { DEFAULT_CURRENCY } from '../constants/pricing.js';
 
 const razorpayClient =
   env.razorpayKeyId && env.razorpayKeySecret
@@ -17,8 +18,10 @@ export async function createRazorpayOrder(amount: number, receipt: string) {
   }
 
   return razorpayClient.orders.create({
+    // Razorpay's API takes amounts in the smallest currency unit (paise for
+    // INR, i.e. rupees * 100), not rupees.
     amount: Math.round(amount * 100),
-    currency: 'INR',
+    currency: DEFAULT_CURRENCY,
     receipt,
     notes: {
       platform: 'SnackCo',
@@ -54,6 +57,7 @@ export async function refundPayment(paymentId: string, amountInRupees?: number) 
   }
 
   return razorpayClient.payments.refund(paymentId, {
+    // Same rupees-to-paise conversion as createRazorpayOrder above.
     ...(amountInRupees ? { amount: Math.round(amountInRupees * 100) } : {}),
   });
 }

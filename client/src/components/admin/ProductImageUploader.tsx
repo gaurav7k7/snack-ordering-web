@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 
 import { uploadImageToCloudinary } from '@/services/cloudinaryUpload';
 import type { ApiProductImage } from '@/types/product';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 const MAX_IMAGES = 8;
 
@@ -37,8 +38,8 @@ export function ProductImageUploader({ images, onChange }: ProductImageUploaderP
         }),
       );
       onChange([...images, ...uploaded]);
-    } catch (error: any) {
-      toast.error(error?.message ?? 'Unable to upload one or more images.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to upload one or more images.'));
     } finally {
       setIsUploading(false);
     }

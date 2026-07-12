@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 
 import { StaticPageLayout } from '@/components/shared/StaticPageLayout';
+import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE } from '@/constants/pricing';
 
 const FAQ_GROUPS = [
   {
@@ -29,7 +30,7 @@ const FAQ_GROUPS = [
       },
       {
         q: 'Is shipping free?',
-        a: 'Orders above ₹999 ship free. Below that, a flat ₹69 shipping fee applies.',
+        a: `Orders above ₹${FREE_SHIPPING_THRESHOLD} ship free. Below that, a flat ₹${STANDARD_SHIPPING_FEE} shipping fee applies.`,
       },
       {
         q: 'How do I track my order?',

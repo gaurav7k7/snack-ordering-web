@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useSubmitContactMessageMutation } from '@/redux/api/contactApi';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 const inputClass =
   'w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm outline-none transition focus:border-primary';
@@ -26,8 +27,8 @@ export default function ContactPage() {
       await submitMessage(form).unwrap();
       toast.success("Message sent — we'll get back to you within 1-2 business days.");
       setForm({ name: '', email: '', subject: '', message: '' });
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to send your message. Please try again.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to send your message. Please try again.'));
     }
   };
 

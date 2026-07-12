@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { RatingDistributionBar } from '@/components/reviews/RatingDistributionBar';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { ReviewListItem } from '@/components/reviews/ReviewListItem';
-import { SearchPagination } from '@/components/customer/SearchPagination';
+import { SearchPagination } from '@/components/shared/SearchPagination';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppSelector } from '@/hooks/redux';
@@ -19,6 +19,7 @@ import {
   useUpdateReviewMutation,
 } from '@/redux/api/reviewsApi';
 import type { ReviewImage } from '@/types/review';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 type ProductReviewsSectionProps = {
   productId: string;
@@ -72,8 +73,8 @@ export function ProductReviewsSection({
         toast.success('Review submitted. Thanks for the feedback!');
       }
       setIsFormOpen(false);
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to save your review.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to save your review.'));
     }
   };
 
@@ -84,8 +85,8 @@ export function ProductReviewsSection({
     try {
       await deleteReview({ productId, reviewId: currentUserReview._id }).unwrap();
       toast.success('Review deleted.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete review.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete review.'));
     }
   };
 
@@ -96,8 +97,8 @@ export function ProductReviewsSection({
     }
     try {
       await toggleHelpfulVote({ productId, reviewId }).unwrap();
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to record your vote.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to record your vote.'));
     }
   };
 
@@ -111,8 +112,8 @@ export function ProductReviewsSection({
     try {
       await reportReview({ productId, reviewId, reason: reason.trim() }).unwrap();
       toast.success('Review reported. Our team will take a look.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to report this review.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to report this review.'));
     }
   };
 

@@ -2,24 +2,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { CategoryModel } from '../models/Category.model.js';
 import { ProductModel } from '../models/Product.model.js';
+import { ensureUniqueSlug } from '../services/slug.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
+import { PUBLIC_LIST_CACHE_CONTROL } from '../constants/cache.js';
 import { slugify } from '../utils/slugify.js';
-
-async function ensureUniqueSlug(baseSlug: string, excludeId?: string) {
-  let slug = baseSlug;
-  let counter = 2;
-
-  while (
-    await CategoryModel.exists({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })
-  ) {
-    slug = `${baseSlug}-${counter}`;
-    counter += 1;
-  }
-
-  return slug;
-}
 
 export const listCategories = asyncHandler(async (req, res) => {
   const includeInactive = req.query.includeInactive === 'true';
@@ -28,7 +16,7 @@ export const listCategories = asyncHandler(async (req, res) => {
 
   // Categories change rarely (admin CRUD only) — a short public cache lets
   // browsers/CDNs skip the round trip for repeat visits within the window.
-  res.set('Cache-Control', 'public, max-age=60');
+  res.set('Cache-Control', PUBLIC_LIST_CACHE_CONTROL);
   res.status(StatusCodes.OK).json(createApiResponse('Categories retrieved.', { categories }));
 });
 
@@ -40,7 +28,7 @@ export const createCategory = asyncHandler(async (req, res) => {
     throw new AppError('A category with this name already exists.', StatusCodes.CONFLICT);
   }
 
-  const slug = await ensureUniqueSlug(slugify(name));
+  const slug = await ensureUniqueSlug(CategoryModel, slugify(name));
 
   const category = await CategoryModel.create({
     name,
@@ -66,7 +54,7 @@ export const updateCategory = asyncHandler(async (req, res) => {
       throw new AppError('A category with this name already exists.', StatusCodes.CONFLICT);
     }
     category.name = name;
-    category.slug = await ensureUniqueSlug(slugify(name), category._id.toString());
+    category.slug = await ensureUniqueSlug(CategoryModel, slugify(name), category._id.toString());
   }
 
   if (description !== undefined) category.description = description;

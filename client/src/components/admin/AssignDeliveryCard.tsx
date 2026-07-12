@@ -5,6 +5,8 @@ import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { useAssignDeliveryMutation } from '@/redux/api/ordersApi';
 import type { AssignedDelivery } from '@/types/order';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import { formatDate } from '@/utils/formatDate';
 
 export function AssignDeliveryCard({
   orderId,
@@ -26,8 +28,8 @@ export function AssignDeliveryCard({
       toast.success('Delivery partner assigned.');
       setName('');
       setPhone('');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to assign delivery.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to assign delivery.'));
     }
   };
 
@@ -35,8 +37,8 @@ export function AssignDeliveryCard({
     try {
       await assignDelivery({ id: orderId, clear: true }).unwrap();
       toast.success('Delivery assignment cleared.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to clear delivery assignment.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to clear delivery assignment.'));
     }
   };
 
@@ -55,7 +57,7 @@ export function AssignDeliveryCard({
             {assignedDelivery.notes && <p className="mt-1 text-xs text-muted-foreground">{assignedDelivery.notes}</p>}
             {assignedDelivery.assignedAt && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Assigned {new Date(assignedDelivery.assignedAt).toLocaleString('en-IN')}
+                Assigned {formatDate(assignedDelivery.assignedAt, 'datetime')}
               </p>
             )}
           </div>

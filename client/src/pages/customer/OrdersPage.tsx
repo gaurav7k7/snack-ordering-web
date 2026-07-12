@@ -5,12 +5,13 @@ import { Link } from 'react-router-dom';
 
 import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
-import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { ROUTES } from '@/constants/routes';
 import { useGetMyOrdersQuery } from '@/redux/api/ordersApi';
 import type { OrderStatus } from '@/types/order';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { formatDate } from '@/utils/formatDate';
 
 const FILTERS: Array<{ label: string; value?: OrderStatus }> = [
   { label: 'All orders' },
@@ -74,7 +75,7 @@ export default function OrdersPage() {
                   <div>
                     <p className="font-semibold">Order #{order.orderNumber}</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Placed on {new Date(order.createdAt).toLocaleDateString('en-IN')}
+                      Placed on {formatDate(order.createdAt)}
                     </p>
                   </div>
                   <OrderStatusBadge status={order.status} />
@@ -99,16 +100,12 @@ export default function OrdersPage() {
               </Link>
             ))
           ) : (
-            <div className="rounded-3xl border border-dashed bg-card p-10 text-center">
-              <Package className="mx-auto h-10 w-10 text-muted-foreground" />
-              <p className="mt-3 text-lg font-semibold">No orders yet.</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Your snack orders will show up here once you place one.
-              </p>
-              <Button asChild className="mt-6">
-                <Link to={ROUTES.products}>Browse snacks</Link>
-              </Button>
-            </div>
+            <EmptyState
+              icon={Package}
+              title="No orders yet."
+              description="Your snack orders will show up here once you place one."
+              action={{ label: 'Browse snacks', to: ROUTES.products }}
+            />
           )}
           {isFetching && !isLoading && (
             <p className="text-center text-xs text-muted-foreground">Refreshing…</p>

@@ -1,5 +1,7 @@
 import { baseApi } from '@/redux/api/baseApi';
 import type { User } from '@/types/auth';
+import type { CustomerReview } from '@/types/customer';
+import type { Order } from '@/types/order';
 import type { ApiProductCard } from '@/types/product';
 
 type ApiResponse<T> = {
@@ -8,14 +10,22 @@ type ApiResponse<T> = {
   data?: T;
 };
 
+type PaginationMeta = { page: number; limit: number; total: number; totalPages: number };
+
+// Notifications/support tickets are modeled on the backend but no write
+// path populates them yet — the shape below matches what the UI reads
+// (message/subject) rather than a confirmed backend contract.
+export type UserNotification = { message?: string; type?: string; createdAt?: string };
+export type SupportTicket = { subject?: string; status?: string; createdAt?: string };
+
 type ProfileResponse = ApiResponse<{ user: User }>;
-type OrdersResponse = ApiResponse<{ orders: any[] }>;
-type WishlistResponse = ApiResponse<{ wishlist: ApiProductCard[] }>;
+type OrdersResponse = ApiResponse<{ orders: Order[] }>;
+type WishlistResponse = ApiResponse<{ wishlist: ApiProductCard[]; pagination: PaginationMeta }>;
 type WalletResponse = ApiResponse<{ wallet: { balance: number; currency: string } }>;
-type NotificationsResponse = ApiResponse<{ notifications: any[] }>;
-type TicketsResponse = ApiResponse<{ supportTickets: any[] }>;
-type RecentlyViewedResponse = ApiResponse<{ recentlyViewed: any[] }>;
-type ReviewHistoryResponse = ApiResponse<{ reviews: any[] }>;
+type NotificationsResponse = ApiResponse<{ notifications: UserNotification[] }>;
+type TicketsResponse = ApiResponse<{ supportTickets: SupportTicket[] }>;
+type RecentlyViewedResponse = ApiResponse<{ recentlyViewed: string[] }>;
+type ReviewHistoryResponse = ApiResponse<{ reviews: CustomerReview[]; pagination: PaginationMeta }>;
 
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -34,7 +44,7 @@ export const profileApi = baseApi.injectEndpoints({
       query: (body) => ({ url: '/profile/avatar', method: 'POST', body }),
       invalidatesTags: ['User'],
     }),
-    updateAddresses: builder.mutation<ProfileResponse, { addresses: any[] }>({
+    updateAddresses: builder.mutation<ProfileResponse, { addresses: string[] }>({
       query: (body) => ({ url: '/profile/addresses', method: 'PUT', body }),
       invalidatesTags: ['User'],
     }),

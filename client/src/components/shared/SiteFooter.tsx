@@ -1,7 +1,9 @@
 import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import type { ComponentType } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ROUTES } from '@/constants/routes';
+import { SOCIAL_LINKS } from '@/constants/socialLinks';
 
 const SHOP_LINKS = [
   { label: 'All snacks', to: ROUTES.products },
@@ -27,12 +29,12 @@ const COMPANY_LINKS = [
   { label: 'Privacy policy', to: ROUTES.privacy },
 ];
 
-const SOCIAL_LINKS = [
-  { label: 'Instagram', href: 'https://instagram.com', icon: Instagram },
-  { label: 'Twitter / X', href: 'https://twitter.com', icon: Twitter },
-  { label: 'Facebook', href: 'https://facebook.com', icon: Facebook },
-  { label: 'YouTube', href: 'https://youtube.com', icon: Youtube },
-];
+const SOCIAL_ICONS: Record<(typeof SOCIAL_LINKS)[number]['label'], ComponentType<{ className?: string }>> = {
+  Instagram,
+  'Twitter / X': Twitter,
+  Facebook,
+  YouTube: Youtube,
+};
 
 export function SiteFooter() {
   return (
@@ -44,18 +46,21 @@ export function SiteFooter() {
             Premium snacks, secure checkout, quick fulfillment, and real support for every craving.
           </p>
           <div className="mt-5 flex items-center gap-3">
-            {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noreferrer noopener"
-                aria-label={label}
-                className="grid h-9 w-9 place-items-center rounded-full border text-muted-foreground transition hover:border-primary hover:text-primary"
-              >
-                <Icon className="h-4 w-4" aria-hidden="true" />
-              </a>
-            ))}
+            {SOCIAL_LINKS.map(({ label, href }) => {
+              const Icon = SOCIAL_ICONS[label];
+              return (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={label}
+                  className="grid h-9 w-9 place-items-center rounded-full border text-muted-foreground transition hover:border-primary hover:text-primary"
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                </a>
+              );
+            })}
           </div>
         </div>
         <div>

@@ -1,5 +1,4 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-
+import { baseApi } from '@/redux/api/baseApi';
 import type { ApiProduct, SearchProduct } from '@/types/product';
 
 type ApiResponse<T> = {
@@ -21,12 +20,7 @@ type SearchResponse = ApiResponse<{
 type SuggestionsResponse = ApiResponse<{ suggestions: string[]; popularSearches: string[] }>;
 type ProductResponse = ApiResponse<{ product: ApiProduct }>;
 
-export const productsApi = createApi({
-  reducerPath: 'productsApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api/v1',
-  }),
-  tagTypes: ['Products', 'Suggestions'],
+export const productsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     searchProducts: builder.query<SearchResponse, Record<string, string>>({
       query: (params) => {

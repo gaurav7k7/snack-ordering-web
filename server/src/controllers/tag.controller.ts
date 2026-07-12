@@ -2,31 +2,19 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ProductModel } from '../models/Product.model.js';
 import { TagModel } from '../models/Tag.model.js';
+import { ensureUniqueSlug } from '../services/slug.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
+import { PUBLIC_LIST_CACHE_CONTROL } from '../constants/cache.js';
 import { slugify } from '../utils/slugify.js';
-
-async function ensureUniqueSlug(baseSlug: string, excludeId?: string) {
-  let slug = baseSlug;
-  let counter = 2;
-
-  while (
-    await TagModel.exists({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })
-  ) {
-    slug = `${baseSlug}-${counter}`;
-    counter += 1;
-  }
-
-  return slug;
-}
 
 export const listTags = asyncHandler(async (req, res) => {
   const includeInactive = req.query.includeInactive === 'true';
   const filter = includeInactive ? {} : { isActive: true };
   const tags = await TagModel.find(filter).sort({ name: 1 });
 
-  res.set('Cache-Control', 'public, max-age=60');
+  res.set('Cache-Control', PUBLIC_LIST_CACHE_CONTROL);
   res.status(StatusCodes.OK).json(createApiResponse('Tags retrieved.', { tags }));
 });
 
@@ -38,7 +26,7 @@ export const createTag = asyncHandler(async (req, res) => {
     throw new AppError('This tag already exists.', StatusCodes.CONFLICT);
   }
 
-  const slug = await ensureUniqueSlug(slugify(trimmedName));
+  const slug = await ensureUniqueSlug(TagModel, slugify(trimmedName));
 
   const tag = await TagModel.create({ name: trimmedName, slug });
 
@@ -61,7 +49,7 @@ export const updateTag = asyncHandler(async (req, res) => {
       throw new AppError('This tag already exists.', StatusCodes.CONFLICT);
     }
     tag.name = trimmedName;
-    tag.slug = await ensureUniqueSlug(slugify(trimmedName), tag._id.toString());
+    tag.slug = await ensureUniqueSlug(TagModel, slugify(trimmedName), tag._id.toString());
   }
 
   if (typeof isActive === 'boolean') tag.isActive = isActive;

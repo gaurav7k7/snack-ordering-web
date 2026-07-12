@@ -7,6 +7,7 @@ import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { escapeHtml, renderEmailHtml } from '../utils/emailTemplates.js';
+import { buildPaginationMeta, parsePagination } from '../utils/pagination.js';
 
 export const submitContactMessage = asyncHandler(async (req, res) => {
   const { name, email, subject, message } = req.body;
@@ -34,18 +35,20 @@ export const submitContactMessage = asyncHandler(async (req, res) => {
 });
 
 export const getContactMessages = asyncHandler(async (req, res) => {
-  const page = Math.max(Number(req.query.page) || 1, 1);
-  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+  const pagination = parsePagination(req.query);
 
   const [messages, total] = await Promise.all([
-    ContactMessageModel.find().sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+    ContactMessageModel.find()
+      .sort({ createdAt: -1 })
+      .skip((pagination.page - 1) * pagination.limit)
+      .limit(pagination.limit),
     ContactMessageModel.countDocuments(),
   ]);
 
   res.status(StatusCodes.OK).json(
     createApiResponse('Contact messages retrieved.', {
       messages,
-      pagination: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) },
+      pagination: buildPaginationMeta(total, pagination),
     }),
   );
 });

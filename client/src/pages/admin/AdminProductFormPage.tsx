@@ -14,6 +14,7 @@ import {
 } from '@/redux/api/adminProductsApi';
 import { useGetBrandsQuery, useGetSubCategoriesQuery, useGetTagsQuery } from '@/redux/api/taxonomyApi';
 import type { ProductFormInput } from '@/types/product';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 const EMPTY_FORM: ProductFormInput = {
   name: '',
@@ -182,8 +183,8 @@ export default function AdminProductFormPage() {
         toast.success('Product created.');
       }
       navigate(ROUTES.adminProducts);
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to save product.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to save product.'));
     }
   };
 

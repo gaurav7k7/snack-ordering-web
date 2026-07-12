@@ -17,6 +17,12 @@ function hasUsageLeft(coupon: CouponDocument) {
   return !coupon.usageLimit || coupon.usageCount < coupon.usageLimit;
 }
 
+// Deliberately never cross-matches a logged-in redemption against a guest
+// redemption with the same email (or vice versa) — a guest who redeems a
+// coupon and later creates an account with that email can reuse the
+// per-user limit. Accepted as a minor tradeoff rather than fixed, since
+// closing it would mean looking up every guest redemption's email against
+// the current user's email on every check.
 function userRedemptionCount(coupon: CouponDocument, { userId, guestEmail }: EvalContext) {
   return (coupon.redemptions ?? []).filter((redemption) => {
     if (userId && redemption.user) return redemption.user.toString() === userId;

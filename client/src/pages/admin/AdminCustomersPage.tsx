@@ -8,7 +8,7 @@ import { AdminSearchForm } from '@/components/admin/AdminSearchForm';
 import { StatusPill } from '@/components/admin/StatusPill';
 import { RefreshingIndicator, TableStateRow } from '@/components/admin/TableStateRow';
 import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
-import { SearchPagination } from '@/components/customer/SearchPagination';
+import { SearchPagination } from '@/components/shared/SearchPagination';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import {
@@ -18,6 +18,8 @@ import {
   useUnblockCustomerMutation,
 } from '@/redux/api/adminUsersApi';
 import { cldUrl } from '@/utils/cloudinaryImage';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import { formatDate } from '@/utils/formatDate';
 
 const STATUS_FILTERS: Array<{ label: string; value?: 'active' | 'blocked' }> = [
   { label: 'All' },
@@ -50,8 +52,8 @@ export default function AdminCustomersPage() {
     try {
       await blockCustomer({ id, reason }).unwrap();
       toast.success('Customer blocked.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to block customer.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to block customer.'));
     }
   };
 
@@ -59,8 +61,8 @@ export default function AdminCustomersPage() {
     try {
       await unblockCustomer(id).unwrap();
       toast.success('Customer unblocked.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to unblock customer.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to unblock customer.'));
     }
   };
 
@@ -69,8 +71,8 @@ export default function AdminCustomersPage() {
     try {
       await deleteCustomer(id).unwrap();
       toast.success('Customer deleted.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete customer.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete customer.'));
     }
   };
 
@@ -153,7 +155,7 @@ export default function AdminCustomersPage() {
                     {customer.phone && <p className="text-xs">{customer.phone}</p>}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {new Date(customer.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {formatDate(customer.createdAt, 'long')}
                   </td>
                   <td className="px-4 py-3">
                     <StatusPill tone={customer.isActive ? 'success' : 'danger'} title={customer.blockedReason}>

@@ -21,6 +21,8 @@ import {
 import { CANCELLABLE_ORDER_STATUSES, type OrderStatus } from '@/types/order';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import { formatDate } from '@/utils/formatDate';
 
 const ALL_STATUSES = Object.keys(STATUS_LABELS) as OrderStatus[];
 
@@ -66,8 +68,8 @@ export default function AdminOrderDetailPage() {
     try {
       await updateStatus({ id: order._id, status }).unwrap();
       toast.success('Order status updated.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update order status.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update order status.'));
     }
   };
 
@@ -76,8 +78,8 @@ export default function AdminOrderDetailPage() {
       await adminCancelOrder({ id: order._id, reason }).unwrap();
       toast.success('Order cancelled.');
       setActiveModal(null);
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to cancel this order.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to cancel this order.'));
     }
   };
 
@@ -86,8 +88,8 @@ export default function AdminOrderDetailPage() {
       await refundOrder({ id: order._id, amount, reason }).unwrap();
       toast.success('Refund processed.');
       setActiveModal(null);
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to process refund.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to process refund.'));
     }
   };
 
@@ -104,7 +106,7 @@ export default function AdminOrderDetailPage() {
           </Link>
           <h1 className="mt-1 text-3xl font-black">Order #{order.orderNumber}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Placed on {new Date(order.createdAt).toLocaleString('en-IN')}
+            Placed on {formatDate(order.createdAt, 'datetime')}
           </p>
         </div>
         <div className="flex items-center gap-3">

@@ -4,6 +4,7 @@ import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
 import { ROUTES } from '@/constants/routes';
 import type { OrderStatus } from '@/types/order';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { formatDate } from '@/utils/formatDate';
 
 type LatestOrder = {
   _id: string;
@@ -39,7 +40,7 @@ export function LatestOrdersList({ orders }: { orders: LatestOrder[] }) {
                   {order.orderNumber}
                 </Link>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                  {formatDate(order.createdAt, 'short')}
                 </p>
               </td>
               <td className="py-2.5 pr-3 text-muted-foreground">{order.guestName ?? order.guestEmail ?? '—'}</td>

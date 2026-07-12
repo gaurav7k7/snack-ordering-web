@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 
 import { uploadImageToCloudinary } from '@/services/cloudinaryUpload';
 import type { ReviewImage } from '@/types/review';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 const MAX_IMAGES = 4;
 
@@ -31,8 +32,8 @@ export function ReviewImageUploader({
     try {
       const uploaded = await uploadImageToCloudinary(file);
       onChange([...images, uploaded]);
-    } catch (error: any) {
-      toast.error(error?.message ?? 'Unable to upload image.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to upload image.'));
     } finally {
       setIsUploading(false);
     }

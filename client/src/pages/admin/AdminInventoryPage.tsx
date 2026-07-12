@@ -4,11 +4,12 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 
 import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
-import { SearchPagination } from '@/components/customer/SearchPagination';
+import { SearchPagination } from '@/components/shared/SearchPagination';
 import { useGetAllProductsForAdminQuery, useUpdateProductMutation } from '@/redux/api/adminProductsApi';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { cn } from '@/utils/cn';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 const TABS: Array<{ label: string; value?: 'low' | 'out' }> = [
   { label: 'All products' },
@@ -25,8 +26,8 @@ function StockInput({ productId, value }: { productId: string; value: number }) 
     try {
       await updateProduct({ id: productId, availableQuantity: localValue, stock: localValue }).unwrap();
       toast.success('Stock updated.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update stock.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update stock.'));
       setLocalValue(value);
     }
   };

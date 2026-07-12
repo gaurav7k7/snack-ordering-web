@@ -1,6 +1,6 @@
 import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
-import { CHART_STATUS } from '@/constants/chartPalette';
+import { CHART_AXIS_TEXT, CHART_STATUS } from '@/constants/chartPalette';
 
 type OrderStatusChartProps = {
   pending: number;
@@ -24,7 +24,7 @@ export function OrderStatusChart({ pending, delivered, cancelled, refunded }: Or
         <YAxis
           type="category"
           dataKey="name"
-          tick={{ fontSize: 13, fill: '#898781' }}
+          tick={{ fontSize: 13, fill: CHART_AXIS_TEXT }}
           axisLine={false}
           tickLine={false}
           width={80}

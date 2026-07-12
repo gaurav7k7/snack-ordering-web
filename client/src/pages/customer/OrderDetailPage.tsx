@@ -21,6 +21,8 @@ import { addItem } from '@/redux/slices/cartSlice';
 import { CANCELLABLE_ORDER_STATUSES, RETURN_WINDOW_DAYS, TERMINAL_ORDER_STATUSES } from '@/types/order';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import { formatDate } from '@/utils/formatDate';
 
 const CANCEL_REASONS = [
   'Ordered by mistake',
@@ -89,8 +91,8 @@ export default function OrderDetailPage() {
       await cancelOrder({ id: order._id, reason }).unwrap();
       toast.success('Order cancelled.');
       setActiveModal(null);
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to cancel this order.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to cancel this order.'));
     }
   };
 
@@ -99,8 +101,8 @@ export default function OrderDetailPage() {
       await requestReturn({ id: order._id, reason }).unwrap();
       toast.success('Return request submitted.');
       setActiveModal(null);
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to submit a return request.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to submit a return request.'));
     }
   };
 
@@ -131,7 +133,7 @@ export default function OrderDetailPage() {
           <div>
             <h1 className="text-3xl font-black">Order #{order.orderNumber}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Placed on {new Date(order.createdAt).toLocaleString('en-IN')}
+              Placed on {formatDate(order.createdAt, 'datetime')}
               {!isTerminal && ' • Status updates automatically'}
             </p>
           </div>

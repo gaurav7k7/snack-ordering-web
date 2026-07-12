@@ -1,4 +1,5 @@
 import { env } from '@/config/env';
+import { SOCIAL_LINKS } from '@/constants/socialLinks';
 import type { HomeProduct } from '@/types/home';
 
 export function buildOrganizationSchema() {
@@ -8,7 +9,7 @@ export function buildOrganizationSchema() {
     name: 'SnackCo',
     url: env.siteUrl,
     logo: `${env.siteUrl}/icon.svg`,
-    sameAs: ['https://instagram.com', 'https://twitter.com', 'https://facebook.com', 'https://youtube.com'],
+    sameAs: SOCIAL_LINKS.map((link) => link.href),
   };
 }
 

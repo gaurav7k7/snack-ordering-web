@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
-import type { SearchProduct } from '@/types/product';
 
 type SearchFiltersProps = {
   categories: string[];

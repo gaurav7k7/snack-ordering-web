@@ -27,6 +27,7 @@ import {
   useUpdateSubCategoryMutation,
   useUpdateTagMutation,
 } from '@/redux/api/taxonomyApi';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 const TABS = ['Categories', 'Subcategories', 'Brands', 'Tags'] as const;
 type Tab = (typeof TABS)[number];
@@ -53,8 +54,8 @@ function CategoriesTab() {
       toast.success('Category created.');
       setName('');
       setDescription('');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to create category.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to create category.'));
     }
   };
 
@@ -64,16 +65,16 @@ function CategoriesTab() {
     try {
       await updateCategory({ id, name: next.trim() }).unwrap();
       toast.success('Category renamed.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to rename category.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to rename category.'));
     }
   };
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
     try {
       await updateCategory({ id, isActive: !isActive }).unwrap();
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update category.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update category.'));
     }
   };
 
@@ -82,8 +83,8 @@ function CategoriesTab() {
     try {
       await deleteCategory(id).unwrap();
       toast.success('Category deleted.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete category.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete category.'));
     }
   };
 
@@ -179,8 +180,8 @@ function SubCategoriesTab() {
       await createSubCategory({ name: name.trim(), category: categoryId }).unwrap();
       toast.success('Subcategory created.');
       setName('');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to create subcategory.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to create subcategory.'));
     }
   };
 
@@ -190,16 +191,16 @@ function SubCategoriesTab() {
     try {
       await updateSubCategory({ id, name: next.trim() }).unwrap();
       toast.success('Subcategory renamed. Existing products were updated to match.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to rename subcategory.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to rename subcategory.'));
     }
   };
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
     try {
       await updateSubCategory({ id, isActive: !isActive }).unwrap();
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update subcategory.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update subcategory.'));
     }
   };
 
@@ -208,8 +209,8 @@ function SubCategoriesTab() {
     try {
       await deleteSubCategory(id).unwrap();
       toast.success('Subcategory deleted.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete subcategory.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete subcategory.'));
     }
   };
 
@@ -305,8 +306,8 @@ function BrandsTab() {
       toast.success('Brand created.');
       setName('');
       setDescription('');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to create brand.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to create brand.'));
     }
   };
 
@@ -316,16 +317,16 @@ function BrandsTab() {
     try {
       await updateBrand({ id, name: next.trim() }).unwrap();
       toast.success('Brand renamed. Existing products were updated to match.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to rename brand.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to rename brand.'));
     }
   };
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
     try {
       await updateBrand({ id, isActive: !isActive }).unwrap();
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update brand.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update brand.'));
     }
   };
 
@@ -334,8 +335,8 @@ function BrandsTab() {
     try {
       await deleteBrand(id).unwrap();
       toast.success('Brand deleted.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete brand.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete brand.'));
     }
   };
 
@@ -427,8 +428,8 @@ function TagsTab() {
       await createTag({ name: name.trim() }).unwrap();
       toast.success('Tag created.');
       setName('');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to create tag.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to create tag.'));
     }
   };
 
@@ -438,16 +439,16 @@ function TagsTab() {
     try {
       await updateTag({ id, name: next.trim() }).unwrap();
       toast.success('Tag renamed. Existing products were updated to match.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to rename tag.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to rename tag.'));
     }
   };
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
     try {
       await updateTag({ id, isActive: !isActive }).unwrap();
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update tag.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update tag.'));
     }
   };
 
@@ -456,8 +457,8 @@ function TagsTab() {
     try {
       await deleteTag(id).unwrap();
       toast.success('Tag deleted.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete tag.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete tag.'));
     }
   };
 

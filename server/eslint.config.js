@@ -13,6 +13,13 @@ export default tseslint.config(
       ecmaVersion: 2022,
       globals: globals.node,
     },
+    rules: {
+      // Express only recognizes an error-handling middleware by its arity
+      // (req, res, next, err) — the trailing param must stay in the
+      // signature even when unused, so the underscore-prefix convention
+      // needs to be honored here.
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
   },
   prettier,
 );

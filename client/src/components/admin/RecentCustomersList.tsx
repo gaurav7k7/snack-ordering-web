@@ -1,4 +1,5 @@
 import { cldUrl } from '@/utils/cloudinaryImage';
+import { formatDate } from '@/utils/formatDate';
 
 type RecentCustomer = {
   _id: string;
@@ -29,7 +30,7 @@ export function RecentCustomersList({ customers }: { customers: RecentCustomer[]
             <p className="truncate text-xs text-muted-foreground">{customer.email}</p>
           </div>
           <p className="shrink-0 text-xs text-muted-foreground">
-            {new Date(customer.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+            {formatDate(customer.createdAt, 'short')}
           </p>
         </div>
       ))}

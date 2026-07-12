@@ -38,6 +38,7 @@ import {
 import { setUser } from '@/redux/slices/authSlice';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 export default function ProfilePage() {
   const dispatch = useAppDispatch();
@@ -87,20 +88,20 @@ export default function ProfilePage() {
         phone: profileForm.phone,
         avatar: profileForm.avatar,
       }).unwrap();
-      dispatch(setUser(result.data?.user as any));
+      if (result.data?.user) dispatch(setUser(result.data.user));
       toast.success('Profile updated.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update profile.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update profile.'));
     }
   };
 
   const handleAvatarSave = async () => {
     try {
       const result = await uploadAvatar({ avatar: profileForm.avatar }).unwrap();
-      dispatch(setUser(result.data?.user as any));
+      if (result.data?.user) dispatch(setUser(result.data.user));
       toast.success('Avatar updated.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update avatar.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update avatar.'));
     }
   };
 
@@ -115,8 +116,8 @@ export default function ProfilePage() {
       await updateAddresses({ addresses: nextAddresses }).unwrap();
       setAddressInput('');
       toast.success('Address added.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to save address.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to save address.'));
     }
   };
 
@@ -129,8 +130,8 @@ export default function ProfilePage() {
       }).unwrap();
       setPasswordForm({ currentPassword: '', newPassword: '' });
       toast.success('Password changed.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to change password.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to change password.'));
     }
   };
 
@@ -140,8 +141,8 @@ export default function ProfilePage() {
     try {
       await deleteAccount().unwrap();
       toast.success('Account deactivated.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete account.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete account.'));
     }
   };
 
@@ -333,7 +334,7 @@ export default function ProfilePage() {
             </div>
             <div className="mt-4 space-y-3">
               {orders.length ? (
-                orders.slice(0, 4).map((order: any) => (
+                orders.slice(0, 4).map((order) => (
                   <Link
                     key={order._id}
                     to={ROUTES.orderDetail(order._id)}
@@ -368,7 +369,7 @@ export default function ProfilePage() {
             </div>
             <div className="mt-4 space-y-3">
               {wishlist.length ? (
-                wishlist.slice(0, 4).map((item: any) => (
+                wishlist.slice(0, 4).map((item) => (
                   <Link
                     key={item._id}
                     to={`/products/${item.slug}`}
@@ -432,7 +433,7 @@ export default function ProfilePage() {
                 </div>
               ) : null}
               {notifications.length ? (
-                notifications.slice(0, 4).map((notification: any, index: number) => (
+                notifications.slice(0, 4).map((notification, index) => (
                   <div
                     key={`${notification.message ?? 'note'}-${index}`}
                     className="rounded-2xl border border-border/70 bg-background p-4 text-sm"
@@ -458,7 +459,7 @@ export default function ProfilePage() {
             </div>
             <div className="mt-4 space-y-3">
               {supportTickets.length ? (
-                supportTickets.slice(0, 4).map((ticket: any, index: number) => (
+                supportTickets.slice(0, 4).map((ticket, index) => (
                   <div
                     key={`${ticket.subject ?? 'ticket'}-${index}`}
                     className="rounded-2xl border border-border/70 bg-background p-4 text-sm"
@@ -489,7 +490,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="mt-2 space-y-2">
                   {reviews.length ? (
-                    reviews.slice(0, 3).map((review: any) => (
+                    reviews.slice(0, 3).map((review) => (
                       <Link
                         key={review._id}
                         to={`/products/${review.productSlug}#reviews`}

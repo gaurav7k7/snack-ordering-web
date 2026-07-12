@@ -7,12 +7,14 @@ import { Link } from 'react-router-dom';
 import { AdminSearchForm } from '@/components/admin/AdminSearchForm';
 import { StatusPill } from '@/components/admin/StatusPill';
 import { RefreshingIndicator } from '@/components/admin/TableStateRow';
-import { SearchPagination } from '@/components/customer/SearchPagination';
+import { SearchPagination } from '@/components/shared/SearchPagination';
 import { Skeleton } from '@/components/shared/Skeleton';
 import { Button } from '@/components/ui/button';
 import { useDeleteReviewMutation, useModerateReviewMutation } from '@/redux/api/reviewsApi';
 import { useDismissReportsMutation, useGetAllReviewsForAdminQuery } from '@/redux/api/reviewAdminApi';
 import { cldUrl } from '@/utils/cloudinaryImage';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import { formatDate } from '@/utils/formatDate';
 
 const FILTERS: Array<{ label: string; status?: 'approved' | 'rejected'; reported?: boolean }> = [
   { label: 'All' },
@@ -62,8 +64,8 @@ export default function AdminReviewsPage() {
     try {
       await moderateReview({ productId, reviewId, status }).unwrap();
       toast.success(status === 'approved' ? 'Review approved.' : 'Review rejected.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update review.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update review.'));
     }
   };
 
@@ -72,8 +74,8 @@ export default function AdminReviewsPage() {
     try {
       await deleteReview({ productId, reviewId }).unwrap();
       toast.success('Review deleted.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete review.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete review.'));
     }
   };
 
@@ -81,8 +83,8 @@ export default function AdminReviewsPage() {
     try {
       await dismissReports({ productId, reviewId }).unwrap();
       toast.success('Reports dismissed.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to dismiss reports.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to dismiss reports.'));
     }
   };
 
@@ -171,7 +173,7 @@ export default function AdminReviewsPage() {
                     <div className="mt-1 flex items-center gap-2">
                       <Stars rating={review.rating} />
                       <span className="text-xs text-muted-foreground">
-                        {review.name} · {new Date(review.createdAt).toLocaleDateString('en-IN')}
+                        {review.name} · {formatDate(review.createdAt)}
                       </span>
                     </div>
                   </div>
@@ -211,7 +213,7 @@ export default function AdminReviewsPage() {
                   <p className="text-xs font-semibold text-orange-600">Report reasons:</p>
                   {review.reports.map((report, index) => (
                     <p key={index} className="text-xs text-muted-foreground">
-                      "{report.reason}" — {new Date(report.createdAt).toLocaleDateString('en-IN')}
+                      "{report.reason}" — {formatDate(report.createdAt)}
                     </p>
                   ))}
                 </div>

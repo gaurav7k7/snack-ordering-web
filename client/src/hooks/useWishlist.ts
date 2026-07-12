@@ -7,6 +7,7 @@ import {
   useGetWishlistQuery,
   useRemoveFromWishlistMutation,
 } from '@/redux/api/profileApi';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 export function useWishlist() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
@@ -33,8 +34,8 @@ export function useWishlist() {
         await addToWishlist(productId).unwrap();
         toast.success('Added to wishlist.');
       }
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update your wishlist.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update your wishlist.'));
     }
   };
 

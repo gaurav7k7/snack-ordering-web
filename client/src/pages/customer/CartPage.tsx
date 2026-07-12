@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -70,15 +71,12 @@ export default function CartPage() {
         </div>
 
         {items.length === 0 && savedItems.length === 0 ? (
-          <div className="mt-10 rounded-3xl border border-dashed bg-card p-10 text-center">
-            <p className="text-lg font-semibold">Your cart is empty.</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Add some premium snacks and come back here for a fast checkout.
-            </p>
-            <Button asChild className="mt-6">
-              <Link to={ROUTES.products}>Browse snacks</Link>
-            </Button>
-          </div>
+          <EmptyState
+            className="mt-10"
+            title="Your cart is empty."
+            description="Add some premium snacks and come back here for a fast checkout."
+            action={{ label: 'Browse snacks', to: ROUTES.products }}
+          />
         ) : null}
 
         {automaticOffer ? (

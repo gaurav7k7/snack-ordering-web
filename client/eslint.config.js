@@ -22,6 +22,19 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      // Allows the `const { omit, ...rest } = value` pattern (e.g. stripping
+      // confirmPassword before submitting a form payload) without having to
+      // reference the destructured-but-intentionally-unused field.
+      '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
+    },
+  },
+  {
+    // The service worker runs in its own worker global scope (self,
+    // caches, fetch as a global) rather than the page's window scope.
+    files: ['public/sw.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: globals.serviceworker,
     },
   },
   prettier,

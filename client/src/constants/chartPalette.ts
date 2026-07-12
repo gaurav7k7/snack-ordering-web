@@ -42,3 +42,7 @@ export const CHART_CATEGORICAL_DARK = [
 
 export const CHART_GRID_LIGHT = '#e1e0d9';
 export const CHART_GRID_DARK = '#2c2c2a';
+
+// Axis tick/label text — same muted tone in both themes since chart chrome
+// (unlike the marks themselves) doesn't need a light/dark variant here.
+export const CHART_AXIS_TEXT = '#898781';

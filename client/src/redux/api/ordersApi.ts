@@ -48,9 +48,21 @@ type VerifyPaymentPayload = {
   razorpaySignature: string;
 };
 
+// Only present when paymentMethod is 'razorpay' — the order is still
+// pending and the client uses these fields to open the Razorpay checkout.
+type RazorpayCheckoutDetails = {
+  key: string;
+  amount: number;
+  currency: string;
+  razorpayOrderId: string;
+};
+
 export const ordersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    createOrder: builder.mutation<ApiResponse<{ order: Order; payment?: any }>, OrderPayload>({
+    createOrder: builder.mutation<
+      ApiResponse<{ order: Order; payment?: RazorpayCheckoutDetails }>,
+      OrderPayload
+    >({
       query: (body) => ({ url: '/orders', method: 'POST', body }),
       invalidatesTags: ['Order'],
     }),

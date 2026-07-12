@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch } from '@/hooks/redux';
@@ -12,6 +13,7 @@ import { addItem } from '@/redux/slices/cartSlice';
 import type { ApiProductCard } from '@/types/product';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 export default function WishlistPage() {
   const dispatch = useAppDispatch();
@@ -42,8 +44,8 @@ export default function WishlistPage() {
     try {
       await removeFromWishlist(product._id).unwrap();
       toast.success('Removed from wishlist.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to remove item.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to remove item.'));
     }
   };
 
@@ -66,16 +68,13 @@ export default function WishlistPage() {
         {isLoading ? (
           <p className="mt-10 text-sm text-muted-foreground">Loading your wishlist…</p>
         ) : wishlist.length === 0 ? (
-          <div className="mt-10 rounded-3xl border border-dashed bg-card p-10 text-center">
-            <Heart className="mx-auto h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 text-lg font-semibold">Your wishlist is empty.</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Tap the heart icon on any snack to save it here.
-            </p>
-            <Button asChild className="mt-6">
-              <Link to={ROUTES.products}>Browse snacks</Link>
-            </Button>
-          </div>
+          <EmptyState
+            className="mt-10"
+            icon={Heart}
+            title="Your wishlist is empty."
+            description="Tap the heart icon on any snack to save it here."
+            action={{ label: 'Browse snacks', to: ROUTES.products }}
+          />
         ) : (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {wishlist.map((product) => {

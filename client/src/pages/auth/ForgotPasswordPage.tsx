@@ -6,8 +6,10 @@ import { toast } from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ROUTES } from '@/constants/routes';
 import { useForgotPasswordMutation } from '@/redux/api/authApi';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 import { forgotPasswordSchema, type ForgotPasswordFormInput } from '@/validation/auth.schema';
 
 export default function ForgotPasswordPage() {
@@ -28,8 +30,7 @@ export default function ForgotPasswordPage() {
       navigate(ROUTES.login, { replace: true });
     }
     if (error) {
-      const message = (error as any)?.data?.message ?? 'Unable to send reset instructions.';
-      toast.error(message);
+      toast.error(getErrorMessage(error, 'Unable to send reset instructions.'));
     }
   }, [error, isSuccess, navigate]);
 
@@ -49,11 +50,7 @@ export default function ForgotPasswordPage() {
         >
           <label className="grid gap-2 text-sm">
             <span>Email address</span>
-            <input
-              type="email"
-              {...register('email')}
-              className="rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
+            <Input type="email" {...register('email')} />
             {errors.email && (
               <span className="text-sm text-destructive">{errors.email.message}</span>
             )}

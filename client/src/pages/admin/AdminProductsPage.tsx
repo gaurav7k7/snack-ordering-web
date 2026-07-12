@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom';
 import { StatusPill } from '@/components/admin/StatusPill';
 import { RefreshingIndicator, TableStateRow } from '@/components/admin/TableStateRow';
 import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
-import { SearchPagination } from '@/components/customer/SearchPagination';
+import { SearchPagination } from '@/components/shared/SearchPagination';
 import { Button } from '@/components/ui/button';
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
 import {
@@ -32,6 +32,7 @@ import { cn } from '@/utils/cn';
 import { downloadCsv } from '@/utils/csv';
 import { exportProductsToCsv, generateProductCsvTemplate, parseProductsCsv } from '@/utils/productCsv';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 export default function AdminProductsPage() {
   const [search, setSearch] = useState('');
@@ -69,8 +70,8 @@ export default function AdminProductsPage() {
   const handleToggle = async (id: string, field: 'isFeatured' | 'isTrending' | 'isActive', value: boolean) => {
     try {
       await updateProduct({ id, [field]: !value }).unwrap();
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update product.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update product.'));
     }
   };
 
@@ -79,8 +80,8 @@ export default function AdminProductsPage() {
     try {
       await deleteProduct(id).unwrap();
       toast.success('Product deleted.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete product.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete product.'));
     }
   };
 
@@ -118,8 +119,8 @@ export default function AdminProductsPage() {
       if (result.data) {
         toast.success(`Imported ${result.data.created} of ${rows.length} products.`);
       }
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to process that file.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to process that file.'));
     } finally {
       setIsImporting(false);
     }

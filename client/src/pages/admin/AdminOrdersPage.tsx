@@ -7,11 +7,13 @@ import { AdminSearchForm } from '@/components/admin/AdminSearchForm';
 import { RefreshingIndicator, TableStateRow } from '@/components/admin/TableStateRow';
 import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
 import { OrderStatusBadge, STATUS_LABELS } from '@/components/orders/OrderStatusBadge';
-import { SearchPagination } from '@/components/customer/SearchPagination';
+import { SearchPagination } from '@/components/shared/SearchPagination';
 import { ROUTES } from '@/constants/routes';
 import { useGetAllOrdersForAdminQuery, useUpdateOrderStatusMutation } from '@/redux/api/ordersApi';
 import type { OrderStatus } from '@/types/order';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import { formatDate } from '@/utils/formatDate';
 
 const STATUS_FILTERS: Array<{ label: string; value?: OrderStatus }> = [
   { label: 'All' },
@@ -55,8 +57,8 @@ export default function AdminOrdersPage() {
     try {
       await updateStatus({ id: orderId, status }).unwrap();
       toast.success('Order status updated.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update order status.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update order status.'));
     } finally {
       setUpdatingId(null);
     }
@@ -120,7 +122,7 @@ export default function AdminOrdersPage() {
             ) : orders.length === 0 ? (
               <TableStateRow colSpan={6}>No orders match this filter.</TableStateRow>
             ) : (
-              orders.map((order: any) => (
+              orders.map((order) => (
                 <tr
                   key={order._id}
                   className={`border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50 ${
@@ -132,7 +134,7 @@ export default function AdminOrdersPage() {
                       {order.orderNumber}
                     </Link>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {formatDate(order.createdAt, 'long')}
                     </p>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{order.guestName ?? order.guestEmail ?? '—'}</td>

@@ -1,4 +1,5 @@
 import { StaticPageLayout } from '@/components/shared/StaticPageLayout';
+import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE } from '@/constants/pricing';
 
 export default function ShippingPolicyPage() {
   return (
@@ -19,8 +20,8 @@ export default function ShippingPolicyPage() {
 
       <h2>2. Shipping fees</h2>
       <p>
-        Orders above <strong>₹999</strong> ship free. Orders below that threshold have a flat{' '}
-        <strong>₹69</strong> shipping fee, calculated automatically at checkout.
+        Orders above <strong>₹{FREE_SHIPPING_THRESHOLD}</strong> ship free. Orders below that threshold have a flat{' '}
+        <strong>₹{STANDARD_SHIPPING_FEE}</strong> shipping fee, calculated automatically at checkout.
       </p>
 
       <h2>3. Order tracking</h2>

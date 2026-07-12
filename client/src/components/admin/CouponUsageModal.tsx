@@ -2,10 +2,11 @@ import { X } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { SearchPagination } from '@/components/customer/SearchPagination';
+import { SearchPagination } from '@/components/shared/SearchPagination';
 import { ROUTES } from '@/constants/routes';
 import { useGetCouponUsageAdminQuery } from '@/redux/api/couponsApi';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { formatDate } from '@/utils/formatDate';
 
 type CouponUsageModalProps = {
   couponId: string;
@@ -102,7 +103,7 @@ export function CouponUsageModal({ couponId, onClose }: CouponUsageModalProps) {
                         </td>
                         <td className="px-4 py-2.5 font-semibold">{formatCurrency(redemption.discountAmount)}</td>
                         <td className="px-4 py-2.5 text-xs text-muted-foreground">
-                          {new Date(redemption.redeemedAt).toLocaleString('en-IN')}
+                          {formatDate(redemption.redeemedAt, 'datetime')}
                         </td>
                       </tr>
                     ))

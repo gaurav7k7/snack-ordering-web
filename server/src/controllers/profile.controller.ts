@@ -5,36 +5,17 @@ import { OrderModel } from '../models/Order.model.js';
 import { ProductModel } from '../models/Product.model.js';
 import { UserModel } from '../models/User.model.js';
 import { PRODUCT_CARD_FIELDS } from '../services/product.service.js';
+import { toUserProfile } from '../services/userSerializer.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { buildPaginationMeta, parsePagination } from '../utils/pagination.js';
 
-function mapUser(user: any) {
-  return {
-    id: user._id?.toString(),
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    role: user.role,
-    avatar: user.avatar,
-    isEmailVerified: user.isEmailVerified,
-    addresses: user.addresses ?? [],
-    wishlist: user.wishlist ?? [],
-    coupons: user.coupons ?? [],
-    wallet: user.wallet ?? { balance: 0, currency: 'INR' },
-    notifications: user.notifications ?? [],
-    recentlyViewed: user.recentlyViewed ?? [],
-    supportTickets: user.supportTickets ?? [],
-    reviews: user.reviews ?? [],
-  };
-}
-
 export const getProfile = asyncHandler(async (req, res) => {
   const user = await UserModel.findById(req.user?.userId).lean();
   if (!user) throw new AppError('User not found.', StatusCodes.NOT_FOUND);
 
-  res.status(StatusCodes.OK).json(createApiResponse('Profile retrieved.', { user: mapUser(user) }));
+  res.status(StatusCodes.OK).json(createApiResponse('Profile retrieved.', { user: toUserProfile(user) }));
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {
@@ -47,7 +28,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
   if (avatar !== undefined) user.avatar = avatar;
 
   await user.save();
-  res.status(StatusCodes.OK).json(createApiResponse('Profile updated.', { user: mapUser(user) }));
+  res.status(StatusCodes.OK).json(createApiResponse('Profile updated.', { user: toUserProfile(user) }));
 });
 
 export const uploadProfilePicture = asyncHandler(async (req, res) => {
@@ -60,7 +41,7 @@ export const uploadProfilePicture = asyncHandler(async (req, res) => {
   await user.save();
   res
     .status(StatusCodes.OK)
-    .json(createApiResponse('Profile picture updated.', { user: mapUser(user) }));
+    .json(createApiResponse('Profile picture updated.', { user: toUserProfile(user) }));
 });
 
 export const updateAddresses = asyncHandler(async (req, res) => {
@@ -69,7 +50,7 @@ export const updateAddresses = asyncHandler(async (req, res) => {
 
   user.addresses = req.body.addresses ?? [];
   await user.save();
-  res.status(StatusCodes.OK).json(createApiResponse('Addresses updated.', { user: mapUser(user) }));
+  res.status(StatusCodes.OK).json(createApiResponse('Addresses updated.', { user: toUserProfile(user) }));
 });
 
 // This only ever backs the profile page's "recent orders" preview (which

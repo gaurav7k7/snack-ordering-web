@@ -2,31 +2,19 @@ import { StatusCodes } from 'http-status-codes';
 
 import { BrandModel } from '../models/Brand.model.js';
 import { ProductModel } from '../models/Product.model.js';
+import { ensureUniqueSlug } from '../services/slug.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
+import { PUBLIC_LIST_CACHE_CONTROL } from '../constants/cache.js';
 import { slugify } from '../utils/slugify.js';
-
-async function ensureUniqueSlug(baseSlug: string, excludeId?: string) {
-  let slug = baseSlug;
-  let counter = 2;
-
-  while (
-    await BrandModel.exists({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })
-  ) {
-    slug = `${baseSlug}-${counter}`;
-    counter += 1;
-  }
-
-  return slug;
-}
 
 export const listBrands = asyncHandler(async (req, res) => {
   const includeInactive = req.query.includeInactive === 'true';
   const filter = includeInactive ? {} : { isActive: true };
   const brands = await BrandModel.find(filter).sort({ name: 1 });
 
-  res.set('Cache-Control', 'public, max-age=60');
+  res.set('Cache-Control', PUBLIC_LIST_CACHE_CONTROL);
   res.status(StatusCodes.OK).json(createApiResponse('Brands retrieved.', { brands }));
 });
 
@@ -38,7 +26,7 @@ export const createBrand = asyncHandler(async (req, res) => {
     throw new AppError('A brand with this name already exists.', StatusCodes.CONFLICT);
   }
 
-  const slug = await ensureUniqueSlug(slugify(name));
+  const slug = await ensureUniqueSlug(BrandModel, slugify(name));
 
   const brand = await BrandModel.create({
     name,
@@ -65,7 +53,7 @@ export const updateBrand = asyncHandler(async (req, res) => {
       throw new AppError('A brand with this name already exists.', StatusCodes.CONFLICT);
     }
     brand.name = name;
-    brand.slug = await ensureUniqueSlug(slugify(name), brand._id.toString());
+    brand.slug = await ensureUniqueSlug(BrandModel, slugify(name), brand._id.toString());
   }
 
   if (description !== undefined) brand.description = description;

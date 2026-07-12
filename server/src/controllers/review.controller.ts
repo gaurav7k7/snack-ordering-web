@@ -2,15 +2,20 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ProductModel } from '../models/Product.model.js';
 import { UserModel } from '../models/User.model.js';
-import { hasVerifiedPurchase, recalculateProductRating } from '../services/review.service.js';
+import {
+  getReviewsArray,
+  hasVerifiedPurchase,
+  recalculateProductRating,
+  type ReviewSubdoc,
+} from '../services/review.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 
 const REVIEWS_PER_PAGE = 10;
 
-function mapReview(review: any, requesterId?: string) {
-  const voters: any[] = review.helpfulVoters ?? [];
+function mapReview(review: ReviewSubdoc, requesterId?: string) {
+  const voters = review.helpfulVoters ?? [];
 
   return {
     _id: review._id,
@@ -38,7 +43,7 @@ export const listProductReviews = asyncHandler(async (req, res) => {
 
   const requesterId = req.user?.userId;
   const isAdmin = req.user?.role === 'admin';
-  const allReviews = (product.reviews ?? []) as any[];
+  const allReviews = (product.reviews ?? []) as unknown as ReviewSubdoc[];
 
   const visibleReviews = allReviews.filter(
     (review) => review.status !== 'rejected' || isAdmin || review.user?.toString() === requesterId,
@@ -106,8 +111,8 @@ export const createReview = asyncHandler(async (req, res) => {
     throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
   }
 
-  const reviews = product.reviews as any;
-  const alreadyReviewed = reviews.some((review: any) => review.user?.toString() === userId);
+  const reviews = getReviewsArray(product);
+  const alreadyReviewed = reviews.some((review) => review.user?.toString() === userId);
   if (alreadyReviewed) {
     throw new AppError(
       'You have already reviewed this product. Edit your existing review instead.',
@@ -130,7 +135,7 @@ export const createReview = asyncHandler(async (req, res) => {
     comment,
     images: images ?? [],
     isVerifiedPurchase,
-  });
+  } as never);
 
   recalculateProductRating(product as never);
   await product.save();
@@ -150,7 +155,7 @@ export const updateReview = asyncHandler(async (req, res) => {
     throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
   }
 
-  const review = (product.reviews as any).id(req.params.reviewId);
+  const review = getReviewsArray(product).id(req.params.reviewId);
   if (!review) {
     throw new AppError('Review not found.', StatusCodes.NOT_FOUND);
   }
@@ -177,7 +182,8 @@ export const deleteReview = asyncHandler(async (req, res) => {
     throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
   }
 
-  const review = (product.reviews as any).id(req.params.reviewId);
+  const reviews = getReviewsArray(product);
+  const review = reviews.id(req.params.reviewId);
   if (!review) {
     throw new AppError('Review not found.', StatusCodes.NOT_FOUND);
   }
@@ -185,7 +191,7 @@ export const deleteReview = asyncHandler(async (req, res) => {
     throw new AppError('You can only delete your own review.', StatusCodes.FORBIDDEN);
   }
 
-  (product.reviews as any).pull({ _id: req.params.reviewId });
+  reviews.pull({ _id: req.params.reviewId });
   recalculateProductRating(product as never);
   await product.save();
 
@@ -200,7 +206,7 @@ export const toggleHelpfulVote = asyncHandler(async (req, res) => {
     throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
   }
 
-  const review = (product.reviews as any).id(req.params.reviewId);
+  const review = getReviewsArray(product).id(req.params.reviewId);
   if (!review) {
     throw new AppError('Review not found.', StatusCodes.NOT_FOUND);
   }
@@ -208,12 +214,12 @@ export const toggleHelpfulVote = asyncHandler(async (req, res) => {
     throw new AppError('You cannot vote on your own review.', StatusCodes.BAD_REQUEST);
   }
 
-  const voters: any[] = review.helpfulVoters ?? [];
+  const voters = review.helpfulVoters ?? [];
   const existingIndex = voters.findIndex((id) => id?.toString() === userId);
   const hasVoted = existingIndex < 0;
 
   if (hasVoted) {
-    voters.push(userId);
+    voters.push(userId as never);
   } else {
     voters.splice(existingIndex, 1);
   }
@@ -235,7 +241,7 @@ export const reportReview = asyncHandler(async (req, res) => {
     throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
   }
 
-  const review = (product.reviews as any).id(req.params.reviewId);
+  const review = getReviewsArray(product).id(req.params.reviewId);
   if (!review) {
     throw new AppError('Review not found.', StatusCodes.NOT_FOUND);
   }
@@ -243,12 +249,12 @@ export const reportReview = asyncHandler(async (req, res) => {
     throw new AppError('You cannot report your own review.', StatusCodes.BAD_REQUEST);
   }
 
-  const reports: any[] = review.reports ?? [];
+  const reports = review.reports ?? [];
   if (reports.some((report) => report.user?.toString() === userId)) {
     throw new AppError('You have already reported this review.', StatusCodes.CONFLICT);
   }
 
-  reports.push({ user: userId, reason });
+  reports.push({ user: userId as never, reason });
   review.reports = reports;
   await product.save();
 
@@ -263,7 +269,7 @@ export const moderateReview = asyncHandler(async (req, res) => {
     throw new AppError('Product not found.', StatusCodes.NOT_FOUND);
   }
 
-  const review = (product.reviews as any).id(req.params.reviewId);
+  const review = getReviewsArray(product).id(req.params.reviewId);
   if (!review) {
     throw new AppError('Review not found.', StatusCodes.NOT_FOUND);
   }

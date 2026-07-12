@@ -1,7 +1,6 @@
 import { configureStore, type Middleware } from '@reduxjs/toolkit';
 
 import { baseApi } from '@/redux/api/baseApi';
-import { productsApi } from '@/redux/api/productsApi';
 import authReducer from '@/redux/slices/authSlice';
 import cartReducer, { CART_STORAGE_KEY } from '@/redux/slices/cartSlice';
 import compareReducer, { COMPARE_STORAGE_KEY } from '@/redux/slices/compareSlice';
@@ -32,15 +31,9 @@ export const store = configureStore({
     compare: compareReducer,
     auth: authReducer,
     [baseApi.reducerPath]: baseApi.reducer,
-    [productsApi.reducerPath]: productsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
-      baseApi.middleware,
-      productsApi.middleware,
-      persistCartMiddleware,
-      persistCompareMiddleware,
-    ),
+    getDefaultMiddleware().concat(baseApi.middleware, persistCartMiddleware, persistCompareMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

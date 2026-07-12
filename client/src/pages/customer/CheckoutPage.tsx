@@ -2,7 +2,7 @@ import { CheckCircle2, CreditCard, MapPin, PackageCheck, Truck } from 'lucide-re
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { useCartPricing } from '@/hooks/useCartPricing';
 import { useCreateOrderMutation, useVerifyPaymentMutation } from '@/redux/api/ordersApi';
 import { clearCart } from '@/redux/slices/cartSlice';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 const defaultAddress = {
   fullName: '',
@@ -142,8 +143,8 @@ export default function CheckoutPage() {
               dispatch(clearCart());
               toast.success('Payment successful. Your order is confirmed.');
               navigate('/order-confirmation', { state: { order: result.data?.order } });
-            } catch (verifyError: any) {
-              toast.error(verifyError?.data?.message ?? 'Payment could not be verified.');
+            } catch (verifyError) {
+              toast.error(getErrorMessage(verifyError, 'Payment could not be verified.'));
             }
           },
           prefill: {
@@ -177,8 +178,8 @@ export default function CheckoutPage() {
       dispatch(clearCart());
       toast.success('Order placed successfully.');
       navigate('/order-confirmation', { state: { order: result.data?.order } });
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to place your order.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to place your order.'));
     }
   };
 

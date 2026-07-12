@@ -1,3 +1,4 @@
+import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, TAX_RATE } from '@/constants/pricing';
 import { useGetAutomaticOfferQuery, useValidateCouponQuery } from '@/redux/api/couponsApi';
 
 export function useCartPricing(subtotal: number, couponCode: string) {
@@ -20,8 +21,8 @@ export function useCartPricing(subtotal: number, couponCode: string) {
   const couponDiscount = appliedCoupon?.discountAmount ?? 0;
   const automaticDiscount = automaticOffer?.discountAmount ?? 0;
   const totalDiscount = Math.min(couponDiscount + automaticDiscount, subtotal);
-  const tax = Math.round(Math.max(subtotal - totalDiscount, 0) * 0.18);
-  const shippingFee = subtotal <= 0 ? 0 : subtotal > 999 ? 0 : 69;
+  const tax = Math.round(Math.max(subtotal - totalDiscount, 0) * TAX_RATE);
+  const shippingFee = subtotal <= 0 ? 0 : subtotal > FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
   const total = subtotal - totalDiscount + tax + shippingFee;
 
   return {

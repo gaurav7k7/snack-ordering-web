@@ -1,7 +1,9 @@
+import type { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 
 import { CANCELLABLE_STATUSES, ORDER_STATUS, RETURN_WINDOW_DAYS } from '../constants/orderStatus.js';
+import { DEFAULT_COUNTRY, DEFAULT_CURRENCY, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, TAX_RATE } from '../constants/pricing.js';
 import { env } from '../config/env.js';
 import { evaluateCouponByCode, findBestAutomaticOffer, redeemCouponByCode } from '../services/coupon.service.js';
 import { sendEmail } from '../services/email.service.js';
@@ -21,6 +23,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { escapeRegex } from '../utils/escapeRegex.js';
 import { escapeHtml, renderEmailHtml } from '../utils/emailTemplates.js';
+import { buildPaginationMeta, parsePagination } from '../utils/pagination.js';
 
 async function loadOwnedOrder(orderId: string, userId?: string) {
   const order = await OrderModel.findById(orderId);
@@ -46,7 +49,14 @@ async function loadOrderById(orderId: string) {
   return order;
 }
 
-type OrderPayment = { provider?: string; status?: string; razorpayPaymentId?: string; refundId?: string };
+type OrderPayment = {
+  provider: string;
+  status: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
+  refundId?: string;
+};
 
 // Best-effort refund used by flows where the primary action (cancel, status
 // change) should still succeed even if the payment gateway call fails
@@ -61,7 +71,7 @@ async function attemptAutoRefund(order: InstanceType<typeof OrderModel>, note: s
 
   try {
     const refund = await refundPayment(payment.razorpayPaymentId as string, order.total);
-    order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as never;
+    order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as OrderPayment;
     order.status = ORDER_STATUS.refunded;
     (order as unknown as { _statusNote?: string })._statusNote = note;
     await order.save();
@@ -176,8 +186,8 @@ export const createOrder = asyncHandler(async (req, res) => {
   const automaticOfferCode = automaticOffer?.coupon.code ?? '';
 
   const totalDiscount = Math.min(couponDiscount + automaticDiscount, subtotal);
-  const tax = Math.round(Math.max(subtotal - totalDiscount, 0) * 0.18);
-  const shippingFee = subtotal > 999 ? 0 : 69;
+  const tax = Math.round(Math.max(subtotal - totalDiscount, 0) * TAX_RATE);
+  const shippingFee = subtotal > FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
   const total = subtotal - totalDiscount + tax + shippingFee;
   const isRazorpayPayment = paymentMethod === 'razorpay';
 
@@ -195,7 +205,7 @@ export const createOrder = asyncHandler(async (req, res) => {
       ...shippingAddress,
       fullName: shippingAddress.fullName || effectiveName,
       phone: shippingAddress.phone || effectivePhone,
-      country: shippingAddress.country || 'India',
+      country: shippingAddress.country || DEFAULT_COUNTRY,
     },
     subtotal,
     shippingFee,
@@ -223,7 +233,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   if (isRazorpayPayment) {
     const razorpayOrder = await createRazorpayOrder(total, order._id.toString());
-    order.payment = { ...(order.payment ?? {}), razorpayOrderId: razorpayOrder.id } as any;
+    order.payment = { ...(order.payment ?? {}), razorpayOrderId: razorpayOrder.id } as OrderPayment;
     await order.save();
 
     return res.status(StatusCodes.CREATED).json(
@@ -232,7 +242,7 @@ export const createOrder = asyncHandler(async (req, res) => {
         payment: {
           key: env.razorpayKeyId,
           amount: total,
-          currency: 'INR',
+          currency: DEFAULT_CURRENCY,
           razorpayOrderId: razorpayOrder.id,
         },
       }),
@@ -265,12 +275,16 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   });
 
   if (!isSignatureValid) {
-    order.payment = { ...(order.payment ?? {}), status: 'failed' } as any;
+    order.payment = { ...(order.payment ?? {}), status: 'failed' } as OrderPayment;
     order.status = ORDER_STATUS.pending;
     await order.save();
     throw new AppError('Payment verification failed.', StatusCodes.BAD_REQUEST);
   }
 
+  // The client-driven verifyPayment call and the async Razorpay webhook
+  // (handleRazorpayWebhook below) can both independently race to confirm
+  // the same order. Without this guard, a race would double-decrement
+  // stock, double-redeem coupons, and send two confirmation emails.
   const wasAlreadyConfirmed = order.status === ORDER_STATUS.confirmed;
 
   order.payment = {
@@ -279,7 +293,7 @@ export const verifyPayment = asyncHandler(async (req, res) => {
     razorpayPaymentId,
     razorpaySignature,
     status: 'paid',
-  } as any;
+  } as OrderPayment;
   order.status = ORDER_STATUS.confirmed;
   await order.save();
 
@@ -314,13 +328,16 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
   }
 
   if (event.event === 'payment.captured' || event.event === 'payment.authorized') {
+    // See the matching comment in verifyPayment above — this guard prevents
+    // double stock/coupon effects if both confirmation paths fire for the
+    // same order.
     const wasAlreadyConfirmed = order.status === ORDER_STATUS.confirmed;
 
     order.payment = {
       ...(order.payment ?? {}),
       razorpayPaymentId: paymentEntity.id,
       status: 'paid',
-    } as any;
+    } as OrderPayment;
     order.status = ORDER_STATUS.confirmed;
     await order.save();
 
@@ -332,7 +349,7 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
   }
 
   if (event.event === 'payment.failed') {
-    order.payment = { ...(order.payment ?? {}), status: 'failed' } as any;
+    order.payment = { ...(order.payment ?? {}), status: 'failed' } as OrderPayment;
     order.status = ORDER_STATUS.pending;
     await order.save();
   }
@@ -341,8 +358,7 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
 });
 
 export const getMyOrders = asyncHandler(async (req, res) => {
-  const page = Math.max(Number(req.query.page) || 1, 1);
-  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
+  const pagination = parsePagination(req.query, { defaultLimit: 10, maxLimit: 50 });
   const statusFilter = typeof req.query.status === 'string' ? req.query.status : undefined;
 
   const filter: Record<string, unknown> = { user: req.user?.userId };
@@ -353,8 +369,8 @@ export const getMyOrders = asyncHandler(async (req, res) => {
   const [orders, total] = await Promise.all([
     OrderModel.find(filter)
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
+      .skip((pagination.page - 1) * pagination.limit)
+      .limit(pagination.limit)
       .lean(),
     OrderModel.countDocuments(filter),
   ]);
@@ -362,14 +378,13 @@ export const getMyOrders = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(
     createApiResponse('Orders retrieved.', {
       orders,
-      pagination: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) },
+      pagination: buildPaginationMeta(total, pagination),
     }),
   );
 });
 
 export const getAllOrdersForAdmin = asyncHandler(async (req, res) => {
-  const page = Math.max(Number(req.query.page) || 1, 1);
-  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+  const pagination = parsePagination(req.query);
   const statusFilter = typeof req.query.status === 'string' ? req.query.status : undefined;
   const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
   const userId = typeof req.query.userId === 'string' ? req.query.userId : undefined;
@@ -392,14 +407,18 @@ export const getAllOrdersForAdmin = asyncHandler(async (req, res) => {
   }
 
   const [orders, total] = await Promise.all([
-    OrderModel.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+    OrderModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((pagination.page - 1) * pagination.limit)
+      .limit(pagination.limit)
+      .lean(),
     OrderModel.countDocuments(filter),
   ]);
 
   res.status(StatusCodes.OK).json(
     createApiResponse('Orders retrieved.', {
       orders,
-      pagination: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) },
+      pagination: buildPaginationMeta(total, pagination),
     }),
   );
 });
@@ -472,15 +491,18 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     | { provider?: string; status?: string; razorpayPaymentId?: string }
     | undefined;
 
+  // Mirrors attemptAutoRefund's guard above: only ever refund a payment
+  // that was actually captured ('paid'), not merely "not yet refunded" —
+  // a pending/failed/COD payment must never reach the Razorpay refund call.
   if (
     status === ORDER_STATUS.refunded &&
-    payment?.status !== 'refunded' &&
+    payment?.status === 'paid' &&
     payment?.provider === 'razorpay' &&
     payment?.razorpayPaymentId
   ) {
     try {
       const refund = await refundPayment(payment.razorpayPaymentId as string, order.total);
-      order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as never;
+      order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as OrderPayment;
     } catch (error) {
       console.error(`Refund failed for order ${order.orderNumber}:`, error);
     }
@@ -502,8 +524,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(createApiResponse('Order status updated.', { order }));
 });
 
-export const getInvoice = asyncHandler(async (req, res) => {
-  const order = await loadOwnedOrder(req.params.id, req.user?.userId);
+function streamInvoice(order: InstanceType<typeof OrderModel>, req: Request, res: Response) {
   const doc = generateInvoicePdf(order.toObject() as never);
 
   const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
@@ -512,6 +533,11 @@ export const getInvoice = asyncHandler(async (req, res) => {
 
   doc.pipe(res);
   doc.end();
+}
+
+export const getInvoice = asyncHandler(async (req, res) => {
+  const order = await loadOwnedOrder(req.params.id, req.user?.userId);
+  streamInvoice(order, req, res);
 });
 
 export const getOrderByIdForAdmin = asyncHandler(async (req, res) => {
@@ -524,14 +550,7 @@ export const getOrderByIdForAdmin = asyncHandler(async (req, res) => {
 
 export const getInvoiceForAdmin = asyncHandler(async (req, res) => {
   const order = await loadOrderById(req.params.id);
-  const doc = generateInvoicePdf(order.toObject() as never);
-
-  const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `${disposition}; filename="invoice-${order.orderNumber}.pdf"`);
-
-  doc.pipe(res);
-  doc.end();
+  streamInvoice(order, req, res);
 });
 
 export const adminCancelOrder = asyncHandler(async (req, res) => {
@@ -576,7 +595,7 @@ export const refundOrder = asyncHandler(async (req, res) => {
   }
 
   const refundReason = reason || `Refund of ₹${refundAmount} processed by admin.`;
-  order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as never;
+  order.payment = { ...(order.payment ?? {}), status: 'refunded', refundId: refund.id } as OrderPayment;
   order.status = ORDER_STATUS.refunded;
   (order as unknown as { _statusNote?: string })._statusNote = refundReason;
   await order.save();

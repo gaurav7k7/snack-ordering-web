@@ -14,6 +14,8 @@ import {
 } from '@/redux/api/couponsApi';
 import type { AdminCoupon, CouponFormInput } from '@/types/coupon';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import { formatDate } from '@/utils/formatDate';
 
 const EMPTY_FORM: CouponFormInput = {
   code: '',
@@ -89,8 +91,8 @@ export default function AdminCouponsPage() {
         toast.success('Coupon created.');
       }
       closeForm();
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to save coupon.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to save coupon.'));
     }
   };
 
@@ -98,8 +100,8 @@ export default function AdminCouponsPage() {
     try {
       await updateCoupon({ id, isActive: !isActive }).unwrap();
       toast.success(isActive ? 'Coupon deactivated.' : 'Coupon activated.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to update coupon.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update coupon.'));
     }
   };
 
@@ -108,8 +110,8 @@ export default function AdminCouponsPage() {
     try {
       await deleteCoupon(id).unwrap();
       toast.success('Coupon deleted.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete coupon.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete coupon.'));
     }
   };
 
@@ -314,8 +316,8 @@ export default function AdminCouponsPage() {
                     {coupon.usageLimit ? ` / ${coupon.usageLimit}` : ''} · {coupon.perUserLimit === 1 ? 'one-time' : coupon.perUserLimit === 0 ? 'unlimited/user' : `${coupon.perUserLimit}/user`}
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {new Date(coupon.validFrom).toLocaleDateString('en-IN')} –{' '}
-                    {new Date(coupon.validUntil).toLocaleDateString('en-IN')}
+                    {formatDate(coupon.validFrom)} –{' '}
+                    {formatDate(coupon.validUntil)}
                   </td>
                   <td className="px-4 py-3">
                     <span

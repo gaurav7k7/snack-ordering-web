@@ -1,6 +1,15 @@
+import type { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { env } from '../config/env.js';
+import {
+  ACCESS_TOKEN_COOKIE_MAX_AGE_MS,
+  EMAIL_VERIFICATION_EXPIRY_MS,
+  OTP_EXPIRY_MS,
+  PASSWORD_RESET_EXPIRY_MS,
+  REFRESH_TOKEN_COOKIE_MAX_AGE_MS,
+  REFRESH_TOKEN_REMEMBER_ME_COOKIE_MAX_AGE_MS,
+} from '../constants/expiry.js';
 import { UserModel } from '../models/User.model.js';
 import {
   generateOtp,
@@ -12,6 +21,7 @@ import {
 } from '../services/auth.service.js';
 import { sendEmail } from '../services/email.service.js';
 import { issueRefreshSession, revokeRefreshToken, rotateRefreshSession } from '../services/refreshToken.service.js';
+import { toUserSummary } from '../services/userSerializer.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
@@ -20,35 +30,24 @@ import { escapeHtml, renderEmailHtml } from '../utils/emailTemplates.js';
 const cookieOptions = getCookieOptions();
 
 function createAuthCookies(
-  res: any,
+  res: Response,
   accessToken: string,
   refreshToken: string,
   rememberMe = false,
 ) {
   res.cookie('accessToken', accessToken, {
     ...cookieOptions,
-    maxAge: 1000 * 60 * 15,
+    maxAge: ACCESS_TOKEN_COOKIE_MAX_AGE_MS,
   });
   res.cookie('refreshToken', refreshToken, {
     ...cookieOptions,
-    maxAge: rememberMe ? 1000 * 60 * 60 * 24 * 30 : 1000 * 60 * 60 * 24 * 7,
+    maxAge: rememberMe ? REFRESH_TOKEN_REMEMBER_ME_COOKIE_MAX_AGE_MS : REFRESH_TOKEN_COOKIE_MAX_AGE_MS,
   });
 }
 
-function clearAuthCookies(res: any) {
+function clearAuthCookies(res: Response) {
   res.clearCookie('accessToken', cookieOptions);
   res.clearCookie('refreshToken', cookieOptions);
-}
-
-function mapUser(user: any) {
-  return {
-    id: user._id?.toString(),
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    avatar: user.avatar,
-    isEmailVerified: user.isEmailVerified,
-  };
 }
 
 export const register = asyncHandler(async (req, res) => {
@@ -65,7 +64,7 @@ export const register = asyncHandler(async (req, res) => {
     email,
     password,
     emailVerificationToken: hashToken(verificationToken),
-    emailVerificationExpires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+    emailVerificationExpires: new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY_MS),
   });
 
   const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
@@ -87,7 +86,7 @@ export const register = asyncHandler(async (req, res) => {
     .status(StatusCodes.CREATED)
     .json(
       createApiResponse('Registration successful. Verification email sent.', {
-        user: mapUser(user),
+        user: toUserSummary(user),
       }),
     );
 });
@@ -116,7 +115,7 @@ export const login = asyncHandler(async (req, res) => {
   const refreshToken = await issueRefreshSession(user._id.toString(), user.role, rememberMe);
   createAuthCookies(res, accessToken, refreshToken, rememberMe);
 
-  res.status(StatusCodes.OK).json(createApiResponse('Login successful.', { user: mapUser(user) }));
+  res.status(StatusCodes.OK).json(createApiResponse('Login successful.', { user: toUserSummary(user) }));
 });
 
 export const logout = asyncHandler(async (req, res) => {
@@ -188,7 +187,7 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
 
   res
     .status(StatusCodes.OK)
-    .json(createApiResponse('Current user retrieved.', { user: mapUser(user) }));
+    .json(createApiResponse('Current user retrieved.', { user: toUserSummary(user) }));
 });
 
 export const verifyEmail = asyncHandler(async (req, res) => {
@@ -222,7 +221,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res) => {
 
   const verificationToken = generateToken(24);
   user.emailVerificationToken = hashToken(verificationToken);
-  user.emailVerificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+  user.emailVerificationExpires = new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY_MS);
   await user.save();
 
   const verificationUrl = `${env.clientUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
@@ -248,7 +247,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   const resetToken = generateToken(24);
   user.passwordResetToken = hashToken(resetToken);
-  user.passwordResetExpires = new Date(Date.now() + 1000 * 60 * 60);
+  user.passwordResetExpires = new Date(Date.now() + PASSWORD_RESET_EXPIRY_MS);
   await user.save();
 
   const resetUrl = `${env.clientUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
@@ -290,7 +289,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
   res
     .status(StatusCodes.OK)
-    .json(createApiResponse('Password reset successfully.', { user: mapUser(user) }));
+    .json(createApiResponse('Password reset successfully.', { user: toUserSummary(user) }));
 });
 
 export const requestOtp = asyncHandler(async (req, res) => {
@@ -306,7 +305,7 @@ export const requestOtp = asyncHandler(async (req, res) => {
 
   const otp = generateOtp();
   user.otpCode = otp;
-  user.otpExpires = new Date(Date.now() + 1000 * 60 * 10);
+  user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
   await sendEmail({
@@ -350,7 +349,7 @@ export const verifyOtp = asyncHandler(async (req, res) => {
 
   res
     .status(StatusCodes.OK)
-    .json(createApiResponse('OTP verified successfully.', { user: mapUser(user) }));
+    .json(createApiResponse('OTP verified successfully.', { user: toUserSummary(user) }));
 });
 
 export const googleAuthCallback = asyncHandler(async (req, res) => {

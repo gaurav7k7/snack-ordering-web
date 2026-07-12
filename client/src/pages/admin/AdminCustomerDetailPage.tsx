@@ -17,6 +17,8 @@ import {
 import { useGetAllOrdersForAdminQuery } from '@/redux/api/ordersApi';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getErrorMessage } from '@/utils/getErrorMessage';
+import { formatDate } from '@/utils/formatDate';
 
 export default function AdminCustomerDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -55,8 +57,8 @@ export default function AdminCustomerDetailPage() {
     try {
       await blockCustomer({ id: customer._id, reason }).unwrap();
       toast.success('Customer blocked.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to block customer.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to block customer.'));
     }
   };
 
@@ -64,8 +66,8 @@ export default function AdminCustomerDetailPage() {
     try {
       await unblockCustomer(customer._id).unwrap();
       toast.success('Customer unblocked.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to unblock customer.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to unblock customer.'));
     }
   };
 
@@ -75,8 +77,8 @@ export default function AdminCustomerDetailPage() {
       await deleteCustomer(customer._id).unwrap();
       toast.success('Customer deleted.');
       navigate(ROUTES.adminCustomers);
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to delete customer.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to delete customer.'));
     }
   };
 
@@ -85,8 +87,8 @@ export default function AdminCustomerDetailPage() {
     try {
       await resetPassword(customer._id).unwrap();
       toast.success('Password reset email sent.');
-    } catch (error: any) {
-      toast.error(error?.data?.message ?? 'Unable to send password reset email.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to send password reset email.'));
     }
   };
 
@@ -141,18 +143,14 @@ export default function AdminCustomerDetailPage() {
                 <User className="h-4 w-4 text-muted-foreground" />
                 <span>
                   Joined{' '}
-                  {new Date(customer.createdAt).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
+                  {formatDate(customer.createdAt, 'long')}
                 </span>
               </div>
             </div>
 
             {!customer.isActive && customer.blockedReason && (
               <p className="mt-4 rounded-xl bg-red-500/10 p-3 text-sm text-red-600">
-                Blocked{customer.blockedAt ? ` on ${new Date(customer.blockedAt).toLocaleDateString('en-IN')}` : ''}:{' '}
+                Blocked{customer.blockedAt ? ` on ${formatDate(customer.blockedAt)}` : ''}:{' '}
                 {customer.blockedReason}
               </p>
             )}
@@ -167,7 +165,7 @@ export default function AdminCustomerDetailPage() {
               {orders.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No orders placed yet.</p>
               ) : (
-                orders.map((order: any) => (
+                orders.map((order) => (
                   <Link
                     key={order._id}
                     to={ROUTES.adminOrderDetail(order._id)}
@@ -176,11 +174,7 @@ export default function AdminCustomerDetailPage() {
                     <div>
                       <p className="font-semibold">{order.orderNumber}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(order.createdAt).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
+                        {formatDate(order.createdAt, 'long')}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">

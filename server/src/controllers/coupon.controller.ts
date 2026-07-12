@@ -119,9 +119,16 @@ export const deleteCoupon = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(createApiResponse('Coupon deleted.'));
 });
 
+type PopulatedRedemption = {
+  user?: { _id: unknown; name: string; email: string } | null;
+  guestEmail?: string | null;
+  order?: { _id: unknown; orderNumber: string; total: number; status: string } | null;
+  discountAmount?: number;
+  redeemedAt: Date | string;
+};
+
 export const getCouponUsage = asyncHandler(async (req, res) => {
-  const page = Math.max(Number(req.query.page) || 1, 1);
-  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
+  const pagination = parsePagination(req.query);
 
   const coupon = await CouponModel.findById(req.params.id)
     .populate('redemptions.user', 'name email')
@@ -131,17 +138,17 @@ export const getCouponUsage = asyncHandler(async (req, res) => {
     throw new AppError('Coupon not found.', StatusCodes.NOT_FOUND);
   }
 
-  const redemptions = [...(coupon.redemptions ?? [])].sort(
-    (a: any, b: any) => new Date(b.redeemedAt).getTime() - new Date(a.redeemedAt).getTime(),
+  const redemptions = [...((coupon.redemptions ?? []) as unknown as PopulatedRedemption[])].sort(
+    (a, b) => new Date(b.redeemedAt).getTime() - new Date(a.redeemedAt).getTime(),
   );
 
-  const totalDiscountGiven = redemptions.reduce((sum: number, redemption: any) => sum + (redemption.discountAmount ?? 0), 0);
+  const totalDiscountGiven = redemptions.reduce((sum, redemption) => sum + (redemption.discountAmount ?? 0), 0);
   const uniqueCustomers = new Set(
-    redemptions.map((redemption: any) => redemption.user?._id?.toString() ?? redemption.guestEmail ?? 'unknown'),
+    redemptions.map((redemption) => redemption.user?._id?.toString() ?? redemption.guestEmail ?? 'unknown'),
   ).size;
 
   const total = redemptions.length;
-  const paged = redemptions.slice((page - 1) * limit, page * limit);
+  const paged = redemptions.slice((pagination.page - 1) * pagination.limit, pagination.page * pagination.limit);
 
   res.status(StatusCodes.OK).json(
     createApiResponse('Coupon usage retrieved.', {
@@ -152,7 +159,7 @@ export const getCouponUsage = asyncHandler(async (req, res) => {
         totalDiscountGiven,
         uniqueCustomers,
       },
-      redemptions: paged.map((redemption: any) => ({
+      redemptions: paged.map((redemption) => ({
         user: redemption.user
           ? { _id: redemption.user._id, name: redemption.user.name, email: redemption.user.email }
           : null,
@@ -168,7 +175,7 @@ export const getCouponUsage = asyncHandler(async (req, res) => {
         discountAmount: redemption.discountAmount ?? 0,
         redeemedAt: redemption.redeemedAt,
       })),
-      pagination: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) },
+      pagination: buildPaginationMeta(total, pagination),
     }),
   );
 });
