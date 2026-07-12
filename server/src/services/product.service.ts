@@ -16,6 +16,9 @@ export type SearchProductsParams = {
   page?: string;
   limit?: string;
   ids?: string;
+  featured?: string;
+  trending?: string;
+  bestSeller?: string;
 };
 
 export const PRODUCT_CARD_FIELDS =
@@ -80,8 +83,10 @@ function buildQuery(params: SearchProductsParams): FilterQuery<Record<string, un
   if (params.availability) {
     if (params.availability === 'available') {
       query.availableQuantity = { $gt: 0 };
-    } else {
-      query.stock = params.availability;
+    } else if (params.availability === 'low_stock') {
+      query.availableQuantity = { $gt: 0, $lte: LOW_STOCK_THRESHOLD };
+    } else if (params.availability === 'out_of_stock') {
+      query.availableQuantity = { $lte: 0 };
     }
   }
 
@@ -89,6 +94,10 @@ function buildQuery(params: SearchProductsParams): FilterQuery<Record<string, un
   if (discount >= 0) {
     query.discount = { $gte: discount };
   }
+
+  if (params.featured === 'true') query.isFeatured = true;
+  if (params.trending === 'true') query.isTrending = true;
+  if (params.bestSeller === 'true') query.isBestSeller = true;
 
   return query;
 }

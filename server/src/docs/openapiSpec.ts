@@ -595,9 +595,12 @@ export const openApiSpec = {
           { name: 'minPrice', in: 'query', schema: { type: 'number' } },
           { name: 'maxPrice', in: 'query', schema: { type: 'number' } },
           { name: 'rating', in: 'query', schema: { type: 'number', minimum: 1, maximum: 5 }, description: 'Minimum average rating.' },
-          { name: 'availability', in: 'query', schema: { type: 'string', enum: ['available', 'in_stock', 'low_stock', 'out_of_stock'] } },
+          { name: 'availability', in: 'query', schema: { type: 'string', enum: ['available', 'low_stock', 'out_of_stock'] } },
           { name: 'discount', in: 'query', schema: { type: 'number' }, description: 'Minimum discount percentage.' },
           { name: 'ids', in: 'query', schema: { type: 'string' }, description: 'Comma-separated product ids — fetch a specific set (e.g. compare, recently viewed).' },
+          { name: 'featured', in: 'query', schema: { type: 'string', enum: ['true'] }, description: 'Only isFeatured products.' },
+          { name: 'trending', in: 'query', schema: { type: 'string', enum: ['true'] }, description: 'Only isTrending products.' },
+          { name: 'bestSeller', in: 'query', schema: { type: 'string', enum: ['true'] }, description: 'Only isBestSeller products.' },
           {
             name: 'sort',
             in: 'query',

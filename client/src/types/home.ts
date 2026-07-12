@@ -11,8 +11,8 @@ export type Slide = {
 export type CategoryTile = {
   id: string;
   name: string;
-  itemCount: number;
-  image: string;
+  itemCount?: number;
+  image?: string;
 };
 
 export type HomeProduct = {

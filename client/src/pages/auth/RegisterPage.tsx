@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ROUTES } from '@/constants/routes';
@@ -67,7 +68,18 @@ export default function RegisterPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Sign up to save favorites, order faster, and track your snacks.
         </p>
-        <form className="mt-8 grid gap-4" onSubmit={handleSubmit(onSubmit)}>
+
+        <div className="mt-6 grid gap-3">
+          <GoogleSignInButton />
+        </div>
+
+        <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          or
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
           <label className="grid gap-2 text-sm">
             <span>Name</span>
             <Input {...registerField('name')} />

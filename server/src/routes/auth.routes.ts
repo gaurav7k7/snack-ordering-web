@@ -1,5 +1,5 @@
 import passport from 'passport';
-import { Router } from 'express';
+import { Router, type RequestHandler } from 'express';
 
 import { env } from '../config/env.js';
 import {
@@ -58,12 +58,27 @@ authRoutes.post(
 authRoutes.post('/reset-password', validateRequest({ body: resetPasswordSchema }), resetPassword);
 authRoutes.post('/otp/request', otpRequestLimiter, validateRequest({ body: requestOtpSchema }), requestOtp);
 authRoutes.post('/otp/verify', otpVerifyLimiter, validateRequest({ body: verifyOtpSchema }), verifyOtp);
+
+// Passport throws "Unknown authentication strategy" (an unhandled 500) if
+// asked to authenticate with a strategy that was never registered — guard
+// both routes so a deploy missing Google credentials fails gracefully
+// (redirect back to login with a clear error) instead of crashing.
+const requireGoogleConfigured: RequestHandler = (_req, res, next) => {
+  if (!env.googleClientId || !env.googleClientSecret) {
+    res.redirect(`${env.clientUrl}/login?error=google-not-configured`);
+    return;
+  }
+  next();
+};
+
 authRoutes.get(
   '/google',
+  requireGoogleConfigured,
   passport.authenticate('google', { scope: ['profile', 'email'], session: false }),
 );
 authRoutes.get(
   '/google/callback',
+  requireGoogleConfigured,
   passport.authenticate('google', {
     session: false,
     failureRedirect: `${env.clientUrl}/login?error=google`,

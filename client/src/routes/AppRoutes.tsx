@@ -22,6 +22,7 @@ const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('@/pages/auth/VerifyEmailPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage'));
 const AdminOrderDetailPage = lazy(() => import('@/pages/admin/AdminOrderDetailPage'));
@@ -253,6 +254,14 @@ export function AppRoutes() {
           element={
             <PageTransition>
               <ResetPasswordPage />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="verify-email"
+          element={
+            <PageTransition>
+              <VerifyEmailPage />
             </PageTransition>
           }
         />

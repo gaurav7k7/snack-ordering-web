@@ -304,7 +304,7 @@ export const requestOtp = asyncHandler(async (req, res) => {
   }
 
   const otp = generateOtp();
-  user.otpCode = otp;
+  user.otpCode = hashToken(otp);
   user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
@@ -328,7 +328,7 @@ export const verifyOtp = asyncHandler(async (req, res) => {
     throw new AppError('Invalid OTP request.', StatusCodes.BAD_REQUEST);
   }
 
-  if (user.otpCode !== otp || user.otpExpires < new Date()) {
+  if (user.otpCode !== hashToken(otp) || user.otpExpires < new Date()) {
     throw new AppError('OTP is invalid or expired.', StatusCodes.BAD_REQUEST);
   }
 

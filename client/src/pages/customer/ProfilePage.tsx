@@ -8,13 +8,13 @@ import {
   Package,
   Shield,
   Sparkles,
-  UserRound,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
+import { AvatarUploader } from '@/components/customer/AvatarUploader';
 import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
@@ -51,7 +51,7 @@ export default function ProfilePage() {
   const { data: recentlyViewedData } = useGetRecentlyViewedQuery();
   const { data: reviewData } = useGetReviewHistoryQuery();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
-  const [uploadAvatar, { isLoading: isUploadingAvatar }] = useUploadProfilePictureMutation();
+  const [uploadAvatar] = useUploadProfilePictureMutation();
   const [updateAddresses, { isLoading: isUpdatingAddresses }] = useUpdateAddressesMutation();
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
   const [deleteAccount] = useDeleteAccountMutation();
@@ -66,7 +66,7 @@ export default function ProfilePage() {
   const recentlyViewed = recentlyViewedData?.data?.recentlyViewed ?? [];
   const reviews = reviewData?.data?.reviews ?? [];
 
-  const [profileForm, setProfileForm] = useState({ name: '', phone: '', avatar: '' });
+  const [profileForm, setProfileForm] = useState({ name: '', phone: '' });
   const [addressInput, setAddressInput] = useState('');
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
 
@@ -75,7 +75,6 @@ export default function ProfilePage() {
       setProfileForm({
         name: profile.name ?? '',
         phone: profile.phone ?? '',
-        avatar: profile.avatar ?? '',
       });
     }
   }, [profile]);
@@ -86,7 +85,6 @@ export default function ProfilePage() {
       const result = await updateProfile({
         name: profileForm.name,
         phone: profileForm.phone,
-        avatar: profileForm.avatar,
       }).unwrap();
       if (result.data?.user) dispatch(setUser(result.data.user));
       toast.success('Profile updated.');
@@ -95,14 +93,9 @@ export default function ProfilePage() {
     }
   };
 
-  const handleAvatarSave = async () => {
-    try {
-      const result = await uploadAvatar({ avatar: profileForm.avatar }).unwrap();
-      if (result.data?.user) dispatch(setUser(result.data.user));
-      toast.success('Avatar updated.');
-    } catch (error) {
-      toast.error(getErrorMessage(error, 'Unable to update avatar.'));
-    }
+  const handleAvatarUpload = async (url: string) => {
+    const result = await uploadAvatar({ avatar: url }).unwrap();
+    if (result.data?.user) dispatch(setUser(result.data.user));
   };
 
   const handleAddressSave = async () => {
@@ -156,17 +149,11 @@ export default function ProfilePage() {
         <section className="rounded-3xl border border-border/70 bg-card p-6 shadow-sm">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
-              <div className="grid h-16 w-16 place-items-center rounded-full bg-primary/10 text-primary">
-                {profile?.avatar ? (
-                  <img
-                    src={cldUrl(profile.avatar, 'avatar')}
-                    alt={profile.name}
-                    className="h-16 w-16 rounded-full object-cover"
-                  />
-                ) : (
-                  <UserRound className="h-8 w-8" />
-                )}
-              </div>
+              <AvatarUploader
+                avatarUrl={profile?.avatar}
+                name={profile?.name ?? 'Account'}
+                onUpload={handleAvatarUpload}
+              />
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
                   Account overview
@@ -217,27 +204,9 @@ export default function ProfilePage() {
                   className="rounded-xl border border-input bg-background px-4 py-3 outline-none transition focus:border-primary"
                 />
               </label>
-              <label className="grid gap-2 text-sm">
-                <span>Avatar URL</span>
-                <input
-                  value={profileForm.avatar}
-                  onChange={(event) =>
-                    setProfileForm((current) => ({ ...current, avatar: event.target.value }))
-                  }
-                  className="rounded-xl border border-input bg-background px-4 py-3 outline-none transition focus:border-primary"
-                />
-              </label>
               <div className="flex flex-wrap gap-3">
                 <Button type="submit" disabled={isUpdatingProfile || isLoadingProfile}>
                   {isUpdatingProfile ? 'Saving…' : 'Save profile'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleAvatarSave}
-                  disabled={isUploadingAvatar}
-                >
-                  {isUploadingAvatar ? 'Updating avatar…' : 'Save avatar'}
                 </Button>
               </div>
             </form>

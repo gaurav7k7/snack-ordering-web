@@ -95,6 +95,7 @@ export type Category = {
   name: string;
   slug: string;
   description?: string;
+  image?: { url: string; publicId: string; alt?: string };
   isActive: boolean;
   createdAt: string;
 };

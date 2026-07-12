@@ -1,10 +1,13 @@
 import { GitCompareArrows, Heart, ShoppingBag, Star } from 'lucide-react';
-import { memo } from 'react';
+import { memo, type MouseEvent } from 'react';
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
+import { useAppDispatch } from '@/hooks/redux';
 import { useCompare } from '@/hooks/useCompare';
 import { useWishlist } from '@/hooks/useWishlist';
+import { addItem } from '@/redux/slices/cartSlice';
 import type { HomeProduct } from '@/types/home';
 import type { SearchProduct } from '@/types/product';
 import { cldUrl } from '@/utils/cloudinaryImage';
@@ -61,10 +64,28 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
   const rating = getProductRating(product);
   const reviews = getProductReviews(product);
   const badge = getBadge(product);
+  const dispatch = useAppDispatch();
   const { isWishlisted, toggleWishlist, isMutating } = useWishlist();
   const wishlisted = isWishlisted(productId);
   const { isComparing, toggle: toggleCompareProduct } = useCompare();
   const comparing = isComparing(productId);
+  const isOutOfStock = (product.availableQuantity ?? 0) <= 0;
+
+  const handleAddToCart = (event: MouseEvent) => {
+    event.preventDefault();
+    dispatch(
+      addItem({
+        productId,
+        name: product.name,
+        image: imageUrl,
+        price,
+        quantity: 1,
+        slug: product.slug,
+        stock: product.availableQuantity ?? 0,
+      }),
+    );
+    toast.success(`${product.name} added to cart.`);
+  };
 
   return (
     <article className="group overflow-hidden rounded-lg border bg-card text-card-foreground transition duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -140,7 +161,13 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
               </span>
             ) : null}
           </div>
-          <Button size="icon" aria-label={`Add ${product.name} to cart`}>
+          <Button
+            type="button"
+            size="icon"
+            aria-label={isOutOfStock ? `${product.name} is out of stock` : `Add ${product.name} to cart`}
+            disabled={isOutOfStock}
+            onClick={handleAddToCart}
+          >
             <ShoppingBag className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>

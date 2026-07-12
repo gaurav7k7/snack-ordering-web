@@ -1,10 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { OtpLoginForm } from '@/components/auth/OtpLoginForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ROUTES } from '@/constants/routes';
@@ -17,7 +19,9 @@ import { loginSchema, type LoginInput } from '@/validation/auth.schema';
 export default function LoginPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const authState = useAppSelector((state) => state.auth);
+  const [mode, setMode] = useState<'password' | 'otp'>('password');
   const [login, { data, error, isLoading, isSuccess }] = useLoginMutation();
   const {
     register,
@@ -40,6 +44,17 @@ export default function LoginPage() {
   }, [data, dispatch, error, isSuccess, navigate]);
 
   useEffect(() => {
+    const oauthError = searchParams.get('error');
+    if (oauthError === 'account-blocked') {
+      toast.error('Your account has been blocked. Contact support if you believe this is a mistake.');
+    } else if (oauthError === 'google-not-configured') {
+      toast.error('Google sign-in is not available right now. Please use your email and password.');
+    } else if (oauthError === 'google') {
+      toast.error('Google sign-in failed. Please try again or use your email and password.');
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     if (authState.isAuthenticated) {
       navigate(ROUTES.home, { replace: true });
     }
@@ -55,33 +70,70 @@ export default function LoginPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Access your cart, orders, and saved favorites.
         </p>
-        <form className="mt-8 grid gap-4" onSubmit={handleSubmit((values) => login(values))}>
-          <label className="grid gap-2 text-sm">
-            <span>Email address</span>
-            <Input type="email" {...register('email')} />
-            {errors.email && (
-              <span className="text-sm text-destructive">{errors.email.message}</span>
-            )}
-          </label>
-          <label className="grid gap-2 text-sm">
-            <span>Password</span>
-            <Input type="password" {...register('password')} />
-            {errors.password && (
-              <span className="text-sm text-destructive">{errors.password.message}</span>
-            )}
-          </label>
-          <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-            <input
-              type="checkbox"
-              {...register('rememberMe')}
-              className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
-            />
-            Remember me
-          </label>
-          <Button type="submit" className="mt-4 w-full" disabled={isLoading}>
-            {isLoading ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </form>
+
+        <div className="mt-6 grid gap-3">
+          <GoogleSignInButton />
+        </div>
+
+        <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          or
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <div className="mb-6 inline-flex w-full rounded-lg border border-input p-1 text-sm">
+          <button
+            type="button"
+            onClick={() => setMode('password')}
+            className={`flex-1 rounded-md py-2 font-semibold transition ${
+              mode === 'password' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
+            }`}
+          >
+            Password
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('otp')}
+            className={`flex-1 rounded-md py-2 font-semibold transition ${
+              mode === 'otp' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
+            }`}
+          >
+            Email code
+          </button>
+        </div>
+
+        {mode === 'password' ? (
+          <form className="grid gap-4" onSubmit={handleSubmit((values) => login(values))}>
+            <label className="grid gap-2 text-sm">
+              <span>Email address</span>
+              <Input type="email" {...register('email')} />
+              {errors.email && (
+                <span className="text-sm text-destructive">{errors.email.message}</span>
+              )}
+            </label>
+            <label className="grid gap-2 text-sm">
+              <span>Password</span>
+              <Input type="password" {...register('password')} />
+              {errors.password && (
+                <span className="text-sm text-destructive">{errors.password.message}</span>
+              )}
+            </label>
+            <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                {...register('rememberMe')}
+                className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+              />
+              Remember me
+            </label>
+            <Button type="submit" className="mt-4 w-full" disabled={isLoading}>
+              {isLoading ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </form>
+        ) : (
+          <OtpLoginForm />
+        )}
+
         <div className="mt-6 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <Link to={ROUTES.forgotPassword} className="font-semibold text-primary hover:underline">
             Forgot password?

@@ -55,6 +55,34 @@ const envSchema = z
         });
       }
     }
+
+    // Every one of these backs a feature the app advertises as working
+    // (email, OTP delivery, payments, image uploads, Google login) — degrade
+    // gracefully in development, but fail startup in production rather than
+    // silently shipping a broken checkout/upload/login path.
+    const requiredIntegrations = [
+      ['SMTP_HOST', data.SMTP_HOST],
+      ['SMTP_USER', data.SMTP_USER],
+      ['SMTP_PASS', data.SMTP_PASS],
+      ['RAZORPAY_KEY_ID', data.RAZORPAY_KEY_ID],
+      ['RAZORPAY_KEY_SECRET', data.RAZORPAY_KEY_SECRET],
+      ['CLOUDINARY_CLOUD_NAME', data.CLOUDINARY_CLOUD_NAME],
+      ['CLOUDINARY_API_KEY', data.CLOUDINARY_API_KEY],
+      ['CLOUDINARY_API_SECRET', data.CLOUDINARY_API_SECRET],
+      ['GOOGLE_CLIENT_ID', data.GOOGLE_CLIENT_ID],
+      ['GOOGLE_CLIENT_SECRET', data.GOOGLE_CLIENT_SECRET],
+      ['GOOGLE_CALLBACK_URL', data.GOOGLE_CALLBACK_URL],
+    ] as const;
+
+    for (const [key, value] of requiredIntegrations) {
+      if (!value) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [key],
+          message: `${key} must be set in production — this backs a feature (email/payments/uploads/Google login) the app requires.`,
+        });
+      }
+    }
   });
 
 const parsedEnv = envSchema.safeParse(process.env);
