@@ -7,6 +7,8 @@ type ApiResponse<T> = {
   data?: T;
 };
 
+type CategoryImageInput = { url: string; publicId: string; alt?: string };
+
 export const categoriesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getCategories: builder.query<ApiResponse<{ categories: Category[] }>, { includeInactive?: boolean } | void>({
@@ -22,13 +24,16 @@ export const categoriesApi = baseApi.injectEndpoints({
             ]
           : [{ type: 'Category' as const, id: 'LIST' }],
     }),
-    createCategory: builder.mutation<ApiResponse<{ category: Category }>, { name: string; description?: string }>({
+    createCategory: builder.mutation<
+      ApiResponse<{ category: Category }>,
+      { name: string; description?: string; image?: CategoryImageInput }
+    >({
       query: (body) => ({ url: '/categories', method: 'POST', body }),
       invalidatesTags: [{ type: 'Category' as const, id: 'LIST' }],
     }),
     updateCategory: builder.mutation<
       ApiResponse<{ category: Category }>,
-      { id: string; name?: string; description?: string; isActive?: boolean }
+      { id: string; name?: string; description?: string; isActive?: boolean; image?: CategoryImageInput }
     >({
       query: ({ id, ...body }) => ({ url: `/categories/${id}`, method: 'PATCH', body }),
       invalidatesTags: (_result, _error, { id }) => [

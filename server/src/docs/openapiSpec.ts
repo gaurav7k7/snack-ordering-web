@@ -460,11 +460,10 @@ export const openApiSpec = {
             name: { type: 'string', minLength: 2, maxLength: 80 },
             email: { type: 'string', format: 'email' },
             password: { type: 'string', minLength: 8, maxLength: 128 },
-            rememberMe: { type: 'boolean' },
           },
         }),
         responses: {
-          '201': { description: 'Account created; verification email sent.', content: { 'application/json': { schema: apiResponseOf({ type: 'object', properties: { user } }) } } },
+          '201': { description: 'Account created (unverified); a 6-digit OTP is emailed. No session is issued until the OTP is verified.', content: { 'application/json': { schema: apiResponseOf({ type: 'object', properties: { email: { type: 'string' } } }) } } },
           '400': commonErrorResponses['400'],
           '409': commonErrorResponses['409'],
         },
@@ -488,6 +487,7 @@ export const openApiSpec = {
           '200': { description: 'Logged in; sets accessToken/refreshToken/csrfToken cookies.', content: { 'application/json': { schema: apiResponseOf({ type: 'object', properties: { user } }) } } },
           '400': commonErrorResponses['400'],
           '401': commonErrorResponses['401'],
+          '403': { description: 'Account not verified (code: EMAIL_NOT_VERIFIED) or blocked.', content: { 'application/json': { schema: errorEnvelope } } },
         },
       },
     },
@@ -573,6 +573,28 @@ export const openApiSpec = {
           properties: { email: { type: 'string' }, otp: { type: 'string', minLength: 6, maxLength: 6 }, rememberMe: { type: 'boolean' } },
         }),
         responses: { '200': { description: 'Logged in via OTP.', content: { 'application/json': { schema: apiResponseOf({ type: 'object', properties: { user } }) } } }, '400': commonErrorResponses['400'] },
+      },
+    },
+    '/auth/verify-registration-otp': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Verify the OTP emailed at registration; activates the account and logs in',
+        security: [],
+        requestBody: jsonBody({
+          type: 'object',
+          required: ['email', 'otp'],
+          properties: { email: { type: 'string', format: 'email' }, otp: { type: 'string', minLength: 6, maxLength: 6 }, rememberMe: { type: 'boolean' } },
+        }),
+        responses: { '200': { description: 'Email verified; logged in.', content: { 'application/json': { schema: apiResponseOf({ type: 'object', properties: { user } }) } } }, '400': commonErrorResponses['400'] },
+      },
+    },
+    '/auth/resend-registration-otp': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Resend the registration verification OTP',
+        security: [],
+        requestBody: jsonBody({ type: 'object', required: ['email'], properties: { email: { type: 'string', format: 'email' } } }),
+        responses: { '200': { description: 'New OTP sent.', content: { 'application/json': { schema: apiResponseOf(null) } } }, '400': commonErrorResponses['400'], '404': commonErrorResponses['404'] },
       },
     },
     '/auth/google': {
@@ -1024,6 +1046,68 @@ export const openApiSpec = {
     },
     '/newsletter/unsubscribe': {
       post: { tags: ['Newsletter'], summary: 'Unsubscribe an email from the newsletter', security: [], requestBody: jsonBody({ type: 'object', required: ['email'], properties: { email: { type: 'string', format: 'email' } } }), responses: { '200': { description: 'Unsubscribed.', content: { 'application/json': { schema: apiResponseOf(null) } } } } },
+    },
+    '/admin/newsletter/subscribers': {
+      get: {
+        tags: ['Newsletter'],
+        summary: '[Admin] List newsletter subscribers (search/status/date-range filters, sortable, paginated)',
+        parameters: [
+          { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Filter by email substring.' },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['active', 'unsubscribed'] } },
+          { name: 'range', in: 'query', schema: { type: 'string', enum: ['7d', '30d', '6m', 'all'] }, description: 'Quick date-range filter on subscription date.' },
+          { name: 'sortBy', in: 'query', schema: { type: 'string', enum: ['createdAt', 'email'] } },
+          { name: 'sortDir', in: 'query', schema: { type: 'string', enum: ['asc', 'desc'] } },
+          ...paginationParams,
+        ],
+        responses: {
+          '200': {
+            description: 'Paginated subscribers.',
+            content: {
+              'application/json': {
+                schema: apiResponseOf({
+                  type: 'object',
+                  properties: {
+                    subscribers: { type: 'array', items: { type: 'object' } },
+                    pagination: paginationMetaSchema,
+                    totalSubscribers: { type: 'integer' },
+                    activeSubscribers: { type: 'integer' },
+                  },
+                }),
+              },
+            },
+          },
+        },
+      },
+    },
+    '/admin/newsletter/subscribers/export': {
+      get: {
+        tags: ['Newsletter'],
+        summary: '[Admin] Export subscribers as CSV, XLSX, or JSON (honors search/status/range filters)',
+        parameters: [
+          { name: 'format', in: 'query', required: true, schema: { type: 'string', enum: ['csv', 'xlsx', 'json'] } },
+          { name: 'search', in: 'query', schema: { type: 'string' } },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['active', 'unsubscribed'] } },
+          { name: 'range', in: 'query', schema: { type: 'string', enum: ['7d', '30d', '6m', 'all'] } },
+        ],
+        responses: {
+          '200': {
+            description: 'File download (Content-Disposition: attachment).',
+            content: {
+              'text/csv': { schema: { type: 'string', format: 'binary' } },
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': { schema: { type: 'string', format: 'binary' } },
+              'application/json': { schema: { type: 'string', format: 'binary' } },
+            },
+          },
+        },
+      },
+    },
+    '/admin/newsletter/subscribers/{id}': {
+      delete: {
+        tags: ['Newsletter'],
+        summary: '[Admin] Delete a subscriber',
+        parameters: [idParam('id', 'Subscriber id.')],
+        responses: { '200': { description: 'Deleted.', content: { 'application/json': { schema: apiResponseOf(null) } } }, '404': commonErrorResponses['404'] },
+      },
     },
 
     // ---------------------------------------------------------------- Contact

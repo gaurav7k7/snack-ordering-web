@@ -8,6 +8,7 @@ import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
 import { OrderTimeline } from '@/components/orders/OrderTimeline';
 import { ReasonModal } from '@/components/orders/ReasonModal';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
+import { PageLoader } from '@/components/shared/PageLoader';
 import { Button } from '@/components/ui/button';
 import { env } from '@/config/env';
 import { ROUTES } from '@/constants/routes';
@@ -59,11 +60,7 @@ export default function OrderDetailPage() {
   }
 
   if (isLoading) {
-    return (
-      <section className="container py-16 text-center text-sm text-muted-foreground">
-        Loading order…
-      </section>
-    );
+    return <PageLoader />;
   }
 
   if (!order) {

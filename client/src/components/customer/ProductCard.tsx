@@ -13,6 +13,7 @@ import type { SearchProduct } from '@/types/product';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { cn } from '@/utils/cn';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getCategoryName } from '@/utils/getCategoryName';
 
 type ProductCardProps = {
   product: HomeProduct | SearchProduct;
@@ -139,7 +140,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
       <div className="space-y-3 p-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {product.category}
+            {getCategoryName(product.category)}
           </p>
           <h3 className="mt-1 line-clamp-2 min-h-12 text-base font-semibold">
             <Link to={`/products/${product.slug}`} className="hover:text-primary">

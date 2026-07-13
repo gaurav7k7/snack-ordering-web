@@ -17,11 +17,10 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ['User'],
     }),
     register: builder.mutation<
-      ApiResponse<{ user: User }>,
-      { name: string; email: string; password: string; rememberMe?: boolean }
+      ApiResponse<{ email: string }>,
+      { name: string; email: string; password: string }
     >({
       query: (body) => ({ url: '/auth/register', method: 'POST', body }),
-      invalidatesTags: ['User'],
     }),
     logout: builder.mutation<ApiResponse<null>, void>({
       query: () => ({ url: '/auth/logout', method: 'POST' }),
@@ -57,6 +56,16 @@ export const authApi = baseApi.injectEndpoints({
       query: (body) => ({ url: '/auth/otp/verify', method: 'POST', body }),
       invalidatesTags: ['User'],
     }),
+    verifyRegistrationOtp: builder.mutation<
+      ApiResponse<{ user: User }>,
+      { email: string; otp: string; rememberMe?: boolean }
+    >({
+      query: (body) => ({ url: '/auth/verify-registration-otp', method: 'POST', body }),
+      invalidatesTags: ['User'],
+    }),
+    resendRegistrationOtp: builder.mutation<ApiResponse<null>, { email: string }>({
+      query: (body) => ({ url: '/auth/resend-registration-otp', method: 'POST', body }),
+    }),
   }),
 });
 
@@ -71,4 +80,6 @@ export const {
   useResetPasswordMutation,
   useRequestOtpMutation,
   useVerifyOtpMutation,
+  useVerifyRegistrationOtpMutation,
+  useResendRegistrationOtpMutation,
 } = authApi;

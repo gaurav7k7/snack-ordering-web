@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
@@ -9,17 +9,16 @@ import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ROUTES } from '@/constants/routes';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { useAppSelector } from '@/hooks/redux';
 import { useRegisterMutation } from '@/redux/api/authApi';
-import { setUser } from '@/redux/slices/authSlice';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 import { registerSchema, type RegisterFormInput } from '@/validation/auth.schema';
 
 export default function RegisterPage() {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const authState = useAppSelector((state) => state.auth);
   const [register, { data, error, isLoading, isSuccess }] = useRegisterMutation();
+  const rememberMeRef = useRef(false);
   const {
     register: registerField,
     handleSubmit,
@@ -36,16 +35,18 @@ export default function RegisterPage() {
   });
 
   useEffect(() => {
-    if (isSuccess && data?.data?.user) {
-      dispatch(setUser(data.data.user));
-      toast.success('Welcome aboard!');
-      navigate(ROUTES.home, { replace: true });
+    if (isSuccess && data?.data?.email) {
+      toast.success('Account created! Check your email for a verification code.');
+      navigate(ROUTES.verifyRegistration, {
+        replace: true,
+        state: { email: data.data.email, rememberMe: rememberMeRef.current },
+      });
     }
 
     if (error) {
       toast.error(getErrorMessage(error, 'Registration failed.'));
     }
-  }, [data, dispatch, error, isSuccess, navigate]);
+  }, [data, error, isSuccess, navigate]);
 
   useEffect(() => {
     if (authState.isAuthenticated) {
@@ -54,7 +55,8 @@ export default function RegisterPage() {
   }, [authState.isAuthenticated, navigate]);
 
   const onSubmit = async (values: RegisterFormInput) => {
-    const { confirmPassword, ...payload } = values;
+    const { confirmPassword, rememberMe, ...payload } = values;
+    rememberMeRef.current = rememberMe ?? false;
     await register(payload);
   };
 

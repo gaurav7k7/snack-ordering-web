@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { PageLoader } from '@/components/shared/PageLoader';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch } from '@/hooks/redux';
@@ -66,7 +67,7 @@ export default function WishlistPage() {
         </div>
 
         {isLoading ? (
-          <p className="mt-10 text-sm text-muted-foreground">Loading your wishlist…</p>
+          <PageLoader />
         ) : wishlist.length === 0 ? (
           <EmptyState
             className="mt-10"

@@ -1,8 +1,8 @@
-import { Heart, Menu, Mic, Search, ShoppingBag, User, X } from 'lucide-react';
+import { Heart, LogOut, Menu, Mic, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { useAppSelector } from '@/hooks/redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useWishlist } from '@/hooks/useWishlist';
 
@@ -12,6 +12,8 @@ import { MiniCart } from '@/components/shared/MiniCart';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { FREE_SHIPPING_THRESHOLD } from '@/constants/pricing';
 import { ROUTES } from '@/constants/routes';
+import { useLogoutMutation } from '@/redux/api/authApi';
+import { clearUser } from '@/redux/slices/authSlice';
 import { cn } from '@/utils/cn';
 
 const navItems = [
@@ -24,10 +26,13 @@ const navItems = [
 export function SiteHeader() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileSearchQuery, setMobileSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const [logout] = useLogoutMutation();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
@@ -56,6 +61,18 @@ export function SiteHeader() {
     [navigate],
   );
   const voiceSearch = useVoiceSearch(handleVoiceResult);
+
+  const handleLogout = async () => {
+    setIsAccountMenuOpen(false);
+    setIsMobileOpen(false);
+    try {
+      await logout().unwrap();
+    } catch {
+      // ignore network errors on logout — clear local state regardless
+    }
+    dispatch(clearUser());
+    navigate(ROUTES.home);
+  };
 
   return (
     <>
@@ -153,11 +170,51 @@ export function SiteHeader() {
               <ShoppingBag className="h-5 w-5" />
               <CountBadge count={cartItemCount} />
             </Button>
-            <Button asChild variant="ghost" size="icon" aria-label="Profile">
-              <Link to={isAuthenticated ? ROUTES.profile : ROUTES.login}>
-                <User className="h-5 w-5" />
-              </Link>
-            </Button>
+            {isAuthenticated ? (
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Account menu"
+                  aria-expanded={isAccountMenuOpen}
+                  onClick={() => setIsAccountMenuOpen((open) => !open)}
+                >
+                  <User className="h-5 w-5" />
+                </Button>
+                {isAccountMenuOpen ? (
+                  <>
+                    <button
+                      type="button"
+                      className="fixed inset-0 z-40 cursor-default"
+                      aria-label="Close account menu"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 top-full z-50 mt-2 w-44 rounded-xl border bg-card p-1.5 shadow-xl">
+                      <Link
+                        to={ROUTES.profile}
+                        onClick={() => setIsAccountMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold hover:bg-muted"
+                      >
+                        <User className="h-4 w-4" /> My account
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-destructive hover:bg-destructive/10"
+                      >
+                        <LogOut className="h-4 w-4" /> Log out
+                      </button>
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            ) : (
+              <Button asChild variant="ghost" size="icon" aria-label="Login">
+                <Link to={ROUTES.login}>
+                  <User className="h-5 w-5" />
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -231,6 +288,15 @@ export function SiteHeader() {
                     {item.label}
                   </Link>
                 ))}
+                {isAuthenticated ? (
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 rounded-md px-3 py-3 text-left text-base font-semibold text-destructive hover:bg-destructive/10"
+                  >
+                    <LogOut className="h-4 w-4" /> Log out
+                  </button>
+                ) : null}
               </nav>
             </aside>
           </div>

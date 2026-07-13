@@ -7,6 +7,8 @@ type ApiResponse<T> = {
   data?: T;
 };
 
+type BrandLogoInput = { url: string; publicId: string };
+
 export const taxonomyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSubCategories: builder.query<
@@ -66,13 +68,16 @@ export const taxonomyApi = baseApi.injectEndpoints({
             ]
           : [{ type: 'Brand' as const, id: 'LIST' }],
     }),
-    createBrand: builder.mutation<ApiResponse<{ brand: Brand }>, { name: string; description?: string }>({
+    createBrand: builder.mutation<
+      ApiResponse<{ brand: Brand }>,
+      { name: string; description?: string; logo?: BrandLogoInput }
+    >({
       query: (body) => ({ url: '/brands', method: 'POST', body }),
       invalidatesTags: [{ type: 'Brand' as const, id: 'LIST' }],
     }),
     updateBrand: builder.mutation<
       ApiResponse<{ brand: Brand }>,
-      { id: string; name?: string; description?: string; isActive?: boolean }
+      { id: string; name?: string; description?: string; isActive?: boolean; logo?: BrandLogoInput }
     >({
       query: ({ id, ...body }) => ({ url: `/brands/${id}`, method: 'PATCH', body }),
       invalidatesTags: (_result, _error, { id }) => [

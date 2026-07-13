@@ -1,5 +1,5 @@
 type RtkQueryLikeError = {
-  data?: { message?: string };
+  data?: { message?: string; code?: string };
 };
 
 function isRtkQueryLikeError(error: unknown): error is RtkQueryLikeError {
@@ -21,4 +21,9 @@ export function getErrorMessage(error: unknown, fallback: string): string {
   }
 
   return fallback;
+}
+
+/** Extracts the server's structured error `code` (e.g. `EMAIL_NOT_VERIFIED`) from an RTK Query error, if present. */
+export function getErrorCode(error: unknown): string | undefined {
+  return isRtkQueryLikeError(error) ? error.data?.code : undefined;
 }

@@ -11,16 +11,11 @@ import { SearchSuggestions } from '@/components/customer/SearchSuggestions';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { SectionHeader } from '@/components/shared/SectionHeader';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
 import { useSearchProductsQuery, useSearchSuggestionsQuery } from '@/redux/api/productsApi';
-import type { SearchProduct } from '@/types/product';
+import { useGetBrandsQuery } from '@/redux/api/taxonomyApi';
 
 const DEFAULT_PAGE_SIZE = 16;
-
-function getUniqueValues(items: SearchProduct[], field: keyof SearchProduct) {
-  return Array.from(
-    new Set(items.flatMap((item) => (item[field] ? [item[field]] : []))),
-  ) as string[];
-}
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -63,6 +58,8 @@ export default function ProductsPage() {
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const suggestionsQuery = debouncedSearchQuery.trim();
   const { data: suggestionsData } = useSearchSuggestionsQuery(suggestionsQuery);
+  const { data: categoriesData } = useGetCategoriesQuery();
+  const { data: brandsData } = useGetBrandsQuery();
 
   const products = data?.data?.products ?? [];
   const pagination = data?.data?.pagination ?? {
@@ -72,8 +69,16 @@ export default function ProductsPage() {
     totalPages: 1,
   };
 
-  const categories = useMemo(() => getUniqueValues(products, 'category'), [products]);
-  const brands = useMemo(() => getUniqueValues(products, 'brand'), [products]);
+  // Filter option lists come from the real taxonomy endpoints (not the
+  // current page of search results) so every real category/brand shows up
+  // regardless of what's currently filtered/paginated into view, and so the
+  // dropdown value is a real Category id the search API can filter on
+  // rather than a name string.
+  const categories = useMemo(
+    () => (categoriesData?.data?.categories ?? []).map((category) => ({ id: category._id, name: category.name })),
+    [categoriesData],
+  );
+  const brands = useMemo(() => (brandsData?.data?.brands ?? []).map((brand) => brand.name), [brandsData]);
 
   const handleParamChange = (key: string, value: string) => {
     const nextParams = new URLSearchParams(searchParams);
@@ -155,8 +160,8 @@ export default function ProductsPage() {
             >
               <option value="">All categories</option>
               {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+                <option key={category.id} value={category.id}>
+                  {category.name}
                 </option>
               ))}
             </select>

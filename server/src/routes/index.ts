@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { adminNewsletterRoutes } from './adminNewsletter.routes.js';
 import { adminUserRoutes } from './adminUser.routes.js';
 import { authRoutes } from './auth.routes.js';
 import { brandRoutes } from './brand.routes.js';
@@ -33,5 +34,6 @@ apiRoutes.use('/dashboard', dashboardRoutes);
 apiRoutes.use('/uploads', uploadRoutes);
 apiRoutes.use('/users', adminUserRoutes);
 apiRoutes.use('/admin/reviews', reviewAdminRoutes);
+apiRoutes.use('/admin/newsletter', adminNewsletterRoutes);
 apiRoutes.use('/newsletter', newsletterRoutes);
 apiRoutes.use('/contact', contactRoutes);

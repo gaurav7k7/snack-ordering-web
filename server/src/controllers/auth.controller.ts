@@ -51,44 +51,33 @@ function clearAuthCookies(res: Response) {
 }
 
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password, rememberMe = false } = req.body;
+  const { name, email, password } = req.body;
 
   const existingUser = await UserModel.findOne({ email });
   if (existingUser) {
     throw new AppError('Email is already registered.', StatusCodes.BAD_REQUEST);
   }
 
-  const verificationToken = generateToken(24);
-  const user = await UserModel.create({
-    name,
-    email,
-    password,
-    emailVerificationToken: hashToken(verificationToken),
-    emailVerificationExpires: new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY_MS),
-  });
+  const user = await UserModel.create({ name, email, password });
 
-  const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
-  const refreshToken = await issueRefreshSession(user._id.toString(), user.role, rememberMe);
-  createAuthCookies(res, accessToken, refreshToken, rememberMe);
+  const otp = generateOtp();
+  user.otpCode = hashToken(otp);
+  user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
+  await user.save();
 
-  const verificationUrl = `${env.clientUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
   await sendEmail({
     to: email,
-    subject: 'Verify your SnackCo email',
+    subject: 'Verify your SnackCo account',
     html: renderEmailHtml(
       'Verify your email',
-      `<p>Hi ${escapeHtml(name)},</p><p>Click <a href="${verificationUrl}">here</a> to verify your email address.</p>`,
+      `<p>Hi ${escapeHtml(name)},</p><p>Your verification code is:</p><p style="font-size:28px;font-weight:800;letter-spacing:0.1em;">${otp}</p><p>This code expires in 10 minutes.</p>`,
     ),
-    text: `Hi ${name}, verify your email: ${verificationUrl}`,
+    text: `Hi ${name}, your SnackCo verification code is ${otp}. It expires in 10 minutes.`,
   });
 
   res
     .status(StatusCodes.CREATED)
-    .json(
-      createApiResponse('Registration successful. Verification email sent.', {
-        user: toUserSummary(user),
-      }),
-    );
+    .json(createApiResponse('Registration successful. Enter the code we emailed you to verify your account.', { email }));
 });
 
 export const login = asyncHandler(async (req, res) => {
@@ -102,6 +91,15 @@ export const login = asyncHandler(async (req, res) => {
   const isMatch = await user.comparePassword(password);
   if (!isMatch) {
     throw new AppError('Invalid email or password.', StatusCodes.UNAUTHORIZED);
+  }
+
+  if (!user.isEmailVerified) {
+    throw new AppError(
+      'Please verify your email before logging in.',
+      StatusCodes.FORBIDDEN,
+      true,
+      'EMAIL_NOT_VERIFIED',
+    );
   }
 
   if (!user.isActive) {
@@ -341,6 +339,8 @@ export const verifyOtp = asyncHandler(async (req, res) => {
 
   user.otpCode = undefined;
   user.otpExpires = undefined;
+  // Receiving the OTP is itself proof of email ownership, whichever flow sent it.
+  user.isEmailVerified = true;
   await user.save();
 
   const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
@@ -350,6 +350,60 @@ export const verifyOtp = asyncHandler(async (req, res) => {
   res
     .status(StatusCodes.OK)
     .json(createApiResponse('OTP verified successfully.', { user: toUserSummary(user) }));
+});
+
+export const verifyRegistrationOtp = asyncHandler(async (req, res) => {
+  const { email, otp, rememberMe = false } = req.body;
+  const user = await UserModel.findOne({ email }).select('+otpCode +otpExpires');
+  if (!user || !user.otpCode || !user.otpExpires) {
+    throw new AppError('Invalid verification request.', StatusCodes.BAD_REQUEST);
+  }
+
+  if (user.otpCode !== hashToken(otp) || user.otpExpires < new Date()) {
+    throw new AppError('Code is invalid or expired.', StatusCodes.BAD_REQUEST);
+  }
+
+  user.otpCode = undefined;
+  user.otpExpires = undefined;
+  user.isEmailVerified = true;
+  await user.save();
+
+  const accessToken = signAccessToken({ userId: user._id.toString(), role: user.role });
+  const refreshToken = await issueRefreshSession(user._id.toString(), user.role, rememberMe);
+  createAuthCookies(res, accessToken, refreshToken, rememberMe);
+
+  res
+    .status(StatusCodes.OK)
+    .json(createApiResponse('Email verified successfully.', { user: toUserSummary(user) }));
+});
+
+export const resendRegistrationOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const user = await UserModel.findOne({ email });
+  if (!user) {
+    throw new AppError('Account not found.', StatusCodes.NOT_FOUND);
+  }
+
+  if (user.isEmailVerified) {
+    throw new AppError('This email is already verified. Please log in.', StatusCodes.BAD_REQUEST);
+  }
+
+  const otp = generateOtp();
+  user.otpCode = hashToken(otp);
+  user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
+  await user.save();
+
+  await sendEmail({
+    to: email,
+    subject: 'Verify your SnackCo account',
+    html: renderEmailHtml(
+      'Verify your email',
+      `<p>Your verification code is:</p><p style="font-size:28px;font-weight:800;letter-spacing:0.1em;">${otp}</p><p>This code expires in 10 minutes.</p>`,
+    ),
+    text: `Your SnackCo verification code is ${otp}. It expires in 10 minutes.`,
+  });
+
+  res.status(StatusCodes.OK).json(createApiResponse('A new code has been sent to your email.'));
 });
 
 export const googleAuthCallback = asyncHandler(async (req, res) => {

@@ -49,6 +49,16 @@ async function loadOrderById(orderId: string) {
   return order;
 }
 
+async function loadOwnedOrderWithCustomer(orderId: string, userId?: string) {
+  const order = await loadOwnedOrder(orderId, userId);
+  return order.populate('user', 'name email phone');
+}
+
+async function loadOrderByIdWithCustomer(orderId: string) {
+  const order = await loadOrderById(orderId);
+  return order.populate('user', 'name email phone');
+}
+
 type OrderPayment = {
   provider: string;
   status: string;
@@ -536,7 +546,7 @@ function streamInvoice(order: InstanceType<typeof OrderModel>, req: Request, res
 }
 
 export const getInvoice = asyncHandler(async (req, res) => {
-  const order = await loadOwnedOrder(req.params.id, req.user?.userId);
+  const order = await loadOwnedOrderWithCustomer(req.params.id, req.user?.userId);
   streamInvoice(order, req, res);
 });
 
@@ -549,7 +559,7 @@ export const getOrderByIdForAdmin = asyncHandler(async (req, res) => {
 });
 
 export const getInvoiceForAdmin = asyncHandler(async (req, res) => {
-  const order = await loadOrderById(req.params.id);
+  const order = await loadOrderByIdWithCustomer(req.params.id);
   streamInvoice(order, req, res);
 });
 

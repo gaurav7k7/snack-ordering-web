@@ -20,6 +20,7 @@ export type HomeProduct = {
   slug: string;
   name: string;
   category: string;
+  categoryId: string;
   subCategory: string;
   brand: string;
   sku: string;

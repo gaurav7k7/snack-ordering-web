@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { PageLoader } from '@/components/shared/PageLoader';
 import { ROUTES } from '@/constants/routes';
 import { useGetMyOrdersQuery } from '@/redux/api/ordersApi';
 import type { OrderStatus } from '@/types/order';
@@ -63,7 +64,7 @@ export default function OrdersPage() {
 
         <div className="mt-8 space-y-4">
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading your orders…</p>
+            <PageLoader />
           ) : orders.length ? (
             orders.map((order) => (
               <Link

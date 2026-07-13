@@ -1,5 +1,6 @@
 import type { HomeProduct, ProductImage } from '@/types/home';
 import type { ApiProduct, ApiProductCard } from '@/types/product';
+import { getCategoryId, getCategoryName } from '@/utils/getCategoryName';
 
 function mapImages(images: ApiProductCard['images'] = []): ProductImage[] {
   return images.map((image, index) => ({
@@ -16,11 +17,6 @@ function deriveStockStatus(availableQuantity = 0): HomeProduct['stock'] {
   return 'in_stock';
 }
 
-function getCategoryName(category: ApiProductCard['category']): string {
-  if (!category) return '';
-  return typeof category === 'string' ? category : category.name;
-}
-
 export function mapApiProductCardToHomeProduct(product: ApiProductCard): HomeProduct {
   const images = mapImages(product.images);
 
@@ -29,6 +25,7 @@ export function mapApiProductCardToHomeProduct(product: ApiProductCard): HomePro
     slug: product.slug,
     name: product.name,
     category: getCategoryName(product.category),
+    categoryId: getCategoryId(product.category),
     subCategory: product.subCategory ?? '',
     brand: product.brand ?? '',
     sku: '',

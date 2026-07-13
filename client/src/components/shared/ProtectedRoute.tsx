@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
+import { PageLoader } from '@/components/shared/PageLoader';
 import { useAppSelector } from '@/hooks/redux';
 import { ROUTES } from '@/constants/routes';
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
@@ -28,11 +29,7 @@ export function ProtectedRoute({ requireAuth = true, allowedRoles }: ProtectedRo
   }
 
   if ((isLoading || isUninitialized) && !resolvedIsAuthenticated) {
-    return (
-      <div className="grid min-h-[50vh] place-items-center text-sm text-muted-foreground">
-        Loading…
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!resolvedIsAuthenticated) {

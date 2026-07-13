@@ -23,6 +23,7 @@ const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('@/pages/auth/VerifyEmailPage'));
+const VerifyRegistrationOtpPage = lazy(() => import('@/pages/auth/VerifyRegistrationOtpPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage'));
 const AdminOrderDetailPage = lazy(() => import('@/pages/admin/AdminOrderDetailPage'));
@@ -34,6 +35,7 @@ const AdminCategoriesPage = lazy(() => import('@/pages/admin/AdminCategoriesPage
 const AdminCustomersPage = lazy(() => import('@/pages/admin/AdminCustomersPage'));
 const AdminCustomerDetailPage = lazy(() => import('@/pages/admin/AdminCustomerDetailPage'));
 const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage'));
+const AdminNewsletterPage = lazy(() => import('@/pages/admin/AdminNewsletterPage'));
 const NotFoundPage = lazy(() => import('@/pages/shared/NotFoundPage'));
 const AboutPage = lazy(() => import('@/pages/static/AboutPage'));
 const ContactPage = lazy(() => import('@/pages/static/ContactPage'));
@@ -265,6 +267,14 @@ export function AppRoutes() {
             </PageTransition>
           }
         />
+        <Route
+          path="verify-registration"
+          element={
+            <PageTransition>
+              <VerifyRegistrationOtpPage />
+            </PageTransition>
+          }
+        />
 
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route path="admin" element={<AdminLayout />}>
@@ -362,6 +372,14 @@ export function AppRoutes() {
               element={
                 <PageTransition>
                   <AdminReviewsPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="newsletter"
+              element={
+                <PageTransition>
+                  <AdminNewsletterPage />
                 </PageTransition>
               }
             />

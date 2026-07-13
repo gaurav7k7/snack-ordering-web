@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 
+import { EntityImageUploader } from '@/components/admin/EntityImageUploader';
 import { StatusPill } from '@/components/admin/StatusPill';
 import { TableStateRow } from '@/components/admin/TableStateRow';
 import { TableSkeletonRows } from '@/components/admin/TableSkeletonRows';
@@ -43,6 +44,7 @@ function CategoriesTab() {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [pendingImage, setPendingImage] = useState<{ url: string; publicId: string } | null>(null);
 
   const categories = data?.data?.categories ?? [];
 
@@ -50,13 +52,22 @@ function CategoriesTab() {
     event.preventDefault();
     if (!name.trim()) return;
     try {
-      await createCategory({ name: name.trim(), description: description.trim() }).unwrap();
+      await createCategory({
+        name: name.trim(),
+        description: description.trim(),
+        image: pendingImage ?? undefined,
+      }).unwrap();
       toast.success('Category created.');
       setName('');
       setDescription('');
+      setPendingImage(null);
     } catch (error) {
       toast.error(getErrorMessage(error, 'Unable to create category.'));
     }
+  };
+
+  const handleImageUpload = async (id: string, image: { url: string; publicId: string }) => {
+    await updateCategory({ id, image }).unwrap();
   };
 
   const handleRename = async (id: string, currentName: string) => {
@@ -104,6 +115,14 @@ function CategoriesTab() {
             className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
           />
         </label>
+        <label className="grid gap-1.5 text-sm">
+          <span className="font-semibold">Image (optional)</span>
+          <EntityImageUploader
+            imageUrl={pendingImage?.url}
+            label={name || 'new category'}
+            onUpload={(image) => setPendingImage(image)}
+          />
+        </label>
         <Button type="submit" disabled={isCreating}>
           <Plus className="mr-2 h-4 w-4" /> {isCreating ? 'Adding…' : 'Add category'}
         </Button>
@@ -113,6 +132,7 @@ function CategoriesTab() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border/70 bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <th className="px-4 py-3 font-semibold">Image</th>
               <th className="px-4 py-3 font-semibold">Name</th>
               <th className="px-4 py-3 font-semibold">Slug</th>
               <th className="px-4 py-3 font-semibold">Description</th>
@@ -122,12 +142,19 @@ function CategoriesTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <TableSkeletonRows columns={5} />
+              <TableSkeletonRows columns={6} />
             ) : categories.length === 0 ? (
-              <TableStateRow colSpan={5}>No categories yet. Add your first one above.</TableStateRow>
+              <TableStateRow colSpan={6}>No categories yet. Add your first one above.</TableStateRow>
             ) : (
               categories.map((category) => (
                 <tr key={category._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
+                  <td className="px-4 py-3">
+                    <EntityImageUploader
+                      imageUrl={category.image?.url}
+                      label={category.name}
+                      onUpload={(image) => handleImageUpload(category._id, image)}
+                    />
+                  </td>
                   <td className="px-4 py-3 font-semibold">{category.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{category.slug}</td>
                   <td className="px-4 py-3 text-muted-foreground">{category.description || '—'}</td>
@@ -295,6 +322,7 @@ function BrandsTab() {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [pendingLogo, setPendingLogo] = useState<{ url: string; publicId: string } | null>(null);
 
   const brands = data?.data?.brands ?? [];
 
@@ -302,13 +330,22 @@ function BrandsTab() {
     event.preventDefault();
     if (!name.trim()) return;
     try {
-      await createBrand({ name: name.trim(), description: description.trim() }).unwrap();
+      await createBrand({
+        name: name.trim(),
+        description: description.trim(),
+        logo: pendingLogo ?? undefined,
+      }).unwrap();
       toast.success('Brand created.');
       setName('');
       setDescription('');
+      setPendingLogo(null);
     } catch (error) {
       toast.error(getErrorMessage(error, 'Unable to create brand.'));
     }
+  };
+
+  const handleLogoUpload = async (id: string, logo: { url: string; publicId: string }) => {
+    await updateBrand({ id, logo }).unwrap();
   };
 
   const handleRename = async (id: string, currentName: string) => {
@@ -356,6 +393,14 @@ function BrandsTab() {
             className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
           />
         </label>
+        <label className="grid gap-1.5 text-sm">
+          <span className="font-semibold">Logo (optional)</span>
+          <EntityImageUploader
+            imageUrl={pendingLogo?.url}
+            label={name || 'new brand'}
+            onUpload={(image) => setPendingLogo(image)}
+          />
+        </label>
         <Button type="submit" disabled={isCreating}>
           <Plus className="mr-2 h-4 w-4" /> {isCreating ? 'Adding…' : 'Add brand'}
         </Button>
@@ -365,6 +410,7 @@ function BrandsTab() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border/70 bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <th className="px-4 py-3 font-semibold">Logo</th>
               <th className="px-4 py-3 font-semibold">Name</th>
               <th className="px-4 py-3 font-semibold">Slug</th>
               <th className="px-4 py-3 font-semibold">Description</th>
@@ -374,12 +420,19 @@ function BrandsTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <TableSkeletonRows columns={5} />
+              <TableSkeletonRows columns={6} />
             ) : brands.length === 0 ? (
-              <TableStateRow colSpan={5}>No brands yet. Add your first one above.</TableStateRow>
+              <TableStateRow colSpan={6}>No brands yet. Add your first one above.</TableStateRow>
             ) : (
               brands.map((brand) => (
                 <tr key={brand._id} className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/50">
+                  <td className="px-4 py-3">
+                    <EntityImageUploader
+                      imageUrl={brand.logo?.url}
+                      label={brand.name}
+                      onUpload={(image) => handleLogoUpload(brand._id, image)}
+                    />
+                  </td>
                   <td className="px-4 py-3 font-semibold">{brand.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{brand.slug}</td>
                   <td className="px-4 py-3 text-muted-foreground">{brand.description || '—'}</td>

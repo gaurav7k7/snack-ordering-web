@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 
 type SearchFiltersProps = {
-  categories: string[];
+  categories: Array<{ id: string; name: string }>;
   brands: string[];
   selectedCategory: string;
   selectedBrand: string;
@@ -87,8 +87,8 @@ export function SearchFilters({
           >
             <option value="">All categories</option>
             {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
             ))}
           </select>

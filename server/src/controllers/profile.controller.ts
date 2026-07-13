@@ -73,7 +73,10 @@ export const getWishlist = asyncHandler(async (req, res) => {
   const pagination = parsePagination(req.query, { defaultLimit: 20, maxLimit: 60 });
   const pageIds = allIds.slice((pagination.page - 1) * pagination.limit, pagination.page * pagination.limit);
 
-  const products = await ProductModel.find({ _id: { $in: pageIds } }).select(PRODUCT_CARD_FIELDS).lean();
+  const products = await ProductModel.find({ _id: { $in: pageIds } })
+    .select(PRODUCT_CARD_FIELDS)
+    .populate('category', 'name slug')
+    .lean();
   const productsById = new Map(products.map((product) => [product._id.toString(), product]));
   const wishlist = pageIds.map((id) => productsById.get(id.toString())).filter(Boolean);
 
@@ -101,7 +104,7 @@ export const addToWishlist = asyncHandler(async (req, res) => {
     req.user?.userId,
     { $addToSet: { wishlist: productId } },
     { new: true },
-  ).populate('wishlist', PRODUCT_CARD_FIELDS);
+  ).populate({ path: 'wishlist', select: PRODUCT_CARD_FIELDS, populate: { path: 'category', select: 'name slug' } });
   if (!user) throw new AppError('User not found.', StatusCodes.NOT_FOUND);
 
   res
@@ -116,7 +119,7 @@ export const removeFromWishlist = asyncHandler(async (req, res) => {
     req.user?.userId,
     { $pull: { wishlist: productId } },
     { new: true },
-  ).populate('wishlist', PRODUCT_CARD_FIELDS);
+  ).populate({ path: 'wishlist', select: PRODUCT_CARD_FIELDS, populate: { path: 'category', select: 'name slug' } });
   if (!user) throw new AppError('User not found.', StatusCodes.NOT_FOUND);
 
   res

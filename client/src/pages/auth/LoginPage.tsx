@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
@@ -13,7 +13,7 @@ import { ROUTES } from '@/constants/routes';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useLoginMutation } from '@/redux/api/authApi';
 import { setUser } from '@/redux/slices/authSlice';
-import { getErrorMessage } from '@/utils/getErrorMessage';
+import { getErrorCode, getErrorMessage } from '@/utils/getErrorMessage';
 import { loginSchema, type LoginInput } from '@/validation/auth.schema';
 
 export default function LoginPage() {
@@ -23,6 +23,7 @@ export default function LoginPage() {
   const authState = useAppSelector((state) => state.auth);
   const [mode, setMode] = useState<'password' | 'otp'>('password');
   const [login, { data, error, isLoading, isSuccess }] = useLoginMutation();
+  const loginEmailRef = useRef('');
   const {
     register,
     handleSubmit,
@@ -39,6 +40,11 @@ export default function LoginPage() {
       navigate(ROUTES.home, { replace: true });
     }
     if (error) {
+      if (getErrorCode(error) === 'EMAIL_NOT_VERIFIED') {
+        toast.error('Please verify your email to continue.');
+        navigate(ROUTES.verifyRegistration, { state: { email: loginEmailRef.current } });
+        return;
+      }
       toast.error(getErrorMessage(error, 'Login failed.'));
     }
   }, [data, dispatch, error, isSuccess, navigate]);
@@ -103,7 +109,13 @@ export default function LoginPage() {
         </div>
 
         {mode === 'password' ? (
-          <form className="grid gap-4" onSubmit={handleSubmit((values) => login(values))}>
+          <form
+            className="grid gap-4"
+            onSubmit={handleSubmit((values) => {
+              loginEmailRef.current = values.email;
+              login(values);
+            })}
+          >
             <label className="grid gap-2 text-sm">
               <span>Email address</span>
               <Input type="email" {...register('email')} />

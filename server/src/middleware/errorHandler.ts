@@ -16,6 +16,7 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
   res.status(statusCode).json({
     success: false,
     message,
+    code: isAppError ? error.code : undefined,
     data: null,
     stack: env.nodeEnv === 'development' ? error.stack : undefined,
   });

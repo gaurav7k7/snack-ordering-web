@@ -4,7 +4,6 @@ export const registerSchema = z.object({
   name: z.string().min(2).max(80),
   email: z.string().email(),
   password: z.string().min(8).max(128),
-  rememberMe: z.boolean().optional(),
 });
 
 export const loginSchema = z.object({
@@ -41,4 +40,14 @@ export const verifyOtpSchema = z.object({
   email: z.string().email(),
   otp: z.string().length(6),
   rememberMe: z.boolean().optional(),
+});
+
+export const verifyRegistrationOtpSchema = z.object({
+  email: z.string().email(),
+  otp: z.string().length(6),
+  rememberMe: z.boolean().optional(),
+});
+
+export const resendRegistrationOtpSchema = z.object({
+  email: z.string().email(),
 });

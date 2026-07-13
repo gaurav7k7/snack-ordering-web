@@ -74,8 +74,7 @@ export function generateCsv(rows: Record<string, unknown>[], columns: string[]):
   return `${header}\r\n${body}`;
 }
 
-export function downloadCsv(filename: string, csvText: string) {
-  const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+export function downloadBlob(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -84,4 +83,8 @@ export function downloadCsv(filename: string, csvText: string) {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+export function downloadCsv(filename: string, csvText: string) {
+  downloadBlob(filename, new Blob([csvText], { type: 'text/csv;charset=utf-8;' }));
 }

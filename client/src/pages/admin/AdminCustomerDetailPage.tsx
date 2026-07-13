@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
+import { PageLoader } from '@/components/shared/PageLoader';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import {
@@ -38,7 +39,7 @@ export default function AdminCustomerDetailPage() {
   const reviews = reviewsData?.data?.reviews ?? [];
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading customer…</p>;
+    return <PageLoader />;
   }
 
   if (!customer || !id) {

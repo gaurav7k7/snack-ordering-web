@@ -157,7 +157,7 @@ export default function ProductDetailPage() {
           {JSON.stringify(
             buildBreadcrumbSchema([
               { label: 'Shop snacks', href: '/products' },
-              { label: product.category, href: `/products?category=${product.category}` },
+              { label: product.category, href: `/products?category=${product.categoryId}` },
               { label: product.name },
             ]),
           )}

@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   LayoutGrid,
   LogOut,
+  Mail,
   Menu,
   Package,
   ShoppingBag,
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
   { label: 'Coupons', href: ROUTES.adminCoupons, icon: Tag },
   { label: 'Customers', href: ROUTES.adminCustomers, icon: Users },
   { label: 'Reviews', href: ROUTES.adminReviews, icon: Star },
+  { label: 'Newsletter', href: ROUTES.adminNewsletter, icon: Mail },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {

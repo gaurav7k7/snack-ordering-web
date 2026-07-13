@@ -39,6 +39,7 @@ export const baseApi = createApi({
     'SubCategory',
     'Brand',
     'Tag',
+    'Newsletter',
   ],
   endpoints: () => ({}),
 });

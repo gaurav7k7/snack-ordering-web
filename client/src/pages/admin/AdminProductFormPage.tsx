@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { ProductImageUploader } from '@/components/admin/ProductImageUploader';
+import { PageLoader } from '@/components/shared/PageLoader';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
@@ -189,7 +190,7 @@ export default function AdminProductFormPage() {
   };
 
   if (isEditMode && isLoadingExisting) {
-    return <p className="text-sm text-muted-foreground">Loading product…</p>;
+    return <PageLoader />;
   }
 
   return (

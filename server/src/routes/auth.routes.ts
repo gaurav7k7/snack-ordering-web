@@ -11,10 +11,12 @@ import {
   refreshAccessToken,
   register,
   requestOtp,
+  resendRegistrationOtp,
   resendVerificationEmail,
   resetPassword,
   verifyEmail,
   verifyOtp,
+  verifyRegistrationOtp,
 } from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 import {
@@ -30,10 +32,12 @@ import {
   loginSchema,
   registerSchema,
   requestOtpSchema,
+  resendRegistrationOtpSchema,
   resetPasswordSchema,
   resendVerificationSchema,
   verifyEmailSchema,
   verifyOtpSchema,
+  verifyRegistrationOtpSchema,
 } from '../validation/auth.validation.js';
 
 export const authRoutes = Router();
@@ -58,6 +62,18 @@ authRoutes.post(
 authRoutes.post('/reset-password', validateRequest({ body: resetPasswordSchema }), resetPassword);
 authRoutes.post('/otp/request', otpRequestLimiter, validateRequest({ body: requestOtpSchema }), requestOtp);
 authRoutes.post('/otp/verify', otpVerifyLimiter, validateRequest({ body: verifyOtpSchema }), verifyOtp);
+authRoutes.post(
+  '/verify-registration-otp',
+  otpVerifyLimiter,
+  validateRequest({ body: verifyRegistrationOtpSchema }),
+  verifyRegistrationOtp,
+);
+authRoutes.post(
+  '/resend-registration-otp',
+  otpRequestLimiter,
+  validateRequest({ body: resendRegistrationOtpSchema }),
+  resendRegistrationOtp,
+);
 
 // Passport throws "Unknown authentication strategy" (an unhandled 500) if
 // asked to authenticate with a strategy that was never registered — guard

@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 import { App } from '@/app/App';
+import { PageLoader } from '@/components/shared/PageLoader';
 import { ThemeProvider } from '@/components/shared/ThemeProvider';
 import { store } from '@/redux/store';
 import { registerServiceWorker } from '@/utils/registerServiceWorker';
@@ -19,7 +20,7 @@ createRoot(document.getElementById('root') as HTMLElement).render(
       <Provider store={store}>
         <ThemeProvider>
           <BrowserRouter>
-            <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading...</div>}>
+            <Suspense fallback={<PageLoader fullScreen />}>
               <App />
             </Suspense>
             <Toaster position="top-right" />

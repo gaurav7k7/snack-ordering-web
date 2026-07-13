@@ -111,6 +111,7 @@ export async function searchProducts(params: SearchProductsParams) {
   const [products, total] = await Promise.all([
     ProductModel.find(query)
       .select('-reviews')
+      .populate('category', 'name slug')
       .sort(sort)
       .skip((page - 1) * limit)
       .limit(limit)
@@ -149,13 +150,15 @@ export async function getSearchSuggestions(query = '') {
   const products = await ProductModel.find({ isActive: true, $text: { $search: query.trim() } })
     .sort({ reviewCount: -1 })
     .limit(10)
-    .select('name category brand tags')
+    .select('name brand tags')
     .lean();
 
+  // Category is deliberately excluded — it's stored as a Category
+  // reference (an ObjectId) here, not a name, and isn't populated for this
+  // lightweight suggestions query, so including it would leak a raw id.
   const suggestionSet = new Set<string>();
   products.forEach((product) => {
     if (typeof product.name === 'string') suggestionSet.add(product.name);
-    if (typeof product.category === 'string') suggestionSet.add(product.category);
     if (typeof product.brand === 'string') suggestionSet.add(product.brand);
     if (Array.isArray(product.tags)) {
       product.tags.slice(0, 3).forEach((tag) => {
@@ -174,8 +177,16 @@ export async function getProductBySlug(slug: string) {
   return ProductModel.findOne({ slug, isActive: true })
     .select('-reviews')
     .populate('category', 'name slug')
-    .populate('recommendedProducts', PRODUCT_CARD_FIELDS)
-    .populate('relatedProducts', PRODUCT_CARD_FIELDS)
+    .populate({
+      path: 'recommendedProducts',
+      select: PRODUCT_CARD_FIELDS,
+      populate: { path: 'category', select: 'name slug' },
+    })
+    .populate({
+      path: 'relatedProducts',
+      select: PRODUCT_CARD_FIELDS,
+      populate: { path: 'category', select: 'name slug' },
+    })
     .lean();
 }
 

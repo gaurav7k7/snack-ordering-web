@@ -16,7 +16,7 @@ export type SearchProduct = {
   _id?: string;
   slug: string;
   name: string;
-  category: string;
+  category: ApiProductCategory | string;
   subCategory?: string;
   brand?: string;
   sku?: string;

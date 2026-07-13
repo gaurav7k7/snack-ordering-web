@@ -9,6 +9,7 @@ import { RefundModal } from '@/components/admin/RefundModal';
 import { OrderStatusBadge, STATUS_LABELS } from '@/components/orders/OrderStatusBadge';
 import { OrderTimeline } from '@/components/orders/OrderTimeline';
 import { ReasonModal } from '@/components/orders/ReasonModal';
+import { PageLoader } from '@/components/shared/PageLoader';
 import { Button } from '@/components/ui/button';
 import { env } from '@/config/env';
 import { ROUTES } from '@/constants/routes';
@@ -45,7 +46,7 @@ export default function AdminOrderDetailPage() {
   const order = data?.data?.order;
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading order…</p>;
+    return <PageLoader />;
   }
 
   if (!order || !id) {

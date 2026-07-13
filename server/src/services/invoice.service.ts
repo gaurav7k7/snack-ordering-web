@@ -3,9 +3,11 @@ import PDFDocument from 'pdfkit';
 type InvoiceOrder = {
   orderNumber: string;
   createdAt: Date;
+  status: string;
   items: Array<{ name: string; price: number; quantity: number }>;
   shippingAddress?: {
     fullName?: string;
+    phone?: string;
     line1?: string;
     line2?: string;
     city?: string;
@@ -13,8 +15,10 @@ type InvoiceOrder = {
     postalCode?: string;
     country?: string;
   };
+  user?: { name?: string; email?: string; phone?: string } | string | null;
   guestName?: string;
   guestEmail?: string;
+  guestPhone?: string;
   subtotal: number;
   shippingFee: number;
   tax: number;
@@ -23,41 +27,84 @@ type InvoiceOrder = {
   couponDiscount?: number;
   automaticOfferCode?: string;
   automaticDiscount?: number;
-  payment?: { provider?: string; status?: string };
+  payment?: { provider?: string; status?: string; razorpayPaymentId?: string };
 };
 
 const currency = (value: number) => `Rs. ${value.toFixed(2)}`;
+const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
 export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
-  doc.fontSize(20).font('Helvetica-Bold').text('SnackCo', { continued: false });
+  const customer = typeof order.user === 'object' && order.user ? order.user : undefined;
+  const address = order.shippingAddress;
+  const customerName = customer?.name || address?.fullName || order.guestName || 'Customer';
+  const customerPhone = address?.phone || customer?.phone || order.guestPhone || 'Not provided';
+  const customerEmail = customer?.email || order.guestEmail || 'Not provided';
+
+  doc.fontSize(20).font('Helvetica-Bold').fillColor('#000').text('SnackCo');
   doc.fontSize(10).font('Helvetica').fillColor('#666').text('Premium snacks, delivered fast.');
   doc.moveDown(1.5);
 
   doc.fillColor('#000').fontSize(16).font('Helvetica-Bold').text('Tax Invoice');
-  doc.moveDown(0.5);
-  doc
-    .fontSize(10)
-    .font('Helvetica')
-    .text(`Order number: ${order.orderNumber}`)
-    .text(`Order date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}`)
-    .text(`Payment method: ${order.payment?.provider === 'razorpay' ? 'Online payment' : 'Cash on delivery'}`)
-    .text(`Payment status: ${order.payment?.status ?? 'pending'}`);
-  doc.moveDown(1);
+  doc.moveDown(0.75);
 
-  const address = order.shippingAddress;
-  doc.font('Helvetica-Bold').text('Billed to');
+  const detailsTop = doc.y;
+  const leftX = 50;
+  const rightX = 300;
+
+  doc.font('Helvetica-Bold').fontSize(11).text('Order details', leftX, detailsTop);
   doc
     .font('Helvetica')
-    .text(address?.fullName || order.guestName || '—')
-    .text(order.guestEmail ?? '')
-    .text(
-      [address?.line1, address?.line2, address?.city, address?.state, address?.postalCode, address?.country]
-        .filter(Boolean)
-        .join(', '),
-    );
+    .fontSize(10)
+    .text(`Order number: ${order.orderNumber}`, leftX, detailsTop + 16)
+    .text(`Order date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}`)
+    .text(`Order status: ${capitalize(order.status)}`);
+
+  doc.font('Helvetica-Bold').fontSize(11).text('Customer details', rightX, detailsTop);
+  doc
+    .font('Helvetica')
+    .fontSize(10)
+    .text(`Name: ${customerName}`, rightX, detailsTop + 16, { width: 245 })
+    .text(`Phone: ${customerPhone}`, rightX, doc.y, { width: 245 })
+    .text(`Email: ${customerEmail}`, rightX, doc.y, { width: 245 });
+
   doc.moveDown(1.5);
+  doc.x = leftX;
+
+  const addressTop = doc.y;
+  doc.font('Helvetica-Bold').fontSize(11).text('Shipping address', leftX, addressTop);
+  doc
+    .font('Helvetica')
+    .fontSize(10)
+    .text(
+      address
+        ? [address.line1, address.line2, address.city, address.state, address.postalCode, address.country]
+            .filter(Boolean)
+            .join(', ')
+        : 'Not provided',
+      leftX,
+      addressTop + 16,
+      { width: 495 },
+    );
+
+  doc.moveDown(1);
+  doc.x = leftX;
+
+  const paymentTop = doc.y;
+  const paymentMethod = order.payment?.provider === 'razorpay' ? 'Online payment (Razorpay)' : 'Cash on delivery';
+  doc.font('Helvetica-Bold').fontSize(11).text('Payment information', leftX, paymentTop);
+  doc
+    .font('Helvetica')
+    .fontSize(10)
+    .text(`Method: ${paymentMethod}`, leftX, paymentTop + 16)
+    .text(`Status: ${capitalize(order.payment?.status ?? 'pending')}`);
+  if (order.payment?.razorpayPaymentId) {
+    doc.text(`Payment ID: ${order.payment.razorpayPaymentId}`);
+  }
+
+  doc.moveDown(1.5);
+  doc.x = leftX;
 
   const tableTop = doc.y;
   const columns = { name: 50, qty: 300, price: 370, total: 460 };

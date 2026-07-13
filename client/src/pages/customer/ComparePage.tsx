@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { PageLoader } from '@/components/shared/PageLoader';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAppDispatch } from '@/hooks/redux';
@@ -13,6 +14,7 @@ import { addItem } from '@/redux/slices/cartSlice';
 import type { SearchProduct } from '@/types/product';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { getCategoryName } from '@/utils/getCategoryName';
 
 function getProductId(product: SearchProduct) {
   return product.id ?? product._id ?? '';
@@ -29,7 +31,7 @@ const SPEC_ROWS: Array<{
       p.compareAtPrice ? <span className="text-muted-foreground line-through">{formatCurrency(p.compareAtPrice)}</span> : '—',
   },
   { label: 'Brand', render: (p) => p.brand || '—' },
-  { label: 'Category', render: (p) => p.category || '—' },
+  { label: 'Category', render: (p) => getCategoryName(p.category) || '—' },
   { label: 'Sub-category', render: (p) => p.subCategory || '—' },
   {
     label: 'Rating',
@@ -89,7 +91,7 @@ export default function ComparePage() {
         </div>
 
         {isLoading ? (
-          <p className="mt-8 text-sm text-muted-foreground">Loading comparison…</p>
+          <PageLoader />
         ) : products.length === 0 ? (
           <EmptyState
             className="mt-8"
