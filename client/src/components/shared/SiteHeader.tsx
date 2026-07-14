@@ -1,4 +1,4 @@
-import { Heart, LogOut, Menu, Mic, Search, ShoppingBag, User, X } from 'lucide-react';
+import { Heart, LogOut, Menu, Mic, Search, ShoppingBag, User } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -9,26 +9,20 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { Button } from '@/components/ui/button';
 import { CountBadge } from '@/components/shared/CountBadge';
 import { MiniCart } from '@/components/shared/MiniCart';
+import { MobileNavDrawer } from '@/components/shared/MobileNavDrawer';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { SITE_NAV_ITEMS } from '@/constants/navigation';
 import { FREE_SHIPPING_THRESHOLD } from '@/constants/pricing';
 import { ROUTES } from '@/constants/routes';
 import { useLogoutMutation } from '@/redux/api/authApi';
 import { clearUser } from '@/redux/slices/authSlice';
 import { cn } from '@/utils/cn';
 
-const navItems = [
-  { label: 'Shop', href: ROUTES.products },
-  { label: 'Deals', href: '/products?tag=deals' },
-  { label: 'Combos', href: '/products?collection=combos' },
-  { label: 'New', href: '/products?tag=new-arrivals' },
-];
-
 export function SiteHeader() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -93,7 +87,7 @@ export function SiteHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="xl:hidden"
             aria-label="Open menu"
             onClick={() => setIsMobileOpen(true)}
           >
@@ -104,8 +98,8 @@ export function SiteHeader() {
             SnackCo
           </Link>
 
-          <nav className="hidden items-center gap-6 text-sm font-semibold lg:flex">
-            {navItems.map((item) => (
+          <nav className="hidden items-center gap-6 text-sm font-semibold xl:flex">
+            {SITE_NAV_ITEMS.map((item) => (
               <Link key={item.label} to={item.href} className="transition hover:text-primary">
                 {item.label}
               </Link>
@@ -217,92 +211,9 @@ export function SiteHeader() {
             )}
           </div>
         </div>
-
-        {isMobileOpen ? (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <button
-              type="button"
-              className="absolute inset-0 bg-foreground/40"
-              aria-label="Close menu"
-              onClick={() => setIsMobileOpen(false)}
-            />
-            <aside className="absolute left-0 top-0 h-full w-80 max-w-[88vw] bg-background p-5 shadow-2xl">
-              <div className="mb-6 flex items-center justify-between">
-                <Link
-                  to={ROUTES.home}
-                  className="text-xl font-black"
-                  onClick={() => setIsMobileOpen(false)}
-                >
-                  SnackCo
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Close menu"
-                  onClick={() => setIsMobileOpen(false)}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-              <form
-                className="mb-6"
-                role="search"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  handleSearchSubmit(mobileSearchQuery);
-                  setIsMobileOpen(false);
-                }}
-              >
-                <label htmlFor="mobile-site-search" className="sr-only">
-                  Search snacks
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    id="mobile-site-search"
-                    type="search"
-                    value={mobileSearchQuery}
-                    onChange={(event) => setMobileSearchQuery(event.target.value)}
-                    placeholder="Search snacks..."
-                    className="h-11 w-full rounded-md border bg-background pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-              </form>
-              <nav className="grid gap-2">
-                {isAuthenticated ? (
-                  <Link
-                    to={ROUTES.profile}
-                    className="rounded-md px-3 py-3 text-base font-semibold hover:bg-muted"
-                    onClick={() => setIsMobileOpen(false)}
-                  >
-                    My account
-                  </Link>
-                ) : null}
-                {navItems.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    className="rounded-md px-3 py-3 text-base font-semibold hover:bg-muted"
-                    onClick={() => setIsMobileOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                {isAuthenticated ? (
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 rounded-md px-3 py-3 text-left text-base font-semibold text-destructive hover:bg-destructive/10"
-                  >
-                    <LogOut className="h-4 w-4" /> Log out
-                  </button>
-                ) : null}
-              </nav>
-            </aside>
-          </div>
-        ) : null}
       </header>
 
+      <MobileNavDrawer isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} />
       <MiniCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );

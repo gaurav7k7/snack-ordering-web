@@ -107,7 +107,7 @@ export function AdminLayout() {
             className="absolute inset-0 bg-foreground/40"
             onClick={() => setIsMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-card shadow-2xl">
+          <aside className="absolute left-0 top-0 h-full w-72 max-w-[85vw] overflow-y-auto overscroll-contain bg-card shadow-2xl">
             <div className="flex justify-end p-3">
               <Button variant="ghost" size="icon" aria-label="Close menu" onClick={() => setIsMobileOpen(false)}>
                 <X className="h-5 w-5" />
