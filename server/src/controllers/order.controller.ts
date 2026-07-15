@@ -23,6 +23,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 import { escapeRegex } from '../utils/escapeRegex.js';
 import { escapeHtml, renderEmailHtml } from '../utils/emailTemplates.js';
+import { logger } from '../utils/logger.js';
 import { buildPaginationMeta, parsePagination } from '../utils/pagination.js';
 
 async function loadOwnedOrder(orderId: string, userId?: string) {
@@ -238,7 +239,15 @@ export const createOrder = asyncHandler(async (req, res) => {
   });
 
   if (!isRazorpayPayment) {
-    await redeemOrderCoupons(order);
+    // The order document already exists at this point — a coupon-redemption
+    // failure (e.g. a stale/invalid coupon doc) must not turn a successfully
+    // placed COD order into a 500 the customer sees as "order failed" while
+    // it's actually sitting in the database.
+    try {
+      await redeemOrderCoupons(order);
+    } catch (error) {
+      logger.error(`Coupon redemption failed for order ${order.orderNumber}`, error);
+    }
   }
 
   if (isRazorpayPayment) {
@@ -259,8 +268,19 @@ export const createOrder = asyncHandler(async (req, res) => {
     );
   }
 
-  await decrementStockAndAlert(toStockItems(order.items as never));
-  await sendOrderConfirmationEmail(order);
+  // Same reasoning as the coupon redemption above: the order is already
+  // saved, so a stock-alert or confirmation-email failure must be logged and
+  // swallowed here rather than surfacing as an order-placement failure.
+  try {
+    await decrementStockAndAlert(toStockItems(order.items as never));
+  } catch (error) {
+    logger.error(`Stock decrement failed for order ${order.orderNumber}`, error);
+  }
+  try {
+    await sendOrderConfirmationEmail(order);
+  } catch (error) {
+    logger.error(`Order confirmation email failed for order ${order.orderNumber}`, error);
+  }
 
   res.status(StatusCodes.CREATED).json(createApiResponse('Order placed successfully.', { order }));
 });
@@ -308,9 +328,26 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   await order.save();
 
   if (!wasAlreadyConfirmed) {
-    await redeemOrderCoupons(order);
-    await decrementStockAndAlert(toStockItems(order.items as never));
-    await sendOrderConfirmationEmail(order);
+    // The payment is already verified and order.status/payment.status are
+    // already saved as confirmed/paid above — a failure in any of these
+    // side effects must not turn a successful payment into an error response
+    // (the frontend would show "payment could not be verified" and strand
+    // the customer on the checkout page despite having actually paid).
+    try {
+      await redeemOrderCoupons(order);
+    } catch (error) {
+      logger.error(`Coupon redemption failed for order ${order.orderNumber}`, error);
+    }
+    try {
+      await decrementStockAndAlert(toStockItems(order.items as never));
+    } catch (error) {
+      logger.error(`Stock decrement failed for order ${order.orderNumber}`, error);
+    }
+    try {
+      await sendOrderConfirmationEmail(order);
+    } catch (error) {
+      logger.error(`Order confirmation email failed for order ${order.orderNumber}`, error);
+    }
   }
 
   res.status(StatusCodes.OK).json(createApiResponse('Payment verified successfully.', { order }));
@@ -352,9 +389,21 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
     await order.save();
 
     if (!wasAlreadyConfirmed) {
-      await redeemOrderCoupons(order);
-      await decrementStockAndAlert(toStockItems(order.items as never));
-      await sendOrderConfirmationEmail(order);
+      try {
+        await redeemOrderCoupons(order);
+      } catch (error) {
+        logger.error(`Coupon redemption failed for order ${order.orderNumber}`, error);
+      }
+      try {
+        await decrementStockAndAlert(toStockItems(order.items as never));
+      } catch (error) {
+        logger.error(`Stock decrement failed for order ${order.orderNumber}`, error);
+      }
+      try {
+        await sendOrderConfirmationEmail(order);
+      } catch (error) {
+        logger.error(`Order confirmation email failed for order ${order.orderNumber}`, error);
+      }
     }
   }
 

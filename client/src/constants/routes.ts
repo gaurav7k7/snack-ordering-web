@@ -10,6 +10,7 @@ export const ROUTES = {
   verifyRegistration: '/verify-registration',
   profile: '/profile',
   checkout: '/checkout',
+  orderConfirmation: '/order-confirmation',
   orders: '/orders',
   orderDetail: (id: string) => `/orders/${id}`,
   wishlist: '/wishlist',

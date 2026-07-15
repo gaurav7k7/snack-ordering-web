@@ -1,14 +1,17 @@
 import { motion, useReducedMotion } from 'framer-motion';
+import { SlidersHorizontal } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router-dom';
 
+import { MobileFilterSheet } from '@/components/customer/MobileFilterSheet';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { ProductGridSkeleton } from '@/components/customer/ProductGridSkeleton';
 import { SearchFilters } from '@/components/customer/SearchFilters';
 import { SearchPagination } from '@/components/shared/SearchPagination';
 import { SearchSuggestions } from '@/components/customer/SearchSuggestions';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
+import { Button } from '@/components/ui/button';
 import { SectionHeader } from '@/components/shared/SectionHeader';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
@@ -20,6 +23,7 @@ const DEFAULT_PAGE_SIZE = 16;
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
   const selectedCategory = searchParams.get('category') ?? '';
@@ -29,6 +33,14 @@ export default function ProductsPage() {
   const selectedDiscount = searchParams.get('discount') ?? '';
   const selectedSort = searchParams.get('sort') ?? 'newest';
   const page = Number(searchParams.get('page') ?? '1');
+
+  const activeFilterCount = [
+    selectedCategory,
+    selectedBrand,
+    selectedRating,
+    selectedAvailability,
+    selectedDiscount,
+  ].filter(Boolean).length;
 
   const queryParams = useMemo(
     () => ({
@@ -75,10 +87,17 @@ export default function ProductsPage() {
   // dropdown value is a real Category id the search API can filter on
   // rather than a name string.
   const categories = useMemo(
-    () => (categoriesData?.data?.categories ?? []).map((category) => ({ id: category._id, name: category.name })),
+    () =>
+      (categoriesData?.data?.categories ?? []).map((category) => ({
+        id: category._id,
+        name: category.name,
+      })),
     [categoriesData],
   );
-  const brands = useMemo(() => (brandsData?.data?.brands ?? []).map((brand) => brand.name), [brandsData]);
+  const brands = useMemo(
+    () => (brandsData?.data?.brands ?? []).map((brand) => brand.name),
+    [brandsData],
+  );
 
   const handleParamChange = (key: string, value: string) => {
     const nextParams = new URLSearchParams(searchParams);
@@ -178,10 +197,22 @@ export default function ProductsPage() {
               <option value="best_selling">Best selling</option>
             </select>
           </div>
+
+          <div className="mt-3 lg:hidden">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => setIsFilterSheetOpen(true)}
+            >
+              <SlidersHorizontal className="mr-2 h-4 w-4" />
+              Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          <div className="space-y-6">
+          <div className="hidden space-y-6 lg:block">
             <SearchFilters
               categories={categories}
               brands={brands}
@@ -261,6 +292,30 @@ export default function ProductsPage() {
           </div>
         </div>
       </section>
+
+      <MobileFilterSheet
+        isOpen={isFilterSheetOpen}
+        onClose={() => setIsFilterSheetOpen(false)}
+        resultCount={pagination.total}
+      >
+        <SearchFilters
+          categories={categories}
+          brands={brands}
+          selectedCategory={selectedCategory}
+          selectedBrand={selectedBrand}
+          selectedRating={selectedRating}
+          selectedAvailability={selectedAvailability}
+          selectedDiscount={selectedDiscount}
+          selectedSort={selectedSort}
+          onCategoryChange={(value) => handleParamChange('category', value)}
+          onBrandChange={(value) => handleParamChange('brand', value)}
+          onRatingChange={(value) => handleParamChange('rating', value)}
+          onAvailabilityChange={(value) => handleParamChange('availability', value)}
+          onDiscountChange={(value) => handleParamChange('discount', value)}
+          onSortChange={(value) => handleParamChange('sort', value)}
+          onResetFilters={handleClearFilters}
+        />
+      </MobileFilterSheet>
     </>
   );
 }

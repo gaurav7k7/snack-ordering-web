@@ -1,8 +1,8 @@
-import { CheckCircle2, CreditCard, MapPin, PackageCheck, Truck } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { AlertCircle, CheckCircle2, CreditCard, MapPin, PackageCheck, Truck } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
@@ -25,9 +25,38 @@ const defaultAddress = {
   country: 'India',
 };
 
+// Some Razorpay payment methods (netbanking, certain UPI apps) do a full
+// top-level page redirect back to this URL instead of staying inside the
+// checkout.js modal — in that case the `handler` closure below never fires
+// because the page reloaded. We persist the pending order here before
+// opening the modal so a returning redirect (or a mid-payment refresh) can
+// be detected and resolved instead of silently stranding the user back on
+// this page, and so a refresh doesn't let them create a duplicate order.
+const PENDING_PAYMENT_KEY = 'snackco_pending_payment';
+
+type PendingPayment = { orderId: string; razorpayOrderId: string; orderNumber?: string };
+
+function readPendingPayment(): PendingPayment | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_PAYMENT_KEY);
+    return raw ? (JSON.parse(raw) as PendingPayment) : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePendingPayment(payment: PendingPayment) {
+  sessionStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify(payment));
+}
+
+function clearPendingPayment() {
+  sessionStorage.removeItem(PENDING_PAYMENT_KEY);
+}
+
 export default function CheckoutPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { items, couponCode } = useAppSelector((state) => state.cart);
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const [createOrder, { isLoading }] = useCreateOrderMutation();
@@ -37,6 +66,9 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'razorpay'>('cod');
   const [isGuest, setIsGuest] = useState(!isAuthenticated);
   const [guestEmail, setGuestEmail] = useState('');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(() => readPendingPayment());
+  const hasHandledReturnRef = useRef(false);
 
   const subtotal = useMemo(
     () => items.reduce((total, item) => total + item.price * item.quantity, 0),
@@ -45,7 +77,83 @@ export default function CheckoutPage() {
   const { appliedCoupon, automaticOffer, couponDiscount, automaticDiscount, tax, shippingFee, total } =
     useCartPricing(subtotal, couponCode);
 
-  if (!items.length) {
+  // Handles the redirect-flow return described above: if Razorpay sent the
+  // browser back here with payment params instead of firing the in-modal
+  // `handler`, finish verification automatically instead of leaving the user
+  // stuck looking at the checkout form with no indication anything happened.
+  useEffect(() => {
+    if (hasHandledReturnRef.current) return;
+    const razorpayPaymentId = searchParams.get('razorpay_payment_id');
+    const razorpayOrderId = searchParams.get('razorpay_order_id');
+    const razorpaySignature = searchParams.get('razorpay_signature');
+    const pending = readPendingPayment();
+
+    if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature || !pending) return;
+    if (pending.razorpayOrderId !== razorpayOrderId) return;
+
+    hasHandledReturnRef.current = true;
+    setIsProcessingPayment(true);
+
+    verifyPayment({
+      orderId: pending.orderId,
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+    })
+      .unwrap()
+      .then((verifyResult) => {
+        clearPendingPayment();
+        setPendingPayment(null);
+        dispatch(clearCart());
+        toast.success('Payment successful. Your order is confirmed.');
+        navigate(ROUTES.orderConfirmation, { replace: true, state: { order: verifyResult.data?.order } });
+      })
+      .catch((verifyError) => {
+        clearPendingPayment();
+        setPendingPayment(null);
+        setIsProcessingPayment(false);
+        toast.error(getErrorMessage(verifyError, 'Payment could not be verified.'));
+        navigate(ROUTES.checkout, { replace: true });
+      });
+  }, [searchParams, verifyPayment, dispatch, navigate]);
+
+  // A pending payment with no razorpay_* return params means the user left
+  // mid-payment (refresh, closed tab) rather than completing a redirect
+  // back — don't silently let them resubmit and create a duplicate order
+  // for the same cart.
+  if (pendingPayment && !searchParams.get('razorpay_payment_id')) {
+    return (
+      <section className="container py-16">
+        <div className="mx-auto max-w-lg rounded-3xl border bg-card p-8 text-center shadow-sm">
+          <AlertCircle className="mx-auto h-12 w-12 text-amber-500" aria-hidden="true" />
+          <h1 className="mt-4 text-2xl font-black">Payment in progress</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            You started a payment for {pendingPayment.orderNumber ? `order ${pendingPayment.orderNumber}` : 'your order'}.
+            If you completed the payment, check your orders to confirm. If it didn't go through, you can start a new
+            order.
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            {isAuthenticated ? (
+              <Button asChild>
+                <Link to={ROUTES.orders}>View my orders</Link>
+              </Button>
+            ) : null}
+            <Button
+              variant="outline"
+              onClick={() => {
+                clearPendingPayment();
+                setPendingPayment(null);
+              }}
+            >
+              Start a new order
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!items.length && !isProcessingPayment) {
     return <Navigate to={ROUTES.cart} replace />;
   }
 
@@ -87,6 +195,8 @@ export default function CheckoutPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    if (isProcessingPayment) return;
+
     if (
       !address.fullName ||
       !address.phone ||
@@ -103,6 +213,8 @@ export default function CheckoutPage() {
       toast.error('Please enter your email for guest checkout.');
       return;
     }
+
+    setIsProcessingPayment(true);
 
     try {
       const result = await createOrder({
@@ -121,6 +233,14 @@ export default function CheckoutPage() {
 
       if (paymentMethod === 'razorpay' && result.data?.payment?.razorpayOrderId && createdOrderId) {
         await loadRazorpayScript();
+
+        const finishFailedOrCancelledPayment = (message: string) => {
+          clearPendingPayment();
+          setPendingPayment(null);
+          setIsProcessingPayment(false);
+          toast.error(message);
+        };
+
         const razorpayOptions = {
           key: result.data.payment.key,
           amount: result.data.payment.amount * 100,
@@ -134,17 +254,19 @@ export default function CheckoutPage() {
             razorpay_signature: string;
           }) => {
             try {
-              await verifyPayment({
+              const verifyResult = await verifyPayment({
                 orderId: createdOrderId,
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
               }).unwrap();
+              clearPendingPayment();
+              setPendingPayment(null);
               dispatch(clearCart());
               toast.success('Payment successful. Your order is confirmed.');
-              navigate('/order-confirmation', { state: { order: result.data?.order } });
+              navigate(ROUTES.orderConfirmation, { state: { order: verifyResult.data?.order } });
             } catch (verifyError) {
-              toast.error(getErrorMessage(verifyError, 'Payment could not be verified.'));
+              finishFailedOrCancelledPayment(getErrorMessage(verifyError, 'Payment could not be verified.'));
             }
           },
           prefill: {
@@ -157,28 +279,48 @@ export default function CheckoutPage() {
           },
           modal: {
             ondismiss: () => {
-              toast.error('Payment was cancelled.');
+              finishFailedOrCancelledPayment('Payment was cancelled.');
             },
           },
         };
 
         const razorpayWindow = window as Window & {
-          Razorpay?: new (options: typeof razorpayOptions) => { open: () => void };
+          Razorpay?: new (options: typeof razorpayOptions) => {
+            open: () => void;
+            on: (event: string, handler: (response: { error?: { description?: string } }) => void) => void;
+          };
         };
         const Razorpay = razorpayWindow.Razorpay;
         if (!Razorpay) {
           throw new Error('Razorpay is not available.');
         }
 
+        // Persisted so a redirect-flow payment method (netbanking, some UPI
+        // apps) that fully navigates away and back can be resolved on
+        // return, and so a mid-payment refresh doesn't let the user create a
+        // duplicate order for the same cart — see the useEffect above.
+        savePendingPayment({
+          orderId: createdOrderId,
+          razorpayOrderId: result.data.payment.razorpayOrderId,
+          orderNumber: result.data.order?.orderNumber,
+        });
+        setPendingPayment(readPendingPayment());
+
         const razorpayInstance = new Razorpay(razorpayOptions);
+        razorpayInstance.on('payment.failed', (response) => {
+          finishFailedOrCancelledPayment(
+            getErrorMessage({ data: { message: response.error?.description } }, 'Payment failed. Please try again.'),
+          );
+        });
         razorpayInstance.open();
         return;
       }
 
       dispatch(clearCart());
       toast.success('Order placed successfully.');
-      navigate('/order-confirmation', { state: { order: result.data?.order } });
+      navigate(ROUTES.orderConfirmation, { state: { order: result.data?.order } });
     } catch (error) {
+      setIsProcessingPayment(false);
       toast.error(getErrorMessage(error, 'Unable to place your order.'));
     }
   };
@@ -215,7 +357,10 @@ export default function CheckoutPage() {
                 <Button
                   type="button"
                   variant={!isGuest ? 'default' : 'outline'}
-                  onClick={() => setIsGuest(false)}
+                  onClick={() => {
+                    if (isAuthenticated) return;
+                    navigate(ROUTES.login, { state: { from: ROUTES.checkout } });
+                  }}
                   disabled={isAuthenticated}
                 >
                   Login checkout
@@ -380,8 +525,12 @@ export default function CheckoutPage() {
                   <span>Total</span>
                   <span>{formatCurrency(total)}</span>
                 </div>
-                <Button type="submit" className="mt-5 w-full" size="lg" disabled={isLoading}>
-                  {isLoading ? 'Placing order…' : 'Place order'}
+                <Button type="submit" className="mt-5 w-full" size="lg" disabled={isLoading || isProcessingPayment}>
+                  {isLoading
+                    ? 'Placing order…'
+                    : isProcessingPayment
+                      ? 'Completing payment…'
+                      : 'Place order'}
                 </Button>
                 <p className="mt-3 text-center text-xs text-muted-foreground">
                   You will receive an email confirmation once your order is placed.

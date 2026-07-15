@@ -1,4 +1,4 @@
-import { Heart, LogOut, Menu, Mic, Search, ShoppingBag, User } from 'lucide-react';
+import { Heart, LogOut, Menu, ShoppingBag, User } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 
 import { Button } from '@/components/ui/button';
 import { CountBadge } from '@/components/shared/CountBadge';
+import { HeaderSearchForm } from '@/components/shared/HeaderSearchForm';
 import { MiniCart } from '@/components/shared/MiniCart';
 import { MobileNavDrawer } from '@/components/shared/MobileNavDrawer';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
@@ -106,49 +107,29 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          <form
-            className="ml-auto hidden max-w-md flex-1 items-center md:flex"
-            role="search"
+          <HeaderSearchForm
+            id="site-search"
+            value={searchQuery}
+            onChange={setSearchQuery}
             onSubmit={(event) => {
               event.preventDefault();
               handleSearchSubmit(searchQuery);
             }}
-          >
-            <label htmlFor="site-search" className="sr-only">
-              Search snacks
-            </label>
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                id="site-search"
-                type="search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search popcorn, chips, combos..."
-                className={cn(
-                  'h-11 w-full rounded-md border bg-background pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20',
-                  voiceSearch.isSupported && 'pr-10',
-                )}
-              />
-              {voiceSearch.isSupported ? (
-                <button
-                  type="button"
-                  aria-label={voiceSearch.isListening ? 'Listening…' : 'Search by voice'}
-                  onClick={() => (voiceSearch.isListening ? voiceSearch.stop() : voiceSearch.start())}
-                  className={cn(
-                    'absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-primary',
-                    voiceSearch.isListening && 'animate-pulse text-primary',
-                  )}
-                >
-                  <Mic className="h-4 w-4" />
-                </button>
-              ) : null}
-            </div>
-          </form>
+            isVoiceSupported={voiceSearch.isSupported}
+            isVoiceListening={voiceSearch.isListening}
+            onToggleVoice={() => (voiceSearch.isListening ? voiceSearch.stop() : voiceSearch.start())}
+            className="ml-auto hidden max-w-md flex-1 xl:flex"
+          />
 
-          <div className="ml-auto flex items-center gap-1 md:ml-0">
-            <ThemeToggle />
-            <Button asChild variant="ghost" size="icon" aria-label="Wishlist" className="relative">
+          <div className="ml-auto flex items-center gap-1 xl:ml-0">
+            <ThemeToggle className="hidden xl:inline-flex" />
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              aria-label="Wishlist"
+              className="relative hidden xl:inline-flex"
+            >
               <Link to={isAuthenticated ? ROUTES.wishlist : ROUTES.login}>
                 <Heart className="h-5 w-5" />
                 <CountBadge count={wishlistCount} />
@@ -210,6 +191,21 @@ export function SiteHeader() {
               </Button>
             )}
           </div>
+        </div>
+
+        <div className="container pb-3 xl:hidden">
+          <HeaderSearchForm
+            id="site-search-mobile"
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleSearchSubmit(searchQuery);
+            }}
+            isVoiceSupported={voiceSearch.isSupported}
+            isVoiceListening={voiceSearch.isListening}
+            onToggleVoice={() => (voiceSearch.isListening ? voiceSearch.stop() : voiceSearch.start())}
+          />
         </div>
       </header>
 

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { LogOut, Search, X } from 'lucide-react';
+import { Heart, LogOut, Search, X } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import { ROUTES } from '@/constants/routes';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useLogoutMutation } from '@/redux/api/authApi';
 import { clearUser } from '@/redux/slices/authSlice';
+import { useWishlist } from '@/hooks/useWishlist';
 
 type MobileNavDrawerProps = {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
   const dispatch = useAppDispatch();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [logout] = useLogoutMutation();
+  const { count: wishlistCount } = useWishlist();
   const [searchQuery, setSearchQuery] = useState('');
   const prefersReducedMotion = useReducedMotion();
 
@@ -124,6 +126,20 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
                     My account
                   </Link>
                 ) : null}
+                <Link
+                  to={isAuthenticated ? ROUTES.wishlist : ROUTES.login}
+                  className="flex items-center justify-between rounded-md px-3 py-3 text-base font-semibold hover:bg-muted"
+                  onClick={onClose}
+                >
+                  <span className="flex items-center gap-2">
+                    <Heart className="h-4 w-4" /> Wishlist
+                  </span>
+                  {wishlistCount > 0 ? (
+                    <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground">
+                      {wishlistCount}
+                    </span>
+                  ) : null}
+                </Link>
                 {SITE_NAV_ITEMS.map((item) => (
                   <Link
                     key={item.label}

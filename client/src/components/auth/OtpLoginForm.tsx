@@ -10,7 +10,11 @@ import { useRequestOtpMutation, useVerifyOtpMutation } from '@/redux/api/authApi
 import { setUser } from '@/redux/slices/authSlice';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
-export function OtpLoginForm() {
+type OtpLoginFormProps = {
+  redirectTo?: string;
+};
+
+export function OtpLoginForm({ redirectTo = ROUTES.home }: OtpLoginFormProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [step, setStep] = useState<'request' | 'verify'>('request');
@@ -36,7 +40,7 @@ export function OtpLoginForm() {
       const result = await verifyOtp({ email, otp }).unwrap();
       if (result.data?.user) dispatch(setUser(result.data.user));
       toast.success('Welcome back!');
-      navigate(ROUTES.home, { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (error) {
       toast.error(getErrorMessage(error, 'That code is invalid or expired.'));
     }

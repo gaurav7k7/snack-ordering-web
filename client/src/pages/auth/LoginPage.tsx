@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { OtpLoginForm } from '@/components/auth/OtpLoginForm';
@@ -19,7 +19,9 @@ import { loginSchema, type LoginInput } from '@/validation/auth.schema';
 export default function LoginPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+  const redirectTo = (location.state as { from?: string } | null)?.from ?? ROUTES.home;
   const authState = useAppSelector((state) => state.auth);
   const [mode, setMode] = useState<'password' | 'otp'>('password');
   const [login, { data, error, isLoading, isSuccess }] = useLoginMutation();
@@ -37,7 +39,7 @@ export default function LoginPage() {
     if (isSuccess && data?.data?.user) {
       dispatch(setUser(data.data.user));
       toast.success('Welcome back!');
-      navigate(ROUTES.home, { replace: true });
+      navigate(redirectTo, { replace: true });
     }
     if (error) {
       if (getErrorCode(error) === 'EMAIL_NOT_VERIFIED') {
@@ -47,7 +49,7 @@ export default function LoginPage() {
       }
       toast.error(getErrorMessage(error, 'Login failed.'));
     }
-  }, [data, dispatch, error, isSuccess, navigate]);
+  }, [data, dispatch, error, isSuccess, navigate, redirectTo]);
 
   useEffect(() => {
     const oauthError = searchParams.get('error');
@@ -62,9 +64,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (authState.isAuthenticated) {
-      navigate(ROUTES.home, { replace: true });
+      navigate(redirectTo, { replace: true });
     }
-  }, [authState.isAuthenticated, navigate]);
+  }, [authState.isAuthenticated, navigate, redirectTo]);
 
   return (
     <main className="grid min-h-screen place-items-center bg-background p-6">
@@ -143,7 +145,7 @@ export default function LoginPage() {
             </Button>
           </form>
         ) : (
-          <OtpLoginForm />
+          <OtpLoginForm redirectTo={redirectTo} />
         )}
 
         <div className="mt-6 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">

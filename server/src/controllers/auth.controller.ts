@@ -19,7 +19,7 @@ import {
   signAccessToken,
   verifyRefreshToken,
 } from '../services/auth.service.js';
-import { sendEmail } from '../services/email.service.js';
+import { sendCriticalEmail } from '../services/email.service.js';
 import { issueRefreshSession, revokeRefreshToken, rotateRefreshSession } from '../services/refreshToken.service.js';
 import { toUserSummary } from '../services/userSerializer.js';
 import { AppError } from '../utils/AppError.js';
@@ -65,7 +65,7 @@ export const register = asyncHandler(async (req, res) => {
   user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
-  await sendEmail({
+  await sendCriticalEmail({
     to: email,
     subject: 'Verify your SnackCo account',
     html: renderEmailHtml(
@@ -223,7 +223,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res) => {
   await user.save();
 
   const verificationUrl = `${env.clientUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
-  await sendEmail({
+  await sendCriticalEmail({
     to: email,
     subject: 'Verify your SnackCo email',
     html: renderEmailHtml(
@@ -249,7 +249,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   await user.save();
 
   const resetUrl = `${env.clientUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
-  await sendEmail({
+  await sendCriticalEmail({
     to: email,
     subject: 'Reset your SnackCo password',
     html: renderEmailHtml(
@@ -306,7 +306,7 @@ export const requestOtp = asyncHandler(async (req, res) => {
   user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
-  await sendEmail({
+  await sendCriticalEmail({
     to: email,
     subject: 'Your SnackCo login code',
     html: renderEmailHtml(
@@ -393,7 +393,7 @@ export const resendRegistrationOtp = asyncHandler(async (req, res) => {
   user.otpExpires = new Date(Date.now() + OTP_EXPIRY_MS);
   await user.save();
 
-  await sendEmail({
+  await sendCriticalEmail({
     to: email,
     subject: 'Verify your SnackCo account',
     html: renderEmailHtml(

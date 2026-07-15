@@ -6,7 +6,7 @@ import { USER_ROLES } from '../constants/roles.js';
 import { ProductModel } from '../models/Product.model.js';
 import { UserModel } from '../models/User.model.js';
 import { generateToken, hashToken } from '../services/auth.service.js';
-import { sendEmail } from '../services/email.service.js';
+import { sendCriticalEmail } from '../services/email.service.js';
 import { revokeAllUserSessions } from '../services/refreshToken.service.js';
 import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -167,7 +167,7 @@ export const resetCustomerPassword = asyncHandler(async (req, res) => {
   await customer.save();
 
   const resetUrl = `${env.clientUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(customer.email)}`;
-  await sendEmail({
+  await sendCriticalEmail({
     to: customer.email,
     subject: 'Reset your SnackCo password',
     html: renderEmailHtml(
