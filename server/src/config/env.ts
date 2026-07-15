@@ -23,11 +23,8 @@ const envSchema = z
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     GOOGLE_CALLBACK_URL: z.string().url().optional(),
-    SMTP_HOST: z.string().optional(),
-    SMTP_PORT: z.coerce.number().default(587),
-    SMTP_USER: z.string().optional(),
-    SMTP_PASS: z.string().optional(),
-    SMTP_FROM: z.string().optional(),
+    RESEND_API_KEY: z.string().optional(),
+    RESEND_FROM_EMAIL: z.string().optional(),
     RAZORPAY_KEY_ID: z.string().optional(),
     RAZORPAY_KEY_SECRET: z.string().optional(),
     CLOUDINARY_CLOUD_NAME: z.string().optional(),
@@ -61,9 +58,7 @@ const envSchema = z
     // gracefully in development, but fail startup in production rather than
     // silently shipping a broken checkout/upload/login path.
     const requiredIntegrations = [
-      ['SMTP_HOST', data.SMTP_HOST],
-      ['SMTP_USER', data.SMTP_USER],
-      ['SMTP_PASS', data.SMTP_PASS],
+      ['RESEND_API_KEY', data.RESEND_API_KEY],
       ['RAZORPAY_KEY_ID', data.RAZORPAY_KEY_ID],
       ['RAZORPAY_KEY_SECRET', data.RAZORPAY_KEY_SECRET],
       ['CLOUDINARY_CLOUD_NAME', data.CLOUDINARY_CLOUD_NAME],
@@ -106,11 +101,8 @@ export const env = {
   googleClientId: parsedEnv.data.GOOGLE_CLIENT_ID,
   googleClientSecret: parsedEnv.data.GOOGLE_CLIENT_SECRET,
   googleCallbackUrl: parsedEnv.data.GOOGLE_CALLBACK_URL,
-  smtpHost: parsedEnv.data.SMTP_HOST,
-  smtpPort: parsedEnv.data.SMTP_PORT,
-  smtpUser: parsedEnv.data.SMTP_USER,
-  smtpPass: parsedEnv.data.SMTP_PASS,
-  smtpFrom: parsedEnv.data.SMTP_FROM,
+  resendApiKey: parsedEnv.data.RESEND_API_KEY,
+  resendFromEmail: parsedEnv.data.RESEND_FROM_EMAIL,
   razorpayKeyId: parsedEnv.data.RAZORPAY_KEY_ID,
   razorpayKeySecret: parsedEnv.data.RAZORPAY_KEY_SECRET,
   cloudinaryCloudName: parsedEnv.data.CLOUDINARY_CLOUD_NAME,
@@ -118,7 +110,7 @@ export const env = {
   cloudinaryApiSecret: parsedEnv.data.CLOUDINARY_API_SECRET,
   maintenanceMode: parsedEnv.data.MAINTENANCE_MODE,
   siteUrl: parsedEnv.data.SITE_URL,
-  supportEmail: parsedEnv.data.SUPPORT_EMAIL ?? parsedEnv.data.SMTP_USER,
+  supportEmail: parsedEnv.data.SUPPORT_EMAIL,
 } as const;
 
 if (env.nodeEnv !== 'production' && (!parsedEnv.data.JWT_ACCESS_SECRET || !parsedEnv.data.JWT_REFRESH_SECRET || !parsedEnv.data.COOKIE_SECRET)) {
