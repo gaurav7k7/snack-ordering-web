@@ -34,7 +34,16 @@ export async function sendEmail(options: EmailOptions) {
   });
 
   if (error) {
-    throw new Error(`Resend email delivery failed: ${error.message}`);
+    // Log the raw provider error server-side for debugging (e.g. Resend's
+    // sandbox-mode "you can only send to your own verified email" 403), but
+    // never surface that detail to the client — just an honest, generic
+    // failure instead of the bare "Internal server error" a plain Error
+    // would produce via the default error handler.
+    console.error(`Resend email delivery failed for ${options.to}:`, error);
+    throw new AppError(
+      'We were unable to send that email right now. Please try again shortly.',
+      StatusCodes.BAD_GATEWAY,
+    );
   }
 }
 
