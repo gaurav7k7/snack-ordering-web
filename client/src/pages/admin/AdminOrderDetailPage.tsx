@@ -97,7 +97,7 @@ export default function AdminOrderDetailPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>Order #{order.orderNumber} | SnackCo Admin</title>
+        <title>Order #{order.orderNumber} | Lotus Delight Admin</title>
       </Helmet>
 
       <div className="flex flex-wrap items-center justify-between gap-3">

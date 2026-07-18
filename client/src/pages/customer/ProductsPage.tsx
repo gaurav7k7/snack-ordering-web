@@ -137,7 +137,7 @@ export default function ProductsPage() {
   return (
     <>
       <Helmet>
-        <title>Shop Snacks | SnackCo</title>
+        <title>Shop Snacks | Lotus Delight</title>
         <meta
           name="description"
           content="Browse premium snacks, popcorn, chips, trail mixes, best sellers, deals, and combo packs. Use powerful search and filters for fast ordering."

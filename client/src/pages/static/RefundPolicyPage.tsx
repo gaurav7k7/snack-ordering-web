@@ -5,7 +5,7 @@ export default function RefundPolicyPage() {
     <StaticPageLayout
       eyebrow="Legal"
       title="Refund & Return Policy"
-      description="Our 7-day return window, refund timelines, and how to request a return on SnackCo."
+      description="Our 7-day return window, refund timelines, and how to request a return on Lotus Delight."
       breadcrumbLabel="Refund Policy"
     >
       <p>Last updated: January 2026</p>

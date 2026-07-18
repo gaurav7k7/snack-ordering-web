@@ -59,6 +59,15 @@ export function AppRoutes() {
     trackPageView(location.pathname + location.search);
   }, [location.pathname, location.search]);
 
+  // React Router doesn't reset scroll position on navigation the way a full
+  // page load does — without this, opening a product from partway down a
+  // scrolled listing/search-results page lands the new page mid-scroll too.
+  // Keyed on pathname only (not search) so filtering/sorting within the same
+  // page doesn't yank the user back to the top.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>

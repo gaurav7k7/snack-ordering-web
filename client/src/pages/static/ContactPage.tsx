@@ -12,7 +12,7 @@ const inputClass =
   'w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm outline-none transition focus:border-primary';
 
 const CONTACT_DETAILS = [
-  { icon: Mail, label: 'Email', value: 'support@snackco.example', href: 'mailto:support@snackco.example' },
+  { icon: Mail, label: 'Email', value: 'support@lotusdelight.co.in', href: 'mailto:support@lotusdelight.co.in' },
   { icon: Phone, label: 'Phone', value: '+91 98765 43210', href: 'tel:+919876543210' },
   { icon: MapPin, label: 'Address', value: 'Andheri East, Mumbai, Maharashtra, India' },
 ];
@@ -35,8 +35,8 @@ export default function ContactPage() {
   return (
     <>
       <Helmet>
-        <title>Contact Us | SnackCo</title>
-        <meta name="description" content="Get in touch with the SnackCo team for order help, bulk orders, or partnership questions." />
+        <title>Contact Us | Lotus Delight</title>
+        <meta name="description" content="Get in touch with the Lotus Delight team for order help, bulk orders, or partnership questions." />
       </Helmet>
 
       <Breadcrumbs items={[{ label: 'Contact us' }]} />

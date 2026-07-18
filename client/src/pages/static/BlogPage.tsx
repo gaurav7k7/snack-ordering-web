@@ -7,8 +7,8 @@ export default function BlogPage() {
   return (
     <StaticPageLayout
       eyebrow="Journal"
-      title="The SnackCo Blog"
-      description="Recipes, snack culture, and behind-the-scenes stories from SnackCo — coming soon."
+      title="The Lotus Delight Blog"
+      description="Recipes, snack culture, and behind-the-scenes stories from Lotus Delight — coming soon."
       breadcrumbLabel="Blog"
     >
       <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-border/70 bg-card/50 py-16 text-center">
@@ -18,7 +18,7 @@ export default function BlogPage() {
         <div>
           <p className="text-lg font-bold text-foreground">We're writing our first posts</p>
           <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
-            Recipes, regional snack spotlights, and stories from the producers we work with — the SnackCo Journal
+            Recipes, regional snack spotlights, and stories from the producers we work with — the Lotus Delight Journal
             launches soon.
           </p>
         </div>

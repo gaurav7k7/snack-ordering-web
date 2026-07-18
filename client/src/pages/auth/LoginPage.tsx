@@ -71,10 +71,10 @@ export default function LoginPage() {
   return (
     <main className="grid min-h-screen place-items-center bg-background p-6">
       <Helmet>
-        <title>Sign in | SnackCo</title>
+        <title>Sign in | Lotus Delight</title>
       </Helmet>
       <section className="w-full max-w-lg rounded-3xl border border-border bg-card p-8 shadow-sm">
-        <h1 className="text-3xl font-black">Sign in to SnackCo</h1>
+        <h1 className="text-3xl font-black">Sign in to Lotus Delight</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Access your cart, orders, and saved favorites.
         </p>

@@ -1,8 +1,8 @@
 {
-  "name": "snack-ordering-platform",
+  "name": "lotus-delight-platform",
   "private": true,
   "version": "1.0.0",
-  "description": "Production-ready MERN stack online snack ordering platform.",
+  "description": "Production-ready MERN stack e-commerce platform for Lotus Delight.",
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace client\" \"npm run dev --workspace server\"",
     "build": "npm run build --workspace client && npm run build --workspace server",

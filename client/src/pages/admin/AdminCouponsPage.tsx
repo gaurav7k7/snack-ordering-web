@@ -118,7 +118,7 @@ export default function AdminCouponsPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>Manage Coupons | SnackCo Admin</title>
+        <title>Manage Coupons | Lotus Delight Admin</title>
       </Helmet>
 
       <div className="flex flex-wrap items-end justify-between gap-3">

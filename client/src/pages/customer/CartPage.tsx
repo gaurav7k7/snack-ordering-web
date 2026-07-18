@@ -54,7 +54,7 @@ export default function CartPage() {
   return (
     <>
       <Helmet>
-        <title>Your Cart | SnackCo</title>
+        <title>Your Cart | Lotus Delight</title>
       </Helmet>
       <Breadcrumbs items={[{ label: 'Cart' }]} />
       <section className="container py-10">

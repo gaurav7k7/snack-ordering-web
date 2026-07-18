@@ -44,7 +44,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-sm font-black text-primary-foreground">
           S
         </div>
-        <span className="text-lg font-black tracking-tight">SnackCo Admin</span>
+        <span className="text-lg font-black tracking-tight">Lotus Delight Admin</span>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">
         {NAV_ITEMS.map((item) => {
@@ -70,7 +70,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </nav>
       <div className="border-t border-border/70 p-4 text-xs text-muted-foreground">
-        SnackCo Admin Panel
+        Lotus Delight Admin Panel
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ export default function MaintenancePage() {
   return (
     <>
       <Helmet>
-        <title>Down for maintenance | SnackCo</title>
+        <title>Down for maintenance | Lotus Delight</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <main className="grid min-h-screen place-items-center bg-background px-6 text-center">
@@ -15,13 +15,13 @@ export default function MaintenancePage() {
           </div>
           <h1 className="mt-6 text-2xl font-black sm:text-3xl">We're sprucing things up</h1>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            SnackCo is undergoing scheduled maintenance right now. We'll be back shortly — thanks for your
+            Lotus Delight is undergoing scheduled maintenance right now. We'll be back shortly — thanks for your
             patience.
           </p>
           <p className="mt-6 text-xs text-muted-foreground">
             Need something urgently? Email{' '}
-            <a href="mailto:support@snackco.example" className="font-semibold text-foreground hover:text-primary">
-              support@snackco.example
+            <a href="mailto:support@lotusdelight.co.in" className="font-semibold text-foreground hover:text-primary">
+              support@lotusdelight.co.in
             </a>
           </p>
         </section>

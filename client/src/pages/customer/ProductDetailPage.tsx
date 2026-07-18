@@ -140,16 +140,16 @@ export default function ProductDetailPage() {
   return (
     <>
       <Helmet>
-        <title>{product.name} | SnackCo</title>
+        <title>{product.name} | Lotus Delight</title>
         <meta name="description" content={product.description} />
         <link rel="canonical" href={`${env.siteUrl}/products/${product.slug}`} />
-        <meta property="og:title" content={`${product.name} | SnackCo`} />
+        <meta property="og:title" content={`${product.name} | Lotus Delight`} />
         <meta property="og:description" content={product.description} />
         <meta property="og:image" content={product.image} />
         <meta property="og:type" content="product" />
         <meta property="og:url" content={`${env.siteUrl}/products/${product.slug}`} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${product.name} | SnackCo`} />
+        <meta name="twitter:title" content={`${product.name} | Lotus Delight`} />
         <meta name="twitter:description" content={product.description} />
         <meta name="twitter:image" content={product.image} />
         <script type="application/ld+json">{JSON.stringify(buildProductSchema(product))}</script>

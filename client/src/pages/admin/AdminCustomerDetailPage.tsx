@@ -96,7 +96,7 @@ export default function AdminCustomerDetailPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>{customer.name} | SnackCo Admin</title>
+        <title>{customer.name} | Lotus Delight Admin</title>
       </Helmet>
 
       <div>

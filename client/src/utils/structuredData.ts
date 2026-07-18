@@ -6,7 +6,7 @@ export function buildOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'SnackCo',
+    name: 'Lotus Delight',
     url: env.siteUrl,
     logo: `${env.siteUrl}/icon.svg`,
     sameAs: SOCIAL_LINKS.map((link) => link.href),
@@ -17,7 +17,7 @@ export function buildWebsiteSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'SnackCo',
+    name: 'Lotus Delight',
     url: env.siteUrl,
     potentialAction: {
       '@type': 'SearchAction',

@@ -24,11 +24,11 @@ export const subscribe = asyncHandler(async (req, res) => {
 
   await sendEmail({
     to: email,
-    subject: "You're subscribed to SnackCo",
+    subject: "You're subscribed to Lotus Delight",
     text: 'Thanks for subscribing! Look out for drops, deals, and seasonal launches in your inbox.',
     html: renderEmailHtml(
       "You're on the list!",
-      '<p>Thanks for subscribing to SnackCo. Look out for drops, deals, and seasonal launches in your inbox.</p>',
+      '<p>Thanks for subscribing to Lotus Delight. Look out for drops, deals, and seasonal launches in your inbox.</p>',
     ),
   });
 

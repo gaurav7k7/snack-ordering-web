@@ -1,4 +1,4 @@
-# SnackCo — MERN E-Commerce Platform
+# Lotus Delight — MERN E-Commerce Platform
 
 A production MERN-stack e-commerce application for ordering snacks online — customer storefront, cart/checkout with Razorpay and Cash-on-Delivery, and a full admin dashboard for managing products, orders, coupons, customers, reviews, and newsletter subscribers.
 

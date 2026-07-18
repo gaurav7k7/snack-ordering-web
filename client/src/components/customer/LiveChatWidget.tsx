@@ -3,6 +3,7 @@ import { MessageCircle, Send, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { useFloatingActionOffset } from '@/hooks/useFloatingActionOffset';
 import { cn } from '@/utils/cn';
 
 const GREETING = "Hey there! 👋 Live chat is coming soon — for now, drop us a message and we'll reply by email.";
@@ -12,9 +13,10 @@ export function LiveChatWidget() {
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
   const prefersReducedMotion = useReducedMotion();
+  const bottomOffset = useFloatingActionOffset();
 
   return (
-    <div className="fixed bottom-6 left-6 z-40">
+    <div className="fixed left-6 z-40 transition-[bottom]" style={{ bottom: bottomOffset }}>
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -25,7 +27,7 @@ export function LiveChatWidget() {
             className="absolute bottom-16 left-0 w-72 overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-soft-lg sm:w-80"
           >
             <div className="flex items-center justify-between bg-gradient-brand px-4 py-3 text-primary-foreground">
-              <p className="text-sm font-bold">SnackCo Support</p>
+              <p className="text-sm font-bold">Lotus Delight Support</p>
               <button type="button" onClick={() => setIsOpen(false)} aria-label="Close chat">
                 <X className="h-4 w-4" />
               </button>

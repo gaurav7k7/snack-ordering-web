@@ -63,7 +63,7 @@ export default function RegisterPage() {
   return (
     <main className="grid min-h-screen place-items-center bg-background p-6">
       <Helmet>
-        <title>Create account | SnackCo</title>
+        <title>Create account | Lotus Delight</title>
       </Helmet>
       <section className="w-full max-w-lg rounded-3xl border border-border bg-card p-8 shadow-sm">
         <h1 className="text-3xl font-black">Create your account</h1>

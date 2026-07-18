@@ -33,7 +33,7 @@ export default function VerifyEmailPage() {
   return (
     <main className="grid min-h-screen place-items-center bg-background p-6">
       <Helmet>
-        <title>Verify your email | SnackCo</title>
+        <title>Verify your email | Lotus Delight</title>
       </Helmet>
       <section className="w-full max-w-lg rounded-3xl border border-border bg-card p-8 text-center shadow-sm">
         {!token || !email ? (
@@ -58,7 +58,7 @@ export default function VerifyEmailPage() {
               Your email address is confirmed. You're all set to start ordering.
             </p>
             <Button asChild className="mt-6">
-              <Link to={ROUTES.home}>Continue to SnackCo</Link>
+              <Link to={ROUTES.home}>Continue to Lotus Delight</Link>
             </Button>
           </>
         ) : isError ? (

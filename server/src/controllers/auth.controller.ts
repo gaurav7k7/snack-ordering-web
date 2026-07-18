@@ -67,12 +67,12 @@ export const register = asyncHandler(async (req, res) => {
 
   await sendCriticalEmail({
     to: email,
-    subject: 'Verify your SnackCo account',
+    subject: 'Verify your Lotus Delight account',
     html: renderEmailHtml(
       'Verify your email',
       `<p>Hi ${escapeHtml(name)},</p><p>Your verification code is:</p><p style="font-size:28px;font-weight:800;letter-spacing:0.1em;">${otp}</p><p>This code expires in 10 minutes.</p>`,
     ),
-    text: `Hi ${name}, your SnackCo verification code is ${otp}. It expires in 10 minutes.`,
+    text: `Hi ${name}, your Lotus Delight verification code is ${otp}. It expires in 10 minutes.`,
   });
 
   res
@@ -225,7 +225,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res) => {
   const verificationUrl = `${env.clientUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
   await sendCriticalEmail({
     to: email,
-    subject: 'Verify your SnackCo email',
+    subject: 'Verify your Lotus Delight email',
     html: renderEmailHtml(
       'Verify your email',
       `<p>Click <a href="${verificationUrl}">here</a> to verify your email address.</p>`,
@@ -251,7 +251,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const resetUrl = `${env.clientUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
   await sendCriticalEmail({
     to: email,
-    subject: 'Reset your SnackCo password',
+    subject: 'Reset your Lotus Delight password',
     html: renderEmailHtml(
       'Reset your password',
       `<p>Reset your password by visiting <a href="${resetUrl}">this link</a>. This link expires in 1 hour.</p>`,
@@ -308,7 +308,7 @@ export const requestOtp = asyncHandler(async (req, res) => {
 
   await sendCriticalEmail({
     to: email,
-    subject: 'Your SnackCo login code',
+    subject: 'Your Lotus Delight login code',
     html: renderEmailHtml(
       'Your login code',
       `<p>Your one-time login code is:</p><p style="font-size:28px;font-weight:800;letter-spacing:0.1em;">${otp}</p><p>This code expires in 10 minutes.</p>`,
@@ -395,12 +395,12 @@ export const resendRegistrationOtp = asyncHandler(async (req, res) => {
 
   await sendCriticalEmail({
     to: email,
-    subject: 'Verify your SnackCo account',
+    subject: 'Verify your Lotus Delight account',
     html: renderEmailHtml(
       'Verify your email',
       `<p>Your verification code is:</p><p style="font-size:28px;font-weight:800;letter-spacing:0.1em;">${otp}</p><p>This code expires in 10 minutes.</p>`,
     ),
-    text: `Your SnackCo verification code is ${otp}. It expires in 10 minutes.`,
+    text: `Your Lotus Delight verification code is ${otp}. It expires in 10 minutes.`,
   });
 
   res.status(StatusCodes.OK).json(createApiResponse('A new code has been sent to your email.'));

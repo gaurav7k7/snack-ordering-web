@@ -40,7 +40,7 @@ export default function VerifyRegistrationOtpPage() {
     try {
       const result = await verifyOtp({ email, otp, rememberMe }).unwrap();
       if (result.data?.user) dispatch(setUser(result.data.user));
-      toast.success('Email verified. Welcome to SnackCo!');
+      toast.success('Email verified. Welcome to Lotus Delight!');
       navigate(ROUTES.home, { replace: true });
     } catch (error) {
       toast.error(getErrorMessage(error, 'That code is invalid or expired.'));
@@ -60,7 +60,7 @@ export default function VerifyRegistrationOtpPage() {
   return (
     <main className="grid min-h-screen place-items-center bg-background p-6">
       <Helmet>
-        <title>Verify your email | SnackCo</title>
+        <title>Verify your email | Lotus Delight</title>
       </Helmet>
       <section className="w-full max-w-lg rounded-3xl border border-border bg-card p-8 text-center shadow-sm">
         <MailCheck className="mx-auto h-12 w-12 text-primary" aria-hidden="true" />

@@ -13,7 +13,7 @@ export default function OrderConfirmationPage() {
     return (
       <main className="container py-16">
         <Helmet>
-          <title>Order confirmation | SnackCo</title>
+          <title>Order confirmation | Lotus Delight</title>
         </Helmet>
         <div className="mx-auto max-w-3xl rounded-3xl border bg-card p-8 text-center shadow-sm">
           <h1 className="text-3xl font-black">We couldn't find that confirmation</h1>
@@ -41,7 +41,7 @@ export default function OrderConfirmationPage() {
   return (
     <main className="container py-16">
       <Helmet>
-        <title>Order confirmed | SnackCo</title>
+        <title>Order confirmed | Lotus Delight</title>
       </Helmet>
       <div className="mx-auto max-w-3xl rounded-3xl border bg-card p-8 text-center shadow-sm">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">

@@ -96,7 +96,7 @@ export function SiteHeader() {
           </Button>
 
           <Link to={ROUTES.home} className="mr-2 text-xl font-black tracking-tight">
-            SnackCo
+            Lotus Delight
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm font-semibold xl:flex">

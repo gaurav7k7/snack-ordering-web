@@ -89,7 +89,7 @@ export default function AdminProductsPage() {
     try {
       const result = await triggerExport().unwrap();
       const products = result.data?.products ?? [];
-      downloadCsv(`snackco-products-${new Date().toISOString().slice(0, 10)}.csv`, exportProductsToCsv(products));
+      downloadCsv(`lotusdelight-products-${new Date().toISOString().slice(0, 10)}.csv`, exportProductsToCsv(products));
       toast.success(`Exported ${products.length} products.`);
     } catch {
       toast.error('Unable to export products.');
@@ -97,7 +97,7 @@ export default function AdminProductsPage() {
   };
 
   const handleDownloadTemplate = () => {
-    downloadCsv('snackco-product-import-template.csv', generateProductCsvTemplate());
+    downloadCsv('lotusdelight-product-import-template.csv', generateProductCsvTemplate());
   };
 
   const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,7 +129,7 @@ export default function AdminProductsPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>Manage Products | SnackCo Admin</title>
+        <title>Manage Products | Lotus Delight Admin</title>
       </Helmet>
 
       <div className="flex flex-wrap items-end justify-between gap-3">

@@ -88,7 +88,7 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
           >
             <div className="flex items-center justify-between gap-2 border-b p-5">
               <Link to={ROUTES.home} className="text-xl font-black" onClick={onClose}>
-                SnackCo
+                Lotus Delight
               </Link>
               <div className="flex items-center gap-1">
                 <ThemeToggle />

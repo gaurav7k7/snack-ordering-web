@@ -4,21 +4,30 @@ import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
+import { useAppSelector } from '@/hooks/redux';
 import { useCompare } from '@/hooks/useCompare';
+import { useReportFloatingBarHeight } from '@/hooks/useReportFloatingBarHeight';
 
 export function CompareBar() {
   const { productIds, count, remove, clear } = useCompare();
   const prefersReducedMotion = useReducedMotion();
+  const isVisible = count > 0;
+  const ref = useReportFloatingBarHeight('compareBar', isVisible);
+  // Stacks above the sticky add-to-cart bar (same fixed bottom-0 slot)
+  // instead of overlapping it when both happen to be visible at once.
+  const addToCartBarHeight = useAppSelector((state) => state.floatingBars.heights.addToCartBar);
 
   return (
     <AnimatePresence>
-      {count > 0 && (
+      {isVisible && (
         <motion.div
+          ref={ref}
           initial={prefersReducedMotion ? { opacity: 0 } : { y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={prefersReducedMotion ? { opacity: 0 } : { y: 80, opacity: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 shadow-soft-lg backdrop-blur-xl"
+          style={{ bottom: addToCartBarHeight }}
+          className="fixed inset-x-0 z-40 border-t bg-background/95 shadow-soft-lg backdrop-blur-xl"
         >
           <div className="container flex flex-wrap items-center justify-between gap-3 py-3">
             <div className="flex items-center gap-2">

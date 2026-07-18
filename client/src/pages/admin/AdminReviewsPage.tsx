@@ -91,7 +91,7 @@ export default function AdminReviewsPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>Reviews | SnackCo Admin</title>
+        <title>Reviews | Lotus Delight Admin</title>
       </Helmet>
 
       <div>

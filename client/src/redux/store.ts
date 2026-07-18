@@ -4,6 +4,7 @@ import { baseApi } from '@/redux/api/baseApi';
 import authReducer from '@/redux/slices/authSlice';
 import cartReducer, { CART_STORAGE_KEY } from '@/redux/slices/cartSlice';
 import compareReducer, { COMPARE_STORAGE_KEY } from '@/redux/slices/compareSlice';
+import floatingBarsReducer from '@/redux/slices/floatingBarsSlice';
 
 const persistCartMiddleware: Middleware = (store) => (next) => (action) => {
   const result = next(action);
@@ -30,6 +31,7 @@ export const store = configureStore({
     cart: cartReducer,
     compare: compareReducer,
     auth: authReducer,
+    floatingBars: floatingBarsReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

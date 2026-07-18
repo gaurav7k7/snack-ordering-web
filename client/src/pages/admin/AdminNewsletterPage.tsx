@@ -103,7 +103,7 @@ export default function AdminNewsletterPage() {
     try {
       const blob = await triggerExport({ format, search: search || undefined, status, range }).unwrap();
       const extension = format === 'xlsx' ? 'xlsx' : format;
-      downloadBlob(`snackco-subscribers-${new Date().toISOString().slice(0, 10)}.${extension}`, blob);
+      downloadBlob(`lotusdelight-subscribers-${new Date().toISOString().slice(0, 10)}.${extension}`, blob);
       toast.success('Export ready.');
     } catch (error) {
       toast.error(getErrorMessage(error, 'Unable to export subscribers.'));
@@ -113,7 +113,7 @@ export default function AdminNewsletterPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>Newsletter | SnackCo Admin</title>
+        <title>Newsletter | Lotus Delight Admin</title>
       </Helmet>
 
       <div>

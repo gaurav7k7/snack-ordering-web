@@ -41,7 +41,7 @@ export function SiteFooter() {
     <footer className="border-t bg-card">
       <div className="container grid gap-8 py-12 md:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
         <div>
-          <h2 className="text-xl font-black">SnackCo</h2>
+          <h2 className="text-xl font-black">Lotus Delight</h2>
           <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
             Premium snacks, secure checkout, quick fulfillment, and real support for every craving.
           </p>
@@ -102,7 +102,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t py-5">
         <div className="container flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>&copy; {new Date().getFullYear()} SnackCo. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} Lotus Delight. All rights reserved.</span>
           <div className="flex items-center gap-4">
             <Link to={ROUTES.privacy} className="transition hover:text-primary">
               Privacy

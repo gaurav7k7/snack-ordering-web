@@ -110,7 +110,7 @@ async function performCancellation(order: InstanceType<typeof OrderModel>, reaso
   if (order.guestEmail) {
     await sendEmail({
       to: order.guestEmail,
-      subject: `Your SnackCo order ${order.orderNumber} was cancelled`,
+      subject: `Your Lotus Delight order ${order.orderNumber} was cancelled`,
       text: `Hi, your order ${order.orderNumber} has been cancelled. Reason: ${cancellationReason}.`,
       html: renderEmailHtml(
         'Order cancelled',

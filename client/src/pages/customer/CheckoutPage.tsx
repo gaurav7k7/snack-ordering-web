@@ -245,7 +245,7 @@ export default function CheckoutPage() {
           key: result.data.payment.key,
           amount: result.data.payment.amount * 100,
           currency: result.data.payment.currency,
-          name: 'SnackCo',
+          name: 'Lotus Delight',
           description: `Payment for ${result.data.order?.orderNumber ?? 'your order'}`,
           order_id: result.data.payment.razorpayOrderId,
           handler: async (response: {
@@ -328,7 +328,7 @@ export default function CheckoutPage() {
   return (
     <>
       <Helmet>
-        <title>Checkout | SnackCo</title>
+        <title>Checkout | Lotus Delight</title>
       </Helmet>
       <Breadcrumbs items={[{ label: 'Cart', href: ROUTES.cart }, { label: 'Checkout' }]} />
       <section className="container py-10">

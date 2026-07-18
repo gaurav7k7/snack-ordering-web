@@ -17,7 +17,7 @@ const resend = env.resendApiKey ? new Resend(env.resendApiKey) : null;
 // from onboarding@resend.dev and only to the account owner's own inbox —
 // set RESEND_FROM_EMAIL once a custom domain is verified in the Resend
 // dashboard to lift that restriction.
-const DEFAULT_FROM = 'SnackCo <onboarding@resend.dev>';
+const DEFAULT_FROM = 'Lotus Delight <onboarding@resend.dev>';
 
 export async function sendEmail(options: EmailOptions) {
   if (!resend) {

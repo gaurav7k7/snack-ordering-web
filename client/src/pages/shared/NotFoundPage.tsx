@@ -9,7 +9,7 @@ export default function NotFoundPage() {
   return (
     <>
       <Helmet>
-        <title>Page not found | SnackCo</title>
+        <title>Page not found | Lotus Delight</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <main className="grid min-h-[70vh] place-items-center px-6 py-16 text-center">

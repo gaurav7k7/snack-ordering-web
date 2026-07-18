@@ -196,7 +196,7 @@ export default function AdminProductFormPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>{isEditMode ? 'Edit product' : 'Add product'} | SnackCo Admin</title>
+        <title>{isEditMode ? 'Edit product' : 'Add product'} | Lotus Delight Admin</title>
       </Helmet>
 
       <div>

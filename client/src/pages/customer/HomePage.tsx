@@ -50,12 +50,12 @@ export default function HomePage() {
   return (
     <>
       <Helmet>
-        <title>SnackCo | Premium Snacks Delivered</title>
+        <title>Lotus Delight | Premium Snacks Delivered</title>
         <meta
           name="description"
-          content="Order premium popcorn, chips, trail mixes, combo snack boxes, seasonal offers, and best sellers from SnackCo."
+          content="Order premium popcorn, chips, trail mixes, combo snack boxes, seasonal offers, and best sellers from Lotus Delight."
         />
-        <meta property="og:title" content="SnackCo | Premium Snacks Delivered" />
+        <meta property="og:title" content="Lotus Delight | Premium Snacks Delivered" />
         <meta
           property="og:description"
           content="Modern snack ordering with fresh batches, gift-ready combo boxes, secure checkout, and fast delivery."
@@ -163,7 +163,7 @@ export default function HomePage() {
       {bestSellers.length > 0 ? (
         <ProductShelf
           eyebrow="Best sellers"
-          title="SnackCo icons with loyal fans"
+          title="Lotus Delight icons with loyal fans"
           description="High-rated flavors built for gifting, celebrations, and daily cravings."
           products={bestSellers}
         />

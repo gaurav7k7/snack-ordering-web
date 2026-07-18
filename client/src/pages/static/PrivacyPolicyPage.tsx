@@ -5,7 +5,7 @@ export default function PrivacyPolicyPage() {
     <StaticPageLayout
       eyebrow="Legal"
       title="Privacy Policy"
-      description="How SnackCo collects, uses, and protects your personal information."
+      description="How Lotus Delight collects, uses, and protects your personal information."
       breadcrumbLabel="Privacy Policy"
     >
       <p>Last updated: January 2026</p>

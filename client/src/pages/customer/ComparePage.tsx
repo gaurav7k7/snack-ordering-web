@@ -69,7 +69,7 @@ export default function ComparePage() {
   return (
     <>
       <Helmet>
-        <title>Compare Products | SnackCo</title>
+        <title>Compare Products | Lotus Delight</title>
         <meta name="robots" content="noindex" />
       </Helmet>
 

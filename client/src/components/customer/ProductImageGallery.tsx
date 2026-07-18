@@ -1,4 +1,4 @@
-import { Maximize2 } from 'lucide-react';
+import { ImageOff, Maximize2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -14,13 +14,25 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
   const [activeImageId, setActiveImageId] = useState(images[0]?.id);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [isZooming, setIsZooming] = useState(false);
+  const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
 
   const activeImage = useMemo(
     () => images.find((image) => image.id === activeImageId) ?? images[0],
     [activeImageId, images],
   );
 
+  const markImageFailed = (id: string) => {
+    setFailedImageIds((current) => {
+      if (current.has(id)) return current;
+      const next = new Set(current);
+      next.add(id);
+      return next;
+    });
+  };
+
   if (!activeImage) return null;
+
+  const activeImageFailed = failedImageIds.has(activeImage.id);
 
   return (
     <section className="grid gap-4 lg:grid-cols-[88px_1fr]">
@@ -34,12 +46,19 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             data-active={activeImage.id === image.id}
             aria-label={`View ${image.alt}`}
           >
-            <img
-              src={cldUrl(image.url, 'thumbnail')}
-              alt={image.alt}
-              loading="lazy"
-              className="h-full w-full object-cover"
-            />
+            {failedImageIds.has(image.id) ? (
+              <div className="grid h-full w-full place-items-center bg-muted text-muted-foreground">
+                <ImageOff className="h-4 w-4" aria-hidden="true" />
+              </div>
+            ) : (
+              <img
+                src={cldUrl(image.url, 'thumbnail')}
+                alt={image.alt}
+                loading="lazy"
+                className="h-full w-full object-cover"
+                onError={() => markImageFailed(image.id)}
+              />
+            )}
           </button>
         ))}
       </div>
@@ -56,24 +75,33 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
         onMouseEnter={() => setIsZooming(true)}
         onMouseLeave={() => setIsZooming(false)}
       >
-        <img
-          src={cldUrl(activeImage.url, 'gallery')}
-          alt={activeImage.alt || productName}
-          fetchPriority="high"
-          className="aspect-square w-full object-cover"
-        />
+        {activeImageFailed ? (
+          <div className="grid aspect-square w-full place-items-center bg-muted text-muted-foreground">
+            <div className="flex flex-col items-center gap-2">
+              <ImageOff className="h-10 w-10" aria-hidden="true" />
+              <span className="text-sm font-medium">Image unavailable</span>
+            </div>
+          </div>
+        ) : (
+          <img
+            src={cldUrl(activeImage.url, 'gallery')}
+            alt={activeImage.alt || productName}
+            fetchPriority="high"
+            className="aspect-square w-full object-cover"
+            onError={() => markImageFailed(activeImage.id)}
+          />
+        )}
         <div
           className="pointer-events-none absolute inset-0 hidden bg-no-repeat opacity-0 transition md:block"
           style={{
-            backgroundImage: `url(${optimizeImageUrl(activeImage.url, { width: 1400, height: 1400 })})`,
+            backgroundImage: activeImageFailed
+              ? undefined
+              : `url(${optimizeImageUrl(activeImage.url, { width: 1400, height: 1400 })})`,
             backgroundSize: '190%',
             backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-            opacity: isZooming ? 1 : 0,
+            opacity: isZooming && !activeImageFailed ? 1 : 0,
           }}
         />
-        <div className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold text-foreground shadow">
-          Cloudinary asset: {activeImage.publicId}
-        </div>
         <Button
           type="button"
           size="icon"

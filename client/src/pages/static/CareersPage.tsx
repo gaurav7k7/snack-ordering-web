@@ -14,7 +14,7 @@ export default function CareersPage() {
     <StaticPageLayout
       eyebrow="Join us"
       title="Build the future of snacking with us"
-      description="Explore open roles at SnackCo — we're a small team building a big snack brand across India."
+      description="Explore open roles at Lotus Delight — we're a small team building a big snack brand across India."
       breadcrumbLabel="Careers"
     >
       <p>
@@ -37,7 +37,7 @@ export default function CareersPage() {
               </p>
             </div>
             <Button asChild size="sm" variant="outline">
-              <a href="mailto:careers@snackco.example?subject=Application">
+              <a href="mailto:careers@lotusdelight.co.in?subject=Application">
                 <Mail className="mr-2 h-3.5 w-3.5" /> Apply
               </a>
             </Button>
@@ -48,8 +48,8 @@ export default function CareersPage() {
       <h2>Don't see a fit?</h2>
       <p>
         Send us your resume and what you'd want to work on at{' '}
-        <a href="mailto:careers@snackco.example" className="font-semibold text-foreground hover:text-primary">
-          careers@snackco.example
+        <a href="mailto:careers@lotusdelight.co.in" className="font-semibold text-foreground hover:text-primary">
+          careers@lotusdelight.co.in
         </a>{' '}
         — we read every message.
       </p>

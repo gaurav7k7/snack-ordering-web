@@ -71,7 +71,7 @@ export default function FaqPage() {
     <StaticPageLayout
       eyebrow="Support"
       title="Frequently asked questions"
-      description="Answers to common questions about orders, shipping, returns, and product quality at SnackCo."
+      description="Answers to common questions about orders, shipping, returns, and product quality at Lotus Delight."
       breadcrumbLabel="FAQ"
     >
       <div className="space-y-8">

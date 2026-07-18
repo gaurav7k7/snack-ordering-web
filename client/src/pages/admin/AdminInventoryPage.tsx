@@ -59,7 +59,7 @@ export default function AdminInventoryPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>Inventory | SnackCo Admin</title>
+        <title>Inventory | Lotus Delight Admin</title>
       </Helmet>
 
       <div>

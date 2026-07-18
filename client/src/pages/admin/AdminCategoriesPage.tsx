@@ -581,7 +581,7 @@ export default function AdminCategoriesPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>Category Management | SnackCo Admin</title>
+        <title>Category Management | Lotus Delight Admin</title>
       </Helmet>
 
       <div>

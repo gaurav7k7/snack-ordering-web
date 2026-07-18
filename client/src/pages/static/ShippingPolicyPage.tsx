@@ -6,7 +6,7 @@ export default function ShippingPolicyPage() {
     <StaticPageLayout
       eyebrow="Legal"
       title="Shipping Policy"
-      description="Delivery timelines, shipping fees, and coverage for SnackCo orders across India."
+      description="Delivery timelines, shipping fees, and coverage for Lotus Delight orders across India."
       breadcrumbLabel="Shipping Policy"
     >
       <p>Last updated: January 2026</p>

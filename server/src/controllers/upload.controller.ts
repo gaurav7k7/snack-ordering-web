@@ -6,7 +6,7 @@ import { AppError } from '../utils/AppError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createApiResponse } from '../utils/apiResponse.js';
 
-const UPLOAD_FOLDER = 'snackco';
+const UPLOAD_FOLDER = 'lotusdelight';
 // Cloudinary only enforces constraints that are part of the *signed*
 // payload — signing just { timestamp, folder } (as before) meant any file
 // type/size could be pushed through this signature. allowed_formats is

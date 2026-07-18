@@ -24,7 +24,7 @@ export async function createRazorpayOrder(amount: number, receipt: string) {
     currency: DEFAULT_CURRENCY,
     receipt,
     notes: {
-      platform: 'SnackCo',
+      platform: 'Lotus Delight',
     },
   });
 }

@@ -67,7 +67,7 @@ export default function AdminOrdersPage() {
   return (
     <section className="space-y-6">
       <Helmet>
-        <title>Manage Orders | SnackCo Admin</title>
+        <title>Manage Orders | Lotus Delight Admin</title>
       </Helmet>
 
       <div>

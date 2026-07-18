@@ -53,7 +53,7 @@ export default function WishlistPage() {
   return (
     <>
       <Helmet>
-        <title>Your Wishlist | SnackCo</title>
+        <title>Your Wishlist | Lotus Delight</title>
         <meta name="description" content="Snacks you've saved for later — pick up where you left off." />
         <meta name="robots" content="noindex" />
       </Helmet>

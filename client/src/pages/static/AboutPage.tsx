@@ -30,11 +30,11 @@ export default function AboutPage() {
     <StaticPageLayout
       eyebrow="Our story"
       title="Snacking, taken seriously"
-      description="Learn about SnackCo — an India-first snack brand built on honest ingredients, small-batch quality, and fast delivery."
+      description="Learn about Lotus Delight — an India-first snack brand built on honest ingredients, small-batch quality, and fast delivery."
       breadcrumbLabel="About us"
     >
       <p>
-        SnackCo started with a simple frustration: great regional snacks were either impossible to find outside
+        Lotus Delight started with a simple frustration: great regional snacks were either impossible to find outside
         their home city, or arrived stale after sitting in a warehouse for months. We set out to fix that — sourcing
         directly from small manufacturers and home kitchens across India, and getting each batch to your door while
         it's still fresh.

@@ -79,7 +79,7 @@ export const exportSubscribers = asyncHandler(async (req, res) => {
 
   if (format === 'json') {
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="snackco-subscribers-${dateStamp}.json"`);
+    res.setHeader('Content-Disposition', `attachment; filename="lotusdelight-subscribers-${dateStamp}.json"`);
     res.status(StatusCodes.OK).send(JSON.stringify(rows, null, 2));
     return;
   }
@@ -97,7 +97,7 @@ export const exportSubscribers = asyncHandler(async (req, res) => {
     sheet.getRow(1).font = { bold: true };
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="snackco-subscribers-${dateStamp}.xlsx"`);
+    res.setHeader('Content-Disposition', `attachment; filename="lotusdelight-subscribers-${dateStamp}.xlsx"`);
     await workbook.xlsx.write(res);
     res.end();
     return;
@@ -110,6 +110,6 @@ export const exportSubscribers = asyncHandler(async (req, res) => {
     .join('\r\n');
 
   res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', `attachment; filename="snackco-subscribers-${dateStamp}.csv"`);
+  res.setHeader('Content-Disposition', `attachment; filename="lotusdelight-subscribers-${dateStamp}.csv"`);
   res.status(StatusCodes.OK).send(`${header}\r\n${body}`);
 });

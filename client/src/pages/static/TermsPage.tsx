@@ -5,14 +5,14 @@ export default function TermsPage() {
     <StaticPageLayout
       eyebrow="Legal"
       title="Terms of Service"
-      description="The terms that govern your use of SnackCo and any orders placed through it."
+      description="The terms that govern your use of Lotus Delight and any orders placed through it."
       breadcrumbLabel="Terms of Service"
     >
       <p>Last updated: January 2026</p>
 
       <h2>1. Acceptance of terms</h2>
       <p>
-        By creating an account or placing an order on SnackCo, you agree to these terms. If you don't agree, please
+        By creating an account or placing an order on Lotus Delight, you agree to these terms. If you don't agree, please
         don't use the site.
       </p>
 
@@ -45,7 +45,7 @@ export default function TermsPage() {
 
       <h2>6. Limitation of liability</h2>
       <p>
-        SnackCo is not liable for indirect or consequential damages arising from use of the site, to the maximum
+        Lotus Delight is not liable for indirect or consequential damages arising from use of the site, to the maximum
         extent permitted by law. Our total liability for any claim is limited to the amount you paid for the order
         in question.
       </p>

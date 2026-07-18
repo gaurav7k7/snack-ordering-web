@@ -361,10 +361,10 @@ const contactMessage = {
 export const openApiSpec = {
   openapi: '3.0.3',
   info: {
-    title: 'SnackCo API',
+    title: 'Lotus Delight API',
     version: '1.0.0',
     description:
-      'REST API for the SnackCo online snack ordering platform. All responses share the envelope ' +
+      'REST API for the Lotus Delight online snack ordering platform. All responses share the envelope ' +
       '`{ success, message, data }`; validation and unexpected errors are returned by a central ' +
       'error handler as `{ success: false, message, data: null }` with an appropriate HTTP status code. ' +
       'Authentication uses an httpOnly `accessToken` cookie (or an `Authorization: Bearer` header). ' +

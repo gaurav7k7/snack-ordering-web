@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { useReportFloatingBarHeight } from '@/hooks/useReportFloatingBarHeight';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 
@@ -26,11 +27,13 @@ export function FloatingAddToCartBar({
   onAddToCart,
 }: FloatingAddToCartBarProps) {
   const prefersReducedMotion = useReducedMotion();
+  const ref = useReportFloatingBarHeight('addToCartBar', isVisible);
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
+          ref={ref}
           initial={prefersReducedMotion ? { opacity: 0 } : { y: 96, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={prefersReducedMotion ? { opacity: 0 } : { y: 96, opacity: 0 }}

@@ -142,7 +142,7 @@ export default function ProfilePage() {
   return (
     <main className="bg-background px-4 py-10 text-foreground sm:px-6 lg:px-8">
       <Helmet>
-        <title>My account | SnackCo</title>
+        <title>My account | Lotus Delight</title>
       </Helmet>
 
       <div className="container space-y-6">

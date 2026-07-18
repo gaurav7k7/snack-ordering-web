@@ -122,7 +122,7 @@ export default function OrderDetailPage() {
   return (
     <>
       <Helmet>
-        <title>Order #{order.orderNumber} | SnackCo</title>
+        <title>Order #{order.orderNumber} | Lotus Delight</title>
       </Helmet>
       <Breadcrumbs items={[{ label: 'My orders', href: ROUTES.orders }, { label: order.orderNumber }]} />
       <section className="container py-10">

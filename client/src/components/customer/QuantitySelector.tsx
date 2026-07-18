@@ -12,7 +12,7 @@ export function QuantitySelector({ value, max, onChange }: QuantitySelectorProps
   const safeMax = Math.max(max, 1);
 
   return (
-    <div className="inline-flex items-center rounded-md border bg-background">
+    <div className="inline-flex w-fit items-center rounded-md border bg-background">
       <Button
         type="button"
         size="icon"

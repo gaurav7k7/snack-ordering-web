@@ -15,5 +15,5 @@ docsRoutes.get('/api-docs.json', (_req, res) => {
 // only rather than weakening it globally.
 docsRoutes.use('/api-docs', helmet({ contentSecurityPolicy: false }));
 docsRoutes.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, {
-  customSiteTitle: 'SnackCo API Docs',
+  customSiteTitle: 'Lotus Delight API Docs',
 }));

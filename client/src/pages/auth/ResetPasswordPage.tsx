@@ -43,7 +43,7 @@ export default function ResetPasswordPage() {
   return (
     <main className="grid min-h-screen place-items-center bg-background p-6">
       <Helmet>
-        <title>Reset password | SnackCo</title>
+        <title>Reset password | Lotus Delight</title>
       </Helmet>
       <section className="w-full max-w-lg rounded-3xl border border-border bg-card p-8 shadow-sm">
         <h1 className="text-3xl font-black">Choose a new password</h1>

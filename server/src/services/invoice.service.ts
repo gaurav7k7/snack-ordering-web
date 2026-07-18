@@ -42,7 +42,7 @@ export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
   const customerPhone = address?.phone || customer?.phone || order.guestPhone || 'Not provided';
   const customerEmail = customer?.email || order.guestEmail || 'Not provided';
 
-  doc.fontSize(20).font('Helvetica-Bold').fillColor('#000').text('SnackCo');
+  doc.fontSize(20).font('Helvetica-Bold').fillColor('#000').text('Lotus Delight');
   doc.fontSize(10).font('Helvetica').fillColor('#666').text('Premium snacks, delivered fast.');
   doc.moveDown(1.5);
 
@@ -167,7 +167,7 @@ export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
     .font('Helvetica')
     .fontSize(9)
     .fillColor('#999')
-    .text('Thank you for shopping with SnackCo. This is a system-generated invoice.', 50, doc.y, {
+    .text('Thank you for shopping with Lotus Delight. This is a system-generated invoice.', 50, doc.y, {
       align: 'center',
       width: 495,
     });

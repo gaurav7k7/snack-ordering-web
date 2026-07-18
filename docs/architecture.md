@@ -2,7 +2,7 @@
 
 ## Overview
 
-SnackCo is a two-tier application: a React single-page app (`client/`) talks to a stateless Express REST API (`server/`) over HTTP, backed by a single MongoDB Atlas cluster. There's no server-side rendering, no separate BFF layer, and no message queue/worker process — everything runs as one Node process per environment (dev, and one Render web service in production).
+Lotus Delight is a two-tier application: a React single-page app (`client/`) talks to a stateless Express REST API (`server/`) over HTTP, backed by a single MongoDB Atlas cluster. There's no server-side rendering, no separate BFF layer, and no message queue/worker process — everything runs as one Node process per environment (dev, and one Render web service in production).
 
 ```
 Browser (React SPA)

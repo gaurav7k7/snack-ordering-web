@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
   return (
     <section className="space-y-8">
       <Helmet>
-        <title>Admin Dashboard | SnackCo</title>
+        <title>Admin Dashboard | Lotus Delight</title>
       </Helmet>
 
       <div>

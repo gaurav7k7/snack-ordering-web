@@ -32,7 +32,7 @@ export default function OrdersPage() {
   return (
     <>
       <Helmet>
-        <title>My orders | SnackCo</title>
+        <title>My orders | Lotus Delight</title>
       </Helmet>
       <Breadcrumbs items={[{ label: 'My orders' }]} />
       <section className="container py-10">

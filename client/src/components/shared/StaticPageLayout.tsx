@@ -15,9 +15,9 @@ export function StaticPageLayout({ title, description, breadcrumbLabel, eyebrow,
   return (
     <>
       <Helmet>
-        <title>{title} | SnackCo</title>
+        <title>{title} | Lotus Delight</title>
         <meta name="description" content={description} />
-        <meta property="og:title" content={`${title} | SnackCo`} />
+        <meta property="og:title" content={`${title} | Lotus Delight`} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
       </Helmet>

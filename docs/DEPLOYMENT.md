@@ -24,7 +24,7 @@ Vercel is excellent for static/SPA hosting (edge network, instant cache invalida
 1. Create a free cluster (M0 is fine to start).
 2. **Database Access** → add a database user with a strong generated password.
 3. **Network Access** → add `0.0.0.0/0` (allow from anywhere). This is the standard approach for PaaS backends without a static IP — safe as long as your database user password is strong, since Atlas still requires authentication.
-4. Copy the connection string from **Connect → Drivers** — this is your `MONGODB_URI`. Replace `<password>` with the real password and add a database name before the `?`, e.g. `.../snackco?appName=Cluster0`.
+4. Copy the connection string from **Connect → Drivers** — this is your `MONGODB_URI`. Replace `<password>` with the real password and add a database name before the `?`, e.g. `.../lotusdelight?appName=Cluster0`.
 
 **Scaling up later:** M0 caps at 512MB storage and throttles under load with no backups. When you have real traffic, move to a shared M2/M5 tier (~$9–25/mo) or a dedicated M10 (~$57/mo, includes automated backups) — Atlas migrates live with no downtime.
 
@@ -40,7 +40,7 @@ Vercel is excellent for static/SPA hosting (edge network, instant cache invalida
 2. **Without a verified domain**, Resend only lets you send from `onboarding@resend.dev`, and only *to the account owner's own email address*. This is fine for development but means real customers won't receive emails until you verify a domain — do this before considering the site launch-ready:
    - Resend dashboard → **Domains** → **Add Domain**.
    - Add the DKIM/SPF DNS records it gives you at your DNS provider (see the domain section below).
-   - Once verified, set `RESEND_FROM_EMAIL=SnackCo <noreply@yourdomain.com>`.
+   - Once verified, set `RESEND_FROM_EMAIL=Lotus Delight <noreply@yourdomain.com>`.
 
 ## 5. Razorpay
 

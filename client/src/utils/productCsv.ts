@@ -79,7 +79,7 @@ export function exportProductsToCsv(products: ApiProduct[]): string {
 const TEMPLATE_EXAMPLE_ROW: Record<string, unknown> = {
   name: 'Classic Masala Chips',
   sku: 'SNK-CHIPS-101',
-  brand: 'SnackCo',
+  brand: 'Lotus Delight',
   category: 'Namkeen & Chips',
   subCategory: 'Chips',
   description: 'Crispy potato chips tossed in a bold masala seasoning, at least 20 characters.',

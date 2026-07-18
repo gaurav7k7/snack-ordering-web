@@ -48,7 +48,7 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
   if (!event.data) return;
 
-  let payload = { title: 'SnackCo', body: 'You have a new update.' };
+  let payload = { title: 'Lotus Delight', body: 'You have a new update.' };
   try {
     payload = { ...payload, ...event.data.json() };
   } catch {

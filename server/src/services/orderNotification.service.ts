@@ -16,7 +16,7 @@ export async function sendOrderConfirmationEmail(order: NotifiableOrder) {
 
   await sendEmail({
     to: order.guestEmail,
-    subject: `Your SnackCo order ${order.orderNumber} is confirmed`,
+    subject: `Your Lotus Delight order ${order.orderNumber} is confirmed`,
     text: `Hi ${name}, your order ${order.orderNumber} is confirmed. Total: ₹${order.total}.`,
     html: renderEmailHtml(
       'Order confirmed',
