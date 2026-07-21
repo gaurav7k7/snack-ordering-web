@@ -42,7 +42,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             key={image.id}
             type="button"
             onClick={() => setActiveImageId(image.id)}
-            className="h-20 w-20 shrink-0 overflow-hidden rounded-md border bg-card ring-offset-background transition focus:outline-none focus:ring-2 focus:ring-ring data-[active=true]:border-primary"
+            className="h-20 w-20 shrink-0 overflow-hidden rounded-md border bg-muted ring-offset-background transition focus:outline-none focus:ring-2 focus:ring-ring data-[active=true]:border-primary"
             data-active={activeImage.id === image.id}
             aria-label={`View ${image.alt}`}
           >
@@ -52,10 +52,10 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
               </div>
             ) : (
               <img
-                src={cldUrl(image.url, 'thumbnail')}
+                src={cldUrl(image.url, 'galleryThumbnail')}
                 alt={image.alt}
                 loading="lazy"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain p-1"
                 onError={() => markImageFailed(image.id)}
               />
             )}
@@ -64,7 +64,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
       </div>
 
       <div
-        className="order-1 relative overflow-hidden rounded-lg border bg-card lg:order-2"
+        className="order-1 relative overflow-hidden rounded-lg border bg-muted lg:order-2"
         onMouseMove={(event) => {
           const rect = event.currentTarget.getBoundingClientRect();
           setZoomPosition({
@@ -87,7 +87,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             src={cldUrl(activeImage.url, 'gallery')}
             alt={activeImage.alt || productName}
             fetchPriority="high"
-            className="aspect-square w-full object-cover"
+            className="aspect-square w-full object-contain"
             onError={() => markImageFailed(activeImage.id)}
           />
         )}
@@ -96,8 +96,14 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
           style={{
             backgroundImage: activeImageFailed
               ? undefined
-              : `url(${optimizeImageUrl(activeImage.url, { width: 1400, height: 1400 })})`,
-            backgroundSize: '190%',
+              : `url(${optimizeImageUrl(activeImage.url, { width: 1400, height: 1400, crop: 'fit' })})`,
+            // A flat percentage (e.g. "190%") scales width and height of the
+            // background image independently to that percent of the
+            // container, which distorts any non-square image. Fixing only
+            // the height and leaving width "auto" lets the browser scale
+            // the zoomed image proportionally, matching the same
+            // uncropped, undistorted image shown at rest.
+            backgroundSize: 'auto 190%',
             backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
             opacity: isZooming && !activeImageFailed ? 1 : 0,
           }}

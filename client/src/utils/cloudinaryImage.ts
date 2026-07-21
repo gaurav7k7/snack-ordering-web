@@ -32,7 +32,14 @@ export const IMAGE_PRESETS = {
   avatar: { width: 96, height: 96 },
   thumbnail: { width: 120, height: 120 },
   card: { width: 480, height: 480 },
-  gallery: { width: 900, height: 900 },
+  // Product detail page only: `fit` (not the default `fill`) scales the
+  // image down to stay within the box without cropping, so packaging that
+  // isn't perfectly square never loses its top/bottom or left/right edges.
+  // Kept separate from `thumbnail` above, which many other tight-crop
+  // contexts (cart lines, order history, admin lists) intentionally still
+  // fill-crop to a clean square.
+  galleryThumbnail: { width: 160, height: 160, crop: 'fit' },
+  gallery: { width: 900, height: 900, crop: 'fit' },
   hero: { width: 1920, crop: 'scale' },
 } satisfies Record<string, TransformOptions>;
 
