@@ -14,6 +14,7 @@ import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { SectionHeader } from '@/components/shared/SectionHeader';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { env } from '@/config/env';
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
 import { useSearchProductsQuery, useSearchSuggestionsQuery } from '@/redux/api/productsApi';
 import { useGetBrandsQuery } from '@/redux/api/taxonomyApi';
@@ -137,15 +138,28 @@ export default function ProductsPage() {
   return (
     <>
       <Helmet>
-        <title>Shop Snacks | Lotus Delight</title>
+        <title>Shop Makhana & Healthy Snacks | Lotus Delight</title>
         <meta
           name="description"
-          content="Browse premium snacks, popcorn, chips, trail mixes, best sellers, deals, and combo packs. Use powerful search and filters for fast ordering."
+          content="Browse premium roasted makhana in multiple flavours, popcorn, chips, trail mixes, best sellers, deals, and combo packs. Use powerful search and filters for fast ordering."
         />
+        <meta name="keywords" content="buy makhana online, flavoured makhana, healthy snacks, fox nuts" />
+        {/* Filter/sort query params can produce many near-duplicate URLs for the
+            same listing — canonicalizing to the base path avoids duplicate-content
+            SEO penalties while keeping every permutation crawlable. */}
+        <link rel="canonical" href={`${env.siteUrl}/products`} />
+        <meta property="og:title" content="Shop Makhana & Healthy Snacks | Lotus Delight" />
+        <meta
+          property="og:description"
+          content="Premium roasted makhana in multiple flavours, popcorn, chips, trail mixes, best sellers, and combo packs."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${env.siteUrl}/products`} />
       </Helmet>
       <Breadcrumbs items={[{ label: 'Shop snacks' }]} />
       <section className="container py-8">
         <SectionHeader
+          level="h1"
           eyebrow="All snacks"
           title="Shop the full snack shelf"
           description="Search, filters, sorting, and live inventory are powered by the product catalog API."

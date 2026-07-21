@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-export const COMPARE_STORAGE_KEY = 'snackco-compare-state';
+export const COMPARE_STORAGE_KEY = 'lotusdelight-compare-state';
 export const MAX_COMPARE_ITEMS = 4;
 
 type CompareState = {

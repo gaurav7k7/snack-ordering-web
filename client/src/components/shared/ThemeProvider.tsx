@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { ThemeContext, type Theme } from '@/hooks/themeContext';
 
-const THEME_KEY = 'snackco-theme';
+const THEME_KEY = 'lotusdelight-theme';
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {

@@ -1,6 +1,12 @@
 import { z } from 'zod';
 
 import { ORDER_STATUS } from '../constants/orderStatus.js';
+import {
+  PHONE_INVALID_MESSAGE,
+  PHONE_REGEX,
+  POSTAL_CODE_INVALID_MESSAGE,
+  POSTAL_CODE_REGEX,
+} from '../utils/validationPatterns.js';
 
 const orderStatusValues = Object.values(ORDER_STATUS) as [string, ...string[]];
 
@@ -14,12 +20,12 @@ const orderItemSchema = z.object({
 
 const shippingAddressSchema = z.object({
   fullName: z.string().trim().max(120).optional(),
-  phone: z.string().trim().max(20).optional(),
+  phone: z.string().trim().regex(PHONE_REGEX, PHONE_INVALID_MESSAGE).optional().or(z.literal('')),
   line1: z.string().trim().min(3, 'Please provide a complete shipping address.').max(200),
   line2: z.string().trim().max(200).optional(),
   city: z.string().trim().min(1, 'Please provide a complete shipping address.').max(80),
   state: z.string().trim().min(1, 'Please provide a complete shipping address.').max(80),
-  postalCode: z.string().trim().min(3, 'Please provide a complete shipping address.').max(12),
+  postalCode: z.string().trim().regex(POSTAL_CODE_REGEX, POSTAL_CODE_INVALID_MESSAGE),
   country: z.string().trim().max(80).optional(),
 });
 
@@ -31,7 +37,7 @@ export const createOrderSchema = z.object({
   couponCode: z.string().trim().max(30).optional(),
   guestName: z.string().trim().max(120).optional(),
   guestEmail: z.string().trim().email().optional(),
-  guestPhone: z.string().trim().max(20).optional(),
+  guestPhone: z.string().trim().regex(PHONE_REGEX, PHONE_INVALID_MESSAGE).optional().or(z.literal('')),
   isGuest: z.boolean().optional(),
 });
 
@@ -64,7 +70,7 @@ export const assignDeliverySchema = z
   .object({
     clear: z.boolean().optional(),
     name: z.string().trim().min(1).max(120).optional(),
-    phone: z.string().trim().max(20).optional(),
+    phone: z.string().trim().regex(PHONE_REGEX, PHONE_INVALID_MESSAGE).optional().or(z.literal('')),
     notes: z.string().trim().max(300).optional(),
   })
   .superRefine((data, ctx) => {

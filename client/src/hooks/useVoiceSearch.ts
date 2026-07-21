@@ -1,21 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+type SpeechRecognitionResultEvent = {
+  results: ArrayLike<ArrayLike<{ transcript: string }>>;
+};
+
 type SpeechRecognitionLike = {
   lang: string;
   interimResults: boolean;
   maxAlternatives: number;
   start: () => void;
   stop: () => void;
-  onresult: ((event: any) => void) | null;
-  onerror: ((event: any) => void) | null;
+  onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
+  onerror: ((event: unknown) => void) | null;
   onend: (() => void) | null;
 };
 
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
+type WindowWithSpeechRecognition = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
+
 function getSpeechRecognitionConstructor(): SpeechRecognitionConstructor | null {
   if (typeof window === 'undefined') return null;
-  return (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition ?? null;
+  const w = window as WindowWithSpeechRecognition;
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
 export function useVoiceSearch(onResult: (transcript: string) => void) {
@@ -38,7 +48,7 @@ export function useVoiceSearch(onResult: (transcript: string) => void) {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript ?? '';
       if (transcript) onResult(transcript);
     };

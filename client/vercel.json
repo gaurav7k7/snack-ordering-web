@@ -5,6 +5,14 @@
       "destination": "https://snack-ordering-web-2.onrender.com/api/:path*"
     },
     {
+      "source": "/sitemap.xml",
+      "destination": "https://snack-ordering-web-2.onrender.com/sitemap.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "https://snack-ordering-web-2.onrender.com/robots.txt"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

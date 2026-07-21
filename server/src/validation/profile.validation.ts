@@ -1,13 +1,10 @@
 import { z } from 'zod';
 
+import { PHONE_INVALID_MESSAGE, PHONE_REGEX } from '../utils/validationPatterns.js';
+
 export const updateProfileSchema = z.object({
   name: z.string().trim().min(2).max(80).optional(),
-  phone: z
-    .string()
-    .trim()
-    .regex(/^[0-9+\-\s()]{7,20}$/, 'Enter a valid phone number.')
-    .optional()
-    .or(z.literal('')),
+  phone: z.string().trim().regex(PHONE_REGEX, PHONE_INVALID_MESSAGE).optional().or(z.literal('')),
   avatar: z.string().trim().url('Avatar must be a valid URL.').optional().or(z.literal('')),
 });
 

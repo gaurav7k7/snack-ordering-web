@@ -149,6 +149,14 @@ async function redeemOrderCoupons(order: {
   );
 }
 
+type IncomingOrderItem = {
+  productId: string;
+  name: string;
+  image?: string;
+  price: number | string;
+  quantity: number | string;
+};
+
 export const createOrder = asyncHandler(async (req, res) => {
   const {
     items,
@@ -173,7 +181,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   }
 
   const subtotal = items.reduce(
-    (sum: number, item: any) => sum + Number(item.price) * Number(item.quantity),
+    (sum: number, item: IncomingOrderItem) => sum + Number(item.price) * Number(item.quantity),
     0,
   );
 
@@ -205,7 +213,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   const order = await OrderModel.create({
     orderNumber: `SNK-${Date.now().toString().slice(-8)}`,
     user: userId,
-    items: items.map((item: any) => ({
+    items: items.map((item: IncomingOrderItem) => ({
       product: item.productId,
       name: item.name,
       image: item.image,

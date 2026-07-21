@@ -19,9 +19,16 @@ export default function MaintenancePage() {
             patience.
           </p>
           <p className="mt-6 text-xs text-muted-foreground">
-            Need something urgently? Email{' '}
-            <a href="mailto:support@lotusdelight.co.in" className="font-semibold text-foreground hover:text-primary">
-              support@lotusdelight.co.in
+            Need something urgently? Call{' '}
+            <a href="tel:+919341502582" className="font-semibold text-foreground hover:text-primary">
+              +91 93415 02582
+            </a>{' '}
+            or email{' '}
+            <a
+              href="mailto:Lotusdelightproducts@gmail.com"
+              className="font-semibold text-foreground hover:text-primary"
+            >
+              Lotusdelightproducts@gmail.com
             </a>
           </p>
         </section>

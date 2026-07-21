@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
+import { env } from '@/config/env';
 
 type StaticPageLayoutProps = {
   title: string;
@@ -12,14 +14,22 @@ type StaticPageLayoutProps = {
 };
 
 export function StaticPageLayout({ title, description, breadcrumbLabel, eyebrow, children }: StaticPageLayoutProps) {
+  const { pathname } = useLocation();
+  const canonicalUrl = `${env.siteUrl}${pathname}`;
+
   return (
     <>
       <Helmet>
-        <title>{title} | Lotus Delight</title>
+        <title>{`${title} | Lotus Delight`}</title>
         <meta name="description" content={description} />
+        <link rel="canonical" href={canonicalUrl} />
         <meta property="og:title" content={`${title} | Lotus Delight`} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={`${title} | Lotus Delight`} />
+        <meta name="twitter:description" content={description} />
       </Helmet>
 
       <Breadcrumbs items={[{ label: breadcrumbLabel }]} />

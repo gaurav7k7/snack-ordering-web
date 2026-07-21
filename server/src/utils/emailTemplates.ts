@@ -26,7 +26,9 @@ export function renderEmailHtml(title: string, bodyHtml: string) {
       ${bodyHtml}
     </div>
     <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 16px;">
-      &copy; ${new Date().getFullYear()} Lotus Delight. This is an automated message, please do not reply.
+      &copy; ${new Date().getFullYear()} Lotus Delight. This is an automated message, please do not reply.<br />
+      Need help? Call +91 93415 02582 or email
+      <a href="mailto:Lotusdelightproducts@gmail.com" style="color: #9ca3af;">Lotusdelightproducts@gmail.com</a>
     </p>
   </div>`;
 }

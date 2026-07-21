@@ -39,7 +39,10 @@ export const baseApi = createApi({
     'SubCategory',
     'Brand',
     'Tag',
+    'Banner',
     'Newsletter',
+    'ContactMessage',
+    'SiteSettings',
   ],
   endpoints: () => ({}),
 });

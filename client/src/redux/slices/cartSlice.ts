@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { CartItem, CartState } from '@/types/cart';
 
-export const CART_STORAGE_KEY = 'snackco-cart-state';
+export const CART_STORAGE_KEY = 'lotusdelight-cart-state';
 
 const loadPersistedCart = (): CartState => {
   if (typeof window === 'undefined') {

@@ -1,11 +1,14 @@
 import {
   Boxes,
+  GalleryHorizontal,
   LayoutDashboard,
   LayoutGrid,
   LogOut,
   Mail,
   Menu,
+  MessageSquare,
   Package,
+  Settings,
   ShoppingBag,
   Star,
   Tag,
@@ -33,6 +36,9 @@ const NAV_ITEMS = [
   { label: 'Customers', href: ROUTES.adminCustomers, icon: Users },
   { label: 'Reviews', href: ROUTES.adminReviews, icon: Star },
   { label: 'Newsletter', href: ROUTES.adminNewsletter, icon: Mail },
+  { label: 'Messages', href: ROUTES.adminMessages, icon: MessageSquare },
+  { label: 'Banners', href: ROUTES.adminBanners, icon: GalleryHorizontal },
+  { label: 'Settings', href: ROUTES.adminSettings, icon: Settings },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {

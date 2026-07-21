@@ -37,7 +37,7 @@ export default function CareersPage() {
               </p>
             </div>
             <Button asChild size="sm" variant="outline">
-              <a href="mailto:careers@lotusdelight.co.in?subject=Application">
+              <a href="mailto:Lotusdelightproducts@gmail.com?subject=Application">
                 <Mail className="mr-2 h-3.5 w-3.5" /> Apply
               </a>
             </Button>
@@ -48,8 +48,11 @@ export default function CareersPage() {
       <h2>Don't see a fit?</h2>
       <p>
         Send us your resume and what you'd want to work on at{' '}
-        <a href="mailto:careers@lotusdelight.co.in" className="font-semibold text-foreground hover:text-primary">
-          careers@lotusdelight.co.in
+        <a
+          href="mailto:Lotusdelightproducts@gmail.com"
+          className="font-semibold text-foreground hover:text-primary"
+        >
+          Lotusdelightproducts@gmail.com
         </a>{' '}
         — we read every message.
       </p>

@@ -140,7 +140,7 @@ export default function ProductDetailPage() {
   return (
     <>
       <Helmet>
-        <title>{product.name} | Lotus Delight</title>
+        <title>{`${product.name} | Lotus Delight`}</title>
         <meta name="description" content={product.description} />
         <link rel="canonical" href={`${env.siteUrl}/products/${product.slug}`} />
         <meta property="og:title" content={`${product.name} | Lotus Delight`} />

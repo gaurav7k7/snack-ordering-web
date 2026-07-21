@@ -7,13 +7,13 @@ import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useWishlist } from '@/hooks/useWishlist';
 
 import { Button } from '@/components/ui/button';
+import { AnnouncementBar } from '@/components/shared/AnnouncementBar';
 import { CountBadge } from '@/components/shared/CountBadge';
 import { HeaderSearchForm } from '@/components/shared/HeaderSearchForm';
 import { MiniCart } from '@/components/shared/MiniCart';
 import { MobileNavDrawer } from '@/components/shared/MobileNavDrawer';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { SITE_NAV_ITEMS } from '@/constants/navigation';
-import { FREE_SHIPPING_THRESHOLD } from '@/constants/pricing';
 import { ROUTES } from '@/constants/routes';
 import { useLogoutMutation } from '@/redux/api/authApi';
 import { clearUser } from '@/redux/slices/authSlice';
@@ -77,12 +77,7 @@ export function SiteHeader() {
           isScrolled ? 'bg-background/95 shadow-soft' : 'bg-background/90 shadow-none',
         )}
       >
-        <div className="border-b bg-foreground py-2 text-xs font-medium text-background">
-          <div className="container flex items-center justify-between gap-4">
-            <span>Free delivery above INR {FREE_SHIPPING_THRESHOLD}</span>
-            <span className="hidden sm:inline">Fresh batches shipped across India</span>
-          </div>
-        </div>
+        <AnnouncementBar />
 
         <div className="container flex h-20 items-center gap-4">
           <Button

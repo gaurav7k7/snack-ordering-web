@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Facebook, Instagram, Mail, Phone, Twitter, Youtube } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -18,7 +18,6 @@ const SUPPORT_LINKS = [
   { label: 'FAQs', to: ROUTES.faq },
   { label: 'Shipping policy', to: ROUTES.shippingPolicy },
   { label: 'Refund policy', to: ROUTES.refundPolicy },
-  { label: 'Track an order', to: ROUTES.orders },
 ];
 
 const COMPANY_LINKS = [
@@ -45,6 +44,22 @@ export function SiteFooter() {
           <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
             Premium snacks, secure checkout, quick fulfillment, and real support for every craving.
           </p>
+          <div className="mt-4 space-y-2 text-sm">
+            <a
+              href="tel:+919341502582"
+              className="flex items-center gap-2 text-muted-foreground transition hover:text-primary"
+            >
+              <Phone className="h-3.5 w-3.5" aria-hidden="true" />
+              +91 93415 02582
+            </a>
+            <a
+              href="mailto:Lotusdelightproducts@gmail.com"
+              className="flex items-center gap-2 text-muted-foreground transition hover:text-primary"
+            >
+              <Mail className="h-3.5 w-3.5" aria-hidden="true" />
+              Lotusdelightproducts@gmail.com
+            </a>
+          </div>
           <div className="mt-5 flex items-center gap-3">
             {SOCIAL_LINKS.map(({ label, href }) => {
               const Icon = SOCIAL_ICONS[label];

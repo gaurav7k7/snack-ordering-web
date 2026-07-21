@@ -39,6 +39,7 @@ import { setUser } from '@/redux/slices/authSlice';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { getErrorMessage } from '@/utils/getErrorMessage';
+import { isValidPhone, sanitizePhoneInput } from '@/utils/validation';
 
 export default function ProfilePage() {
   const dispatch = useAppDispatch();
@@ -81,6 +82,10 @@ export default function ProfilePage() {
 
   const handleProfileSave = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (profileForm.phone.trim() && !isValidPhone(profileForm.phone.trim())) {
+      toast.error('Enter a valid phone number (digits only, optional leading +).');
+      return;
+    }
     try {
       const result = await updateProfile({
         name: profileForm.name,
@@ -197,9 +202,12 @@ export default function ProfilePage() {
               <label className="grid gap-2 text-sm">
                 <span>Phone number</span>
                 <input
+                  type="tel"
+                  inputMode="tel"
+                  maxLength={16}
                   value={profileForm.phone}
                   onChange={(event) =>
-                    setProfileForm((current) => ({ ...current, phone: event.target.value }))
+                    setProfileForm((current) => ({ ...current, phone: sanitizePhoneInput(event.target.value) }))
                   }
                   className="rounded-xl border border-input bg-background px-4 py-3 outline-none transition focus:border-primary"
                 />

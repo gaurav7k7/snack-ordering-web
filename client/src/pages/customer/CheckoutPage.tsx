@@ -13,6 +13,7 @@ import { useCreateOrderMutation, useVerifyPaymentMutation } from '@/redux/api/or
 import { clearCart } from '@/redux/slices/cartSlice';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { getErrorMessage } from '@/utils/getErrorMessage';
+import { isValidPhone, isValidPostalCode, sanitizeDigitsInput, sanitizePhoneInput } from '@/utils/validation';
 
 const defaultAddress = {
   fullName: '',
@@ -32,7 +33,7 @@ const defaultAddress = {
 // opening the modal so a returning redirect (or a mid-payment refresh) can
 // be detected and resolved instead of silently stranding the user back on
 // this page, and so a refresh doesn't let them create a duplicate order.
-const PENDING_PAYMENT_KEY = 'snackco_pending_payment';
+const PENDING_PAYMENT_KEY = 'lotusdelight_pending_payment';
 
 type PendingPayment = { orderId: string; razorpayOrderId: string; orderNumber?: string };
 
@@ -206,6 +207,16 @@ export default function CheckoutPage() {
       !address.postalCode
     ) {
       toast.error('Please complete the delivery address.');
+      return;
+    }
+
+    if (!isValidPhone(address.phone)) {
+      toast.error('Enter a valid phone number (digits only, optional leading +).');
+      return;
+    }
+
+    if (!isValidPostalCode(address.postalCode)) {
+      toast.error('Enter a valid postal code (numbers only).');
       return;
     }
 
@@ -392,9 +403,12 @@ export default function CheckoutPage() {
                   placeholder="Full name"
                 />
                 <input
+                  type="tel"
+                  inputMode="tel"
+                  maxLength={16}
                   value={address.phone}
                   onChange={(event) =>
-                    setAddress((current) => ({ ...current, phone: event.target.value }))
+                    setAddress((current) => ({ ...current, phone: sanitizePhoneInput(event.target.value) }))
                   }
                   className="rounded-xl border bg-background px-4 py-3 text-sm"
                   placeholder="Phone number"
@@ -432,9 +446,12 @@ export default function CheckoutPage() {
                   placeholder="State"
                 />
                 <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={10}
                   value={address.postalCode}
                   onChange={(event) =>
-                    setAddress((current) => ({ ...current, postalCode: event.target.value }))
+                    setAddress((current) => ({ ...current, postalCode: sanitizeDigitsInput(event.target.value) }))
                   }
                   className="rounded-xl border bg-background px-4 py-3 text-sm"
                   placeholder="Postal code"

@@ -14,12 +14,18 @@ function formatShortDate(value: string) {
   return date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
-function ChartTooltip({ active, payload, label }: any) {
+type ChartTooltipProps = {
+  active?: boolean;
+  label?: string;
+  payload?: Array<{ value: number; payload: { orders: number } }>;
+};
+
+function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
 
   return (
     <div className="rounded-xl border border-border/70 bg-card px-3 py-2 text-sm shadow-lg">
-      <p className="font-semibold">{formatShortDate(label)}</p>
+      <p className="font-semibold">{formatShortDate(label ?? '')}</p>
       <p className="mt-1 text-muted-foreground">
         Revenue: <span className="font-semibold text-foreground">{formatCurrency(payload[0].value)}</span>
       </p>

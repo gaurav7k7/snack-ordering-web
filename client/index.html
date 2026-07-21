@@ -3,8 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lotus Delight | Premium Snacks Delivered</title>
+    <!-- This is a client-rendered SPA — every route sets its own title, meta
+         description, robots, and Open Graph/Twitter tags via
+         react-helmet-async (see each page's <Helmet> block — a few pages,
+         like Wishlist and Compare, deliberately set "noindex"). Duplicating
+         any of those tags here would leave two conflicting copies in the DOM
+         once React mounts, with no reliable guarantee which one a crawler
+         honors, so this file only carries the truly static fallback title
+         (shown before hydration / if JS fails) and og:site_name, which no
+         page overrides. -->
+    <title>Lotus Delight | Premium Makhana (Fox Nuts) & Healthy Snacks Online</title>
     <meta name="theme-color" content="#c11a3c" />
+    <meta property="og:site_name" content="Lotus Delight" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/icon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />

@@ -1,5 +1,5 @@
-import { GitCompareArrows, Heart, ShoppingBag, Star } from 'lucide-react';
-import { memo, type MouseEvent } from 'react';
+import { GitCompareArrows, Heart, ImageOff, ShoppingBag, Star } from 'lucide-react';
+import { memo, type MouseEvent, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
@@ -71,6 +71,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
   const { isComparing, toggle: toggleCompareProduct } = useCompare();
   const comparing = isComparing(productId);
   const isOutOfStock = (product.availableQuantity ?? 0) <= 0;
+  const [imageFailed, setImageFailed] = useState(false);
 
   const handleAddToCart = (event: MouseEvent) => {
     event.preventDefault();
@@ -92,12 +93,19 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
     <article className="group overflow-hidden rounded-lg border bg-card text-card-foreground transition duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <Link to={`/products/${product.slug}`} className="block h-full">
-          <img
-            src={cldUrl(imageUrl, 'card')}
-            alt={product.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          />
+          {imageFailed || !imageUrl ? (
+            <div className="grid h-full w-full place-items-center text-muted-foreground">
+              <ImageOff className="h-8 w-8" aria-hidden="true" />
+            </div>
+          ) : (
+            <img
+              src={cldUrl(imageUrl, 'card')}
+              alt={product.name}
+              loading="lazy"
+              className="h-full w-full object-contain p-3 transition duration-500 group-hover:scale-105"
+              onError={() => setImageFailed(true)}
+            />
+          )}
         </Link>
         {badge ? (
           <span className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">

@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Outlet } from 'react-router-dom';
 
 import { CompareBar } from '@/components/customer/CompareBar';
-import { LiveChatWidget } from '@/components/customer/LiveChatWidget';
+import { SupportMessageWidget } from '@/components/customer/SupportMessageWidget';
 import { BackToTop } from '@/components/shared/BackToTop';
 import { CookieConsent } from '@/components/shared/CookieConsent';
 import { SiteFooter } from '@/components/shared/SiteFooter';
@@ -22,7 +22,7 @@ export function CustomerLayout() {
       </main>
       <SiteFooter />
       <CompareBar />
-      <LiveChatWidget />
+      <SupportMessageWidget />
       <BackToTop />
       <CookieConsent />
     </div>

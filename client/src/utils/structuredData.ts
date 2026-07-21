@@ -7,6 +7,8 @@ export function buildOrganizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Lotus Delight',
+    description:
+      'Lotus Delight is a premium Indian makhana (fox nuts) brand offering multiple flavours and healthy snack options.',
     url: env.siteUrl,
     logo: `${env.siteUrl}/icon.svg`,
     sameAs: SOCIAL_LINKS.map((link) => link.href),

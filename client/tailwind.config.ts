@@ -61,6 +61,21 @@ export default {
         'gradient-brand': 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))',
         'gradient-brand-soft': 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--secondary) / 0.12))',
       },
+      keyframes: {
+        // Width-independent ticker crawl: `100vw` moves the element (from its
+        // natural x=0 position) by a full viewport width, so it starts fully
+        // off-screen right regardless of the element's own width; `-100%` is
+        // relative to the element's own width, so it ends fully off-screen
+        // left. This works correctly at any text length or viewport width
+        // without measuring anything in JS.
+        ticker: {
+          '0%': { transform: 'translateX(100vw)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+      },
+      animation: {
+        ticker: 'ticker 16s linear infinite',
+      },
     },
   },
   plugins: [animate],

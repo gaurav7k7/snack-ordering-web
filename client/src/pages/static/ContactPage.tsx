@@ -7,26 +7,36 @@ import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useSubmitContactMessageMutation } from '@/redux/api/contactApi';
 import { getErrorMessage } from '@/utils/getErrorMessage';
+import { isValidPhone, sanitizePhoneInput } from '@/utils/validation';
 
 const inputClass =
   'w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm outline-none transition focus:border-primary';
 
 const CONTACT_DETAILS = [
-  { icon: Mail, label: 'Email', value: 'support@lotusdelight.co.in', href: 'mailto:support@lotusdelight.co.in' },
-  { icon: Phone, label: 'Phone', value: '+91 98765 43210', href: 'tel:+919876543210' },
+  {
+    icon: Mail,
+    label: 'Email',
+    value: 'Lotusdelightproducts@gmail.com',
+    href: 'mailto:Lotusdelightproducts@gmail.com',
+  },
+  { icon: Phone, label: 'Phone', value: '+91 93415 02582', href: 'tel:+919341502582' },
   { icon: MapPin, label: 'Address', value: 'Andheri East, Mumbai, Maharashtra, India' },
 ];
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [submitMessage, { isLoading }] = useSubmitContactMessageMutation();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (form.phone.trim() && !isValidPhone(form.phone.trim())) {
+      toast.error('Enter a valid phone number (digits only, optional leading +).');
+      return;
+    }
     try {
       await submitMessage(form).unwrap();
       toast.success("Message sent — we'll get back to you within 1-2 business days.");
-      setForm({ name: '', email: '', subject: '', message: '' });
+      setForm({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (error) {
       toast.error(getErrorMessage(error, 'Unable to send your message. Please try again.'));
     }
@@ -98,6 +108,22 @@ export default function ContactPage() {
               />
             </label>
           </div>
+          <label className="grid gap-1.5 text-sm">
+            <span className="font-semibold">
+              Phone <span className="font-normal text-muted-foreground">(optional)</span>
+            </span>
+            <input
+              type="tel"
+              inputMode="tel"
+              maxLength={16}
+              value={form.phone}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, phone: sanitizePhoneInput(event.target.value) }))
+              }
+              placeholder="10-digit mobile number"
+              className={inputClass}
+            />
+          </label>
           <label className="grid gap-1.5 text-sm">
             <span className="font-semibold">Subject</span>
             <input

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-const RECENTLY_VIEWED_KEY = 'snackco-recently-viewed';
+const RECENTLY_VIEWED_KEY = 'lotusdelight-recently-viewed';
 const MAX_RECENTLY_VIEWED = 5;
 
 function readRecentlyViewed() {

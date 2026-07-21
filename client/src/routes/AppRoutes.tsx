@@ -36,6 +36,9 @@ const AdminCustomersPage = lazy(() => import('@/pages/admin/AdminCustomersPage')
 const AdminCustomerDetailPage = lazy(() => import('@/pages/admin/AdminCustomerDetailPage'));
 const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage'));
 const AdminNewsletterPage = lazy(() => import('@/pages/admin/AdminNewsletterPage'));
+const AdminMessagesPage = lazy(() => import('@/pages/admin/AdminMessagesPage'));
+const AdminBannersPage = lazy(() => import('@/pages/admin/AdminBannersPage'));
+const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/shared/NotFoundPage'));
 const AboutPage = lazy(() => import('@/pages/static/AboutPage'));
 const ContactPage = lazy(() => import('@/pages/static/ContactPage'));
@@ -389,6 +392,30 @@ export function AppRoutes() {
               element={
                 <PageTransition>
                   <AdminNewsletterPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="messages"
+              element={
+                <PageTransition>
+                  <AdminMessagesPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="banners"
+              element={
+                <PageTransition>
+                  <AdminBannersPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <PageTransition>
+                  <AdminSettingsPage />
                 </PageTransition>
               }
             />

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import {
+  deleteContactMessage,
   getContactMessages,
   submitContactMessage,
   updateContactMessageStatus,
@@ -15,3 +16,4 @@ export const contactRoutes = Router();
 contactRoutes.post('/', contactLimiter, validateRequest({ body: contactSchema }), submitContactMessage);
 contactRoutes.get('/', authenticate, authorize('admin'), getContactMessages);
 contactRoutes.patch('/:id/status', authenticate, authorize('admin'), updateContactMessageStatus);
+contactRoutes.delete('/:id', authenticate, authorize('admin'), deleteContactMessage);

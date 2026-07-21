@@ -1,4 +1,4 @@
-const CACHE_NAME = 'snackco-shell-v2';
+const CACHE_NAME = 'lotusdelight-shell-v1';
 const SHELL_ASSETS = ['/', '/manifest.webmanifest', '/icon.svg'];
 
 self.addEventListener('install', (event) => {

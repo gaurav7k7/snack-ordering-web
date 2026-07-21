@@ -10,7 +10,8 @@ import { Newsletter } from '@/components/customer/Newsletter';
 import { ProductShelf } from '@/components/customer/ProductShelf';
 import { ReviewCard } from '@/components/customer/ReviewCard';
 import { SectionHeader } from '@/components/shared/SectionHeader';
-import { galleryImages, heroSlides, reviews } from '@/constants/homeContent';
+import { env } from '@/config/env';
+import { galleryImages, reviews } from '@/constants/homeContent';
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
 import { useSearchProductsQuery } from '@/redux/api/productsApi';
 import { useGetBrandsQuery } from '@/redux/api/taxonomyApi';
@@ -50,19 +51,30 @@ export default function HomePage() {
   return (
     <>
       <Helmet>
-        <title>Lotus Delight | Premium Snacks Delivered</title>
+        <title>Lotus Delight | Premium Makhana (Fox Nuts) & Healthy Snacks Online</title>
         <meta
           name="description"
-          content="Order premium popcorn, chips, trail mixes, combo snack boxes, seasonal offers, and best sellers from Lotus Delight."
+          content="Shop Lotus Delight's premium roasted makhana in multiple flavours, plus popcorn, chips, trail mixes, combo boxes, and best sellers — healthy snacking delivered across India."
         />
-        <meta property="og:title" content="Lotus Delight | Premium Snacks Delivered" />
+        <meta name="keywords" content="makhana, fox nuts, roasted makhana, healthy snacks, flavoured makhana online" />
+        <link rel="canonical" href={env.siteUrl} />
+        <meta property="og:title" content="Lotus Delight | Premium Makhana (Fox Nuts) & Healthy Snacks Online" />
         <meta
           property="og:description"
-          content="Modern snack ordering with fresh batches, gift-ready combo boxes, secure checkout, and fast delivery."
+          content="Premium roasted makhana in multiple flavours, plus popcorn, chips, and trail mixes — healthy snacking, delivered across India."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={env.siteUrl} />
+        <meta property="og:image" content={`${env.siteUrl}/icon.svg`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Lotus Delight | Premium Makhana (Fox Nuts) & Healthy Snacks Online" />
+        <meta
+          name="twitter:description"
+          content="Premium roasted makhana in multiple flavours, plus popcorn, chips, and trail mixes — healthy snacking, delivered across India."
         />
       </Helmet>
 
-      <HeroSlider slides={heroSlides} />
+      <HeroSlider />
 
       <section className="border-b border-t bg-card py-6">
         <div className="container grid gap-4 text-center sm:grid-cols-3">

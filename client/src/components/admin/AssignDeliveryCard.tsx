@@ -7,6 +7,7 @@ import { useAssignDeliveryMutation } from '@/redux/api/ordersApi';
 import type { AssignedDelivery } from '@/types/order';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 import { formatDate } from '@/utils/formatDate';
+import { isValidPhone, sanitizePhoneInput } from '@/utils/validation';
 
 export function AssignDeliveryCard({
   orderId,
@@ -22,6 +23,10 @@ export function AssignDeliveryCard({
   const handleAssign = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!name.trim()) return;
+    if (phone.trim() && !isValidPhone(phone.trim())) {
+      toast.error('Enter a valid phone number (digits only, optional leading +).');
+      return;
+    }
 
     try {
       await assignDelivery({ id: orderId, name: name.trim(), phone: phone.trim() }).unwrap();
@@ -74,8 +79,11 @@ export function AssignDeliveryCard({
             className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
           />
           <input
+            type="tel"
+            inputMode="tel"
+            maxLength={16}
             value={phone}
-            onChange={(event) => setPhone(event.target.value)}
+            onChange={(event) => setPhone(sanitizePhoneInput(event.target.value))}
             placeholder="Phone number (optional)"
             className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
           />

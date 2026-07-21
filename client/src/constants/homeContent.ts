@@ -1,37 +1,4 @@
-import type { GalleryImage, Review, Slide } from '@/types/home';
-
-export const heroSlides: Slide[] = [
-  {
-    id: 'midnight-caramel',
-    eyebrow: 'Limited batch',
-    title: 'Midnight caramel popcorn for movie nights.',
-    description: 'Air-popped kernels glazed with deep caramel, sea salt, and a velvet cocoa finish.',
-    image:
-      'https://images.unsplash.com/photo-1578849278619-e73505e9610f?auto=format&fit=crop&w=1600&q=85',
-    ctaLabel: 'Shop popcorn',
-    href: '/products?category=popcorn',
-  },
-  {
-    id: 'festival-combo',
-    eyebrow: 'Combo offers',
-    title: 'Snack boxes that make gifting dangerously easy.',
-    description: 'Curated sweet, spicy, and crunchy bundles packed for birthdays, teams, and festivals.',
-    image:
-      'https://images.unsplash.com/photo-1606312619070-d48b4c652a52?auto=format&fit=crop&w=1600&q=85',
-    ctaLabel: 'Explore combos',
-    href: '/products?collection=combos',
-  },
-  {
-    id: 'protein-trail',
-    eyebrow: 'New arrival',
-    title: 'Trail mixes built for the desk, gym, and road.',
-    description: 'Roasted nuts, seeds, berries, and chocolate notes in resealable everyday packs.',
-    image:
-      'https://images.unsplash.com/photo-1599599810694-b5b37304c041?auto=format&fit=crop&w=1600&q=85',
-    ctaLabel: 'Try new mixes',
-    href: '/products?tag=new-arrivals',
-  },
-];
+import type { GalleryImage, Review } from '@/types/home';
 
 export const reviews: Review[] = [
   {
