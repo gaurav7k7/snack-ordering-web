@@ -148,8 +148,11 @@ export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
           string,
         ]]
       : []),
-    ['Shipping', order.shippingFee === 0 ? 'Free' : currency(order.shippingFee)],
-    ['Tax (GST)', currency(order.tax)],
+    ['Shipping', order.shippingFee === 0 ? 'FREE Delivery' : currency(order.shippingFee)],
+    // order.tax is only > 0 for historical orders placed before product
+    // prices were made GST-inclusive — new orders show an informational note
+    // instead of an additive charge (see the disclaimer below the total).
+    ...(order.tax > 0 ? [['Tax (GST)', currency(order.tax)] as [string, string]] : []),
   ];
 
   summaryLines.forEach(([label, value]) => {
@@ -161,6 +164,17 @@ export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
   doc.font('Helvetica-Bold').fontSize(12);
   doc.text('Total', columns.price - 80, cursorY);
   doc.text(currency(order.total), columns.total, cursorY);
+  cursorY += 20;
+
+  if (order.tax === 0) {
+    doc
+      .font('Helvetica-Oblique')
+      .fontSize(9)
+      .fillColor('#666')
+      .text('Price includes 5% GST. GST (5%) is included in the product price — no additional tax is charged.', 50, cursorY, {
+        width: 495,
+      });
+  }
 
   doc.moveDown(4);
   doc

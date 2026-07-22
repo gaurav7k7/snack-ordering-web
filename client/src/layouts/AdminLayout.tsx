@@ -1,5 +1,6 @@
 import {
   Boxes,
+  Building2,
   GalleryHorizontal,
   LayoutDashboard,
   LayoutGrid,
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
   { label: 'Newsletter', href: ROUTES.adminNewsletter, icon: Mail },
   { label: 'Messages', href: ROUTES.adminMessages, icon: MessageSquare },
   { label: 'Banners', href: ROUTES.adminBanners, icon: GalleryHorizontal },
+  { label: 'B2B & Media Logos', href: ROUTES.adminPartnerLogos, icon: Building2 },
   { label: 'Settings', href: ROUTES.adminSettings, icon: Settings },
 ];
 

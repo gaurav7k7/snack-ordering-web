@@ -10,7 +10,7 @@ export function buildOrganizationSchema() {
     description:
       'Lotus Delight is a premium Indian makhana (fox nuts) brand offering multiple flavours and healthy snack options.',
     url: env.siteUrl,
-    logo: `${env.siteUrl}/icon.svg`,
+    logo: `${env.siteUrl}/icon-512.png`,
     sameAs: SOCIAL_LINKS.map((link) => link.href),
   };
 }

@@ -1,6 +1,8 @@
 import { Mic, Search } from 'lucide-react';
 import type { FormEvent } from 'react';
 
+import { SEARCH_PLACEHOLDER_PHRASES } from '@/constants/search';
+import { useRotatingPlaceholder } from '@/hooks/useRotatingPlaceholder';
 import { cn } from '@/utils/cn';
 
 type HeaderSearchFormProps = {
@@ -24,6 +26,8 @@ export function HeaderSearchForm({
   onToggleVoice,
   className,
 }: HeaderSearchFormProps) {
+  const placeholder = useRotatingPlaceholder(SEARCH_PLACEHOLDER_PHRASES);
+
   return (
     <form className={cn('flex items-center', className)} role="search" onSubmit={onSubmit}>
       <label htmlFor={id} className="sr-only">
@@ -36,7 +40,7 @@ export function HeaderSearchForm({
           type="search"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          placeholder="Search popcorn, chips, combos..."
+          placeholder={placeholder}
           className={cn(
             'h-11 w-full rounded-md border bg-background pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20',
             isVoiceSupported && 'pr-10',

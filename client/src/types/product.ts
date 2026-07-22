@@ -24,6 +24,7 @@ export type SearchProduct = {
   price?: number;
   offerPrice?: number;
   compareAtPrice?: number;
+  mrp?: number;
   discount?: number;
   image?: string;
   images?: { url: string }[];

@@ -10,7 +10,7 @@ const imageSchema = z.object({
 
 export const createBannerSchema = z
   .object({
-    heading: z.string().trim().min(2).max(120),
+    heading: z.string().trim().max(120).optional(),
     subheading: z.string().trim().max(80).optional(),
     description: z.string().trim().max(300).optional(),
     buttonText: z.string().trim().max(40).optional(),
@@ -26,11 +26,18 @@ export const createBannerSchema = z
     if (data.buttonLink && !data.buttonText) {
       ctx.addIssue({ code: 'custom', path: ['buttonText'], message: 'Button text is required when button link is set.' });
     }
+    if (!data.heading && !data.image) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['heading'],
+        message: 'Provide at least a banner image or a heading.',
+      });
+    }
   });
 
 export const updateBannerSchema = z
   .object({
-    heading: z.string().trim().min(2).max(120).optional(),
+    heading: z.string().trim().max(120).optional(),
     subheading: z.string().trim().max(80).optional(),
     description: z.string().trim().max(300).optional(),
     buttonText: z.string().trim().max(40).optional(),
@@ -42,5 +49,16 @@ export const updateBannerSchema = z
   .superRefine((data, ctx) => {
     if (data.buttonText && data.buttonLink === '') {
       ctx.addIssue({ code: 'custom', path: ['buttonLink'], message: 'Button link is required when button text is set.' });
+    }
+    // Only enforced when a save explicitly submits both fields (the admin
+    // edit form always sends the full draft) — a sparse patch like toggling
+    // isActive or swapping order never includes heading/image at all, so it
+    // must not be blocked by this check.
+    if ('heading' in data && 'image' in data && !data.heading && !data.image) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['heading'],
+        message: 'Provide at least a banner image or a heading.',
+      });
     }
   });

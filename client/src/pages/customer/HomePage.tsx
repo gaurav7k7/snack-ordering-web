@@ -3,9 +3,9 @@ import { Helmet } from 'react-helmet-async';
 import { toast } from 'react-hot-toast';
 import { useSearchParams } from 'react-router-dom';
 
-import { AiRecommendationsTeaser } from '@/components/customer/AiRecommendationsTeaser';
 import { CategoryTile } from '@/components/customer/CategoryTile';
 import { HeroSlider } from '@/components/customer/HeroSlider';
+import { LogoCarousel } from '@/components/customer/LogoCarousel';
 import { Newsletter } from '@/components/customer/Newsletter';
 import { ProductShelf } from '@/components/customer/ProductShelf';
 import { ReviewCard } from '@/components/customer/ReviewCard';
@@ -13,7 +13,9 @@ import { SectionHeader } from '@/components/shared/SectionHeader';
 import { env } from '@/config/env';
 import { galleryImages, reviews } from '@/constants/homeContent';
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
+import { useGetPartnerLogosQuery } from '@/redux/api/partnerLogosApi';
 import { useSearchProductsQuery } from '@/redux/api/productsApi';
+import { useGetSiteSettingsQuery } from '@/redux/api/siteSettingsApi';
 import { useGetBrandsQuery } from '@/redux/api/taxonomyApi';
 import { cldUrl } from '@/utils/cloudinaryImage';
 
@@ -38,6 +40,9 @@ export default function HomePage() {
   const { data: newArrivalsData } = useSearchProductsQuery({ sort: 'newest', limit: '4' });
   const { data: categoriesData } = useGetCategoriesQuery();
   const { data: brandsData } = useGetBrandsQuery();
+  const { data: b2bClientsData } = useGetPartnerLogosQuery({ category: 'b2b_client' });
+  const { data: mediaCoverageData } = useGetPartnerLogosQuery({ category: 'media_coverage' });
+  const { data: siteSettingsData } = useGetSiteSettingsQuery();
 
   const featuredProducts = featuredData?.data?.products ?? [];
   const popularSnacks = popularData?.data?.products ?? [];
@@ -47,6 +52,9 @@ export default function HomePage() {
   const newArrivals = newArrivalsData?.data?.products ?? [];
   const categories = categoriesData?.data?.categories ?? [];
   const brands = brandsData?.data?.brands ?? [];
+  const b2bClients = b2bClientsData?.data?.logos ?? [];
+  const mediaCoverage = mediaCoverageData?.data?.logos ?? [];
+  const siteSettings = siteSettingsData?.data?.settings;
 
   return (
     <>
@@ -65,7 +73,7 @@ export default function HomePage() {
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={env.siteUrl} />
-        <meta property="og:image" content={`${env.siteUrl}/icon.svg`} />
+        <meta property="og:image" content={`${env.siteUrl}/icon-512.png`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Lotus Delight | Premium Makhana (Fox Nuts) & Healthy Snacks Online" />
         <meta
@@ -101,8 +109,6 @@ export default function HomePage() {
           products={featuredProducts}
         />
       ) : null}
-
-      <AiRecommendationsTeaser />
 
       {categories.length > 0 ? (
         <section className="bg-muted/50 py-12">
@@ -285,6 +291,24 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {b2bClients.length > 0 ? (
+        <section className="border-t bg-muted/30 py-12">
+          <div className="container">
+            <SectionHeader title={siteSettings?.b2bClientsHeading || 'Our B2B Clients'} />
+            <LogoCarousel logos={b2bClients} />
+          </div>
+        </section>
+      ) : null}
+
+      {mediaCoverage.length > 0 ? (
+        <section className="border-t py-12">
+          <div className="container">
+            <SectionHeader title={siteSettings?.mediaCoverageHeading || 'Media Coverage'} />
+            <LogoCarousel logos={mediaCoverage} />
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }

@@ -72,9 +72,19 @@ export default {
           '0%': { transform: 'translateX(100vw)' },
           '100%': { transform: 'translateX(-100%)' },
         },
+        // Unlike `ticker` above (one message, enters/exits the viewport), a
+        // logo strip renders its list TWICE back to back and slides the
+        // whole track by exactly half its own width — the second copy lands
+        // pixel-for-pixel where the first started, so the loop point is
+        // invisible and the strip never shows a gap.
+        'logo-scroll': {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         ticker: 'ticker 16s linear infinite',
+        'logo-scroll': 'logo-scroll 28s linear infinite',
       },
     },
   },

@@ -269,12 +269,19 @@ export default function AdminOrderDetailPage() {
               )}
               <div className="flex items-center justify-between">
                 <span>Shipping</span>
-                <span>{order.shippingFee === 0 ? 'Free' : formatCurrency(order.shippingFee)}</span>
+                <span>{order.shippingFee === 0 ? 'FREE Delivery' : formatCurrency(order.shippingFee)}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span>Tax</span>
-                <span>{formatCurrency(order.tax)}</span>
-              </div>
+              {order.tax > 0 ? (
+                <div className="flex items-center justify-between">
+                  <span>Tax</span>
+                  <span>{formatCurrency(order.tax)}</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>GST (5%)</span>
+                  <span>Included in price</span>
+                </div>
+              )}
               <div className="flex items-center justify-between border-t pt-2 text-base font-semibold">
                 <span>Total</span>
                 <span>{formatCurrency(order.total)}</span>

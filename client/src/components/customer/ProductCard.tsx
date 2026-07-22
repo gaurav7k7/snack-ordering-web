@@ -13,7 +13,6 @@ import type { SearchProduct } from '@/types/product';
 import { cldUrl } from '@/utils/cloudinaryImage';
 import { cn } from '@/utils/cn';
 import { formatCurrency } from '@/utils/formatCurrency';
-import { getCategoryName } from '@/utils/getCategoryName';
 
 type ProductCardProps = {
   product: HomeProduct | SearchProduct;
@@ -34,6 +33,7 @@ function getProductPrice(product: HomeProduct | SearchProduct) {
 function getCompareAtPrice(product: HomeProduct | SearchProduct) {
   return (
     product.compareAtPrice ??
+    product.mrp ??
     (product.price !== undefined && product.offerPrice ? product.price : undefined)
   );
 }
@@ -50,11 +50,16 @@ function getProductReviews(product: HomeProduct | SearchProduct) {
 function getBadge(product: HomeProduct | SearchProduct) {
   return (
     product.badge ||
-    (product.isBestSeller ? 'Best seller' : undefined) ||
     (product.isTrending ? 'Trending' : undefined) ||
     (product.isFeatured ? 'Featured' : undefined) ||
     ''
   );
+}
+
+/** Rounds down like a real storefront discount — never overstate the % off. */
+function getDiscountPercent(price: number, compareAtPrice: number | undefined) {
+  if (!compareAtPrice || compareAtPrice <= price) return 0;
+  return Math.floor(((compareAtPrice - price) / compareAtPrice) * 100);
 }
 
 export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
@@ -65,6 +70,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
   const rating = getProductRating(product);
   const reviews = getProductReviews(product);
   const badge = getBadge(product);
+  const discountPercent = getDiscountPercent(price, compareAtPrice);
   const dispatch = useAppDispatch();
   const { isWishlisted, toggleWishlist, isMutating } = useWishlist();
   const wishlisted = isWishlisted(productId);
@@ -99,7 +105,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             </div>
           ) : (
             <img
-              src={cldUrl(imageUrl, 'card')}
+              src={cldUrl(imageUrl, 'productCard')}
               alt={product.name}
               loading="lazy"
               className="h-full w-full object-contain p-3 transition duration-500 group-hover:scale-105"
@@ -107,10 +113,19 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             />
           )}
         </Link>
-        {badge ? (
-          <span className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-            {badge}
-          </span>
+        {discountPercent > 0 || badge ? (
+          <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+            {discountPercent > 0 ? (
+              <span className="rounded-full bg-destructive px-3 py-1 text-xs font-bold text-destructive-foreground">
+                {discountPercent}% OFF
+              </span>
+            ) : null}
+            {badge ? (
+              <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                {badge}
+              </span>
+            ) : null}
+          </div>
         ) : null}
         <div className="absolute right-3 top-3 flex flex-col gap-2">
           <Button
@@ -147,10 +162,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
       </div>
       <div className="space-y-3 p-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {getCategoryName(product.category)}
-          </p>
-          <h3 className="mt-1 line-clamp-2 min-h-12 text-base font-semibold">
+          <h3 className="line-clamp-2 min-h-12 text-base font-semibold">
             <Link to={`/products/${product.slug}`} className="hover:text-primary">
               {product.name}
             </Link>
@@ -164,7 +176,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-wrap items-baseline gap-2">
             <span className="text-lg font-bold">{formatCurrency(price)}</span>
-            {compareAtPrice ? (
+            {compareAtPrice && compareAtPrice > price ? (
               <span className="text-sm text-muted-foreground line-through">
                 {formatCurrency(compareAtPrice)}
               </span>

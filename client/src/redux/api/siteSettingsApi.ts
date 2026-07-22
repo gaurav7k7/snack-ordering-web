@@ -13,7 +13,10 @@ export const siteSettingsApi = baseApi.injectEndpoints({
       query: () => ({ url: '/settings' }),
       providesTags: [{ type: 'SiteSettings' as const, id: 'SINGLETON' }],
     }),
-    updateSiteSettings: builder.mutation<ApiResponse<{ settings: SiteSettings }>, { announcementText: string }>({
+    updateSiteSettings: builder.mutation<
+      ApiResponse<{ settings: SiteSettings }>,
+      Partial<Pick<SiteSettings, 'announcementText' | 'b2bClientsHeading' | 'mediaCoverageHeading'>>
+    >({
       query: (body) => ({ url: '/settings', method: 'PATCH', body }),
       invalidatesTags: [{ type: 'SiteSettings' as const, id: 'SINGLETON' }],
     }),

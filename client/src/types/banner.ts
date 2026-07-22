@@ -1,6 +1,6 @@
 export type Banner = {
   _id: string;
-  heading: string;
+  heading?: string;
   subheading?: string;
   description?: string;
   buttonText?: string;

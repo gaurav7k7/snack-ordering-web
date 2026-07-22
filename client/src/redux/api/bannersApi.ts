@@ -10,7 +10,7 @@ type ApiResponse<T> = {
 type BannerImageInput = { url: string; publicId?: string; alt?: string };
 
 type BannerInput = {
-  heading: string;
+  heading?: string;
   subheading?: string;
   description?: string;
   buttonText?: string;

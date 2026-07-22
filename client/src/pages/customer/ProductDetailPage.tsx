@@ -187,16 +187,9 @@ export default function ProductDetailPage() {
                 Trending
               </span>
             ) : null}
-            {product.isBestSeller ? (
-              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-secondary-foreground">
-                Best seller
-              </span>
-            ) : null}
           </div>
 
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-            {product.brand} | {product.subCategory}
-          </p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">{product.brand}</p>
           <h1 className="mt-3 text-3xl font-black leading-tight sm:text-5xl">{product.name}</h1>
           <p className="mt-4 text-base leading-7 text-muted-foreground">{product.description}</p>
 

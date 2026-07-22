@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 
 import { CANCELLABLE_STATUSES, ORDER_STATUS, RETURN_WINDOW_DAYS } from '../constants/orderStatus.js';
-import { DEFAULT_COUNTRY, DEFAULT_CURRENCY, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE, TAX_RATE } from '../constants/pricing.js';
+import { DEFAULT_COUNTRY, DEFAULT_CURRENCY, FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_FEE } from '../constants/pricing.js';
 import { env } from '../config/env.js';
 import { evaluateCouponByCode, findBestAutomaticOffer, redeemCouponByCode } from '../services/coupon.service.js';
 import { sendEmail } from '../services/email.service.js';
@@ -205,9 +205,10 @@ export const createOrder = asyncHandler(async (req, res) => {
   const automaticOfferCode = automaticOffer?.coupon.code ?? '';
 
   const totalDiscount = Math.min(couponDiscount + automaticDiscount, subtotal);
-  const tax = Math.round(Math.max(subtotal - totalDiscount, 0) * TAX_RATE);
-  const shippingFee = subtotal > FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
-  const total = subtotal - totalDiscount + tax + shippingFee;
+  // Product prices already include 5% GST — do not add it again on top.
+  const tax = 0;
+  const shippingFee = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
+  const total = subtotal - totalDiscount + shippingFee;
   const isRazorpayPayment = paymentMethod === 'razorpay';
 
   const order = await OrderModel.create({

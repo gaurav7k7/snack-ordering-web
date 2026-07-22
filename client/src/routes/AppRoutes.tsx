@@ -38,6 +38,7 @@ const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage'));
 const AdminNewsletterPage = lazy(() => import('@/pages/admin/AdminNewsletterPage'));
 const AdminMessagesPage = lazy(() => import('@/pages/admin/AdminMessagesPage'));
 const AdminBannersPage = lazy(() => import('@/pages/admin/AdminBannersPage'));
+const AdminPartnerLogosPage = lazy(() => import('@/pages/admin/AdminPartnerLogosPage'));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/shared/NotFoundPage'));
 const AboutPage = lazy(() => import('@/pages/static/AboutPage'));
@@ -408,6 +409,14 @@ export function AppRoutes() {
               element={
                 <PageTransition>
                   <AdminBannersPage />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="partner-logos"
+              element={
+                <PageTransition>
+                  <AdminPartnerLogosPage />
                 </PageTransition>
               }
             />

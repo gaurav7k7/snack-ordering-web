@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { SITE_NAV_ITEMS } from '@/constants/navigation';
 import { ROUTES } from '@/constants/routes';
+import { SEARCH_PLACEHOLDER_PHRASES } from '@/constants/search';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useLogoutMutation } from '@/redux/api/authApi';
 import { clearUser } from '@/redux/slices/authSlice';
+import { useRotatingPlaceholder } from '@/hooks/useRotatingPlaceholder';
 import { useWishlist } from '@/hooks/useWishlist';
 
 type MobileNavDrawerProps = {
@@ -24,6 +26,7 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
   const [logout] = useLogoutMutation();
   const { count: wishlistCount } = useWishlist();
   const [searchQuery, setSearchQuery] = useState('');
+  const searchPlaceholder = useRotatingPlaceholder(SEARCH_PLACEHOLDER_PHRASES);
   const prefersReducedMotion = useReducedMotion();
 
   // Lock background scroll while the drawer is open — without this the page
@@ -110,7 +113,7 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
                     type="search"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search snacks..."
+                    placeholder={searchPlaceholder}
                     className="h-11 w-full rounded-md border bg-background pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>

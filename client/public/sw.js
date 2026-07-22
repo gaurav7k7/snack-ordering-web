@@ -1,5 +1,9 @@
-const CACHE_NAME = 'lotusdelight-shell-v1';
-const SHELL_ASSETS = ['/', '/manifest.webmanifest', '/icon.svg'];
+// Bumped alongside the favicon/icon change below — a same-named cache would
+// otherwise just accumulate the new icon entries next to the old, now-deleted
+// '/icon.svg' one instead of the `activate` handler's stale-cache cleanup
+// actually running.
+const CACHE_NAME = 'lotusdelight-shell-v2';
+const SHELL_ASSETS = ['/', '/manifest.webmanifest', '/icon-192.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -58,8 +62,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,
-      icon: '/icon.svg',
-      badge: '/icon.svg',
+      icon: '/icon-192.png',
+      badge: '/favicon-32x32.png',
     }),
   );
 });

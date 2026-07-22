@@ -40,6 +40,7 @@ export const baseApi = createApi({
     'Brand',
     'Tag',
     'Banner',
+    'PartnerLogo',
     'Newsletter',
     'ContactMessage',
     'SiteSettings',

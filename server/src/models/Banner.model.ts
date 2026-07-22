@@ -2,7 +2,7 @@ import { Schema, model, type InferSchemaType } from 'mongoose';
 
 const bannerSchema = new Schema(
   {
-    heading: { type: String, required: true, trim: true, maxlength: 120 },
+    heading: { type: String, trim: true, maxlength: 120 },
     subheading: { type: String, trim: true, maxlength: 80 },
     description: { type: String, trim: true, maxlength: 300 },
     buttonText: { type: String, trim: true, maxlength: 40 },

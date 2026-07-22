@@ -528,13 +528,20 @@ export default function CheckoutPage() {
                     <span>-{formatCurrency(automaticDiscount)}</span>
                   </div>
                 ) : null}
-                <div className="flex items-center justify-between">
-                  <span>Tax</span>
-                  <span>{formatCurrency(tax)}</span>
-                </div>
+                {tax > 0 ? (
+                  <div className="flex items-center justify-between">
+                    <span>Tax</span>
+                    <span>{formatCurrency(tax)}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>GST (5%)</span>
+                    <span>Included in price</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span>Delivery</span>
-                  <span>{shippingFee === 0 ? 'Free' : formatCurrency(shippingFee)}</span>
+                  <span>{shippingFee === 0 ? 'FREE Delivery' : formatCurrency(shippingFee)}</span>
                 </div>
               </div>
               <div className="mt-5 border-t pt-4">

@@ -19,13 +19,18 @@ export const getSiteSettings = asyncHandler(async (_req, res) => {
 });
 
 export const updateSiteSettings = asyncHandler(async (req, res) => {
-  const { announcementText } = req.body;
+  const { announcementText, b2bClientsHeading, mediaCoverageHeading } = req.body;
 
-  const settings = await SiteSettingsModel.findOneAndUpdate(
-    {},
-    { announcementText },
-    { upsert: true, new: true, setDefaultsOnInsert: true },
-  );
+  const update: Record<string, string> = {};
+  if (announcementText !== undefined) update.announcementText = announcementText;
+  if (b2bClientsHeading !== undefined) update.b2bClientsHeading = b2bClientsHeading;
+  if (mediaCoverageHeading !== undefined) update.mediaCoverageHeading = mediaCoverageHeading;
+
+  const settings = await SiteSettingsModel.findOneAndUpdate({}, update, {
+    upsert: true,
+    new: true,
+    setDefaultsOnInsert: true,
+  });
 
   res.status(StatusCodes.OK).json(createApiResponse('Site settings updated.', { settings }));
 });

@@ -39,7 +39,7 @@ const EMPTY_DRAFT: BannerDraft = {
 
 function toDraft(banner: Banner): BannerDraft {
   return {
-    heading: banner.heading,
+    heading: banner.heading ?? '',
     subheading: banner.subheading ?? '',
     description: banner.description ?? '',
     buttonText: banner.buttonText ?? '',
@@ -63,16 +63,20 @@ function BannerForm({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <label className="grid gap-1.5 text-sm">
-        <span className="font-semibold">Main heading</span>
+        <span className="font-semibold">
+          Main heading <span className="font-normal text-muted-foreground">(optional)</span>
+        </span>
         <input
-          required
           value={draft.heading}
           onChange={(event) => onChange({ ...draft, heading: event.target.value })}
+          placeholder="Leave empty to show only the image"
           className={fieldClass}
         />
       </label>
       <label className="grid gap-1.5 text-sm">
-        <span className="font-semibold">Sub heading</span>
+        <span className="font-semibold">
+          Sub heading <span className="font-normal text-muted-foreground">(optional)</span>
+        </span>
         <input
           value={draft.subheading}
           onChange={(event) => onChange({ ...draft, subheading: event.target.value })}
@@ -80,7 +84,9 @@ function BannerForm({
         />
       </label>
       <label className="col-span-full grid gap-1.5 text-sm">
-        <span className="font-semibold">Description</span>
+        <span className="font-semibold">
+          Description <span className="font-normal text-muted-foreground">(optional)</span>
+        </span>
         <textarea
           rows={2}
           value={draft.description}
@@ -89,7 +95,9 @@ function BannerForm({
         />
       </label>
       <label className="grid gap-1.5 text-sm">
-        <span className="font-semibold">Button text</span>
+        <span className="font-semibold">
+          Button text <span className="font-normal text-muted-foreground">(optional)</span>
+        </span>
         <input
           value={draft.buttonText}
           onChange={(event) => onChange({ ...draft, buttonText: event.target.value })}
@@ -98,7 +106,9 @@ function BannerForm({
         />
       </label>
       <label className="grid gap-1.5 text-sm">
-        <span className="font-semibold">Button link</span>
+        <span className="font-semibold">
+          Button link <span className="font-normal text-muted-foreground">(optional)</span>
+        </span>
         <input
           value={draft.buttonLink}
           onChange={(event) => onChange({ ...draft, buttonLink: event.target.value })}
@@ -108,6 +118,10 @@ function BannerForm({
       </label>
       <div className="col-span-full grid gap-1.5 text-sm">
         <span className="font-semibold">Banner image</span>
+        <p className="text-xs text-muted-foreground">
+          The homepage banner now displays at full width using the image's own aspect ratio (no cropping). For a
+          premium wide look, upload a landscape image — recommended around 1920×600px (roughly 3:1).
+        </p>
         <div className="flex items-center gap-3">
           <EntityImageUploader
             imageUrl={draft.image?.url}
@@ -156,8 +170,8 @@ function BannerCard({
   };
 
   const handleSave = async () => {
-    if (!draft.heading.trim()) {
-      toast.error('A main heading is required.');
+    if (!draft.heading.trim() && !draft.image) {
+      toast.error('Provide at least a banner image or a heading.');
       return;
     }
     if ((draft.buttonText.trim() && !draft.buttonLink.trim()) || (draft.buttonLink.trim() && !draft.buttonText.trim())) {
@@ -190,7 +204,7 @@ function BannerCard({
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`Delete the "${banner.heading}" banner? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete the "${banner.heading || 'untitled'}" banner? This cannot be undone.`)) return;
     try {
       await deleteBanner(banner._id).unwrap();
       toast.success('Banner deleted.');
@@ -211,7 +225,9 @@ function BannerCard({
             )}
           </div>
           <div>
-            <p className="font-bold">{banner.heading}</p>
+            <p className="font-bold">
+              {banner.heading || <span className="italic text-muted-foreground">Image only — no heading</span>}
+            </p>
             {banner.subheading ? <p className="text-sm text-muted-foreground">{banner.subheading}</p> : null}
             <p className="mt-1 text-xs text-muted-foreground">
               Order {banner.order + 1} · Last updated {formatDate(banner.updatedAt, 'long')}
@@ -242,7 +258,7 @@ function BannerCard({
 
       {isEditing ? (
         <div className="mt-5 border-t border-border/70 pt-5">
-          <BannerForm draft={draft} onChange={setDraft} label={banner.heading} />
+          <BannerForm draft={draft} onChange={setDraft} label={banner.heading || 'this banner'} />
           <div className="mt-4 flex gap-2">
             <Button type="button" size="sm" disabled={isSaving} onClick={handleSave}>
               {isSaving ? 'Saving…' : 'Save changes'}
@@ -262,8 +278,8 @@ function NewBannerCard({ nextOrder, onDone }: { nextOrder: number; onDone: () =>
   const [createBanner, { isLoading }] = useCreateBannerMutation();
 
   const handleCreate = async () => {
-    if (!draft.heading.trim()) {
-      toast.error('A main heading is required.');
+    if (!draft.heading.trim() && !draft.image) {
+      toast.error('Provide at least a banner image or a heading.');
       return;
     }
     if ((draft.buttonText.trim() && !draft.buttonLink.trim()) || (draft.buttonLink.trim() && !draft.buttonText.trim())) {
