@@ -533,12 +533,7 @@ export default function CheckoutPage() {
                     <span>Tax</span>
                     <span>{formatCurrency(tax)}</span>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span>GST (5%)</span>
-                    <span>Included in price</span>
-                  </div>
-                )}
+                ) : null}
                 <div className="flex items-center justify-between">
                   <span>Delivery</span>
                   <span>{shippingFee === 0 ? 'FREE Delivery' : formatCurrency(shippingFee)}</span>

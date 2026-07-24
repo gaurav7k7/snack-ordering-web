@@ -18,7 +18,7 @@ export async function sendOrderConfirmationEmail(order: NotifiableOrder) {
     to: order.guestEmail,
     subject: `Your Lotus Delight order ${order.orderNumber} is confirmed`,
     text: `Hi ${name}, your order ${order.orderNumber} is confirmed. Total: ₹${order.total}.`,
-    html: renderEmailHtml(
+    html: await renderEmailHtml(
       'Order confirmed',
       `<p>Hi ${escapeHtml(name)},</p><p>Your order <strong>${order.orderNumber}</strong> is confirmed and being prepared.</p><p>Total: <strong>₹${order.total}</strong></p>`,
     ),
@@ -52,6 +52,6 @@ export async function sendOrderStatusEmail(order: NotifiableOrder, status: Order
     to: order.guestEmail,
     subject: `${copy.subject} — ${order.orderNumber}`,
     text: `${copy.message} Order: ${order.orderNumber}.`,
-    html: renderEmailHtml(copy.subject, `<p>${copy.message}</p><p>Order: <strong>${order.orderNumber}</strong></p>`),
+    html: await renderEmailHtml(copy.subject, `<p>${copy.message}</p><p>Order: <strong>${order.orderNumber}</strong></p>`),
   });
 }

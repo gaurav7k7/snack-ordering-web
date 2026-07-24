@@ -56,6 +56,10 @@ function getBadge(product: HomeProduct | SearchProduct) {
   );
 }
 
+function getWeight(product: HomeProduct | SearchProduct) {
+  return product.weight || '';
+}
+
 /** Rounds down like a real storefront discount — never overstate the % off. */
 function getDiscountPercent(price: number, compareAtPrice: number | undefined) {
   if (!compareAtPrice || compareAtPrice <= price) return 0;
@@ -70,6 +74,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
   const rating = getProductRating(product);
   const reviews = getProductReviews(product);
   const badge = getBadge(product);
+  const weight = getWeight(product);
   const discountPercent = getDiscountPercent(price, compareAtPrice);
   const dispatch = useAppDispatch();
   const { isWishlisted, toggleWishlist, isMutating } = useWishlist();
@@ -113,18 +118,11 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             />
           )}
         </Link>
-        {discountPercent > 0 || badge ? (
-          <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
-            {discountPercent > 0 ? (
-              <span className="rounded-full bg-destructive px-3 py-1 text-xs font-bold text-destructive-foreground">
-                {discountPercent}% OFF
-              </span>
-            ) : null}
-            {badge ? (
-              <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                {badge}
-              </span>
-            ) : null}
+        {badge ? (
+          <div className="absolute left-3 top-3">
+            <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+              {badge}
+            </span>
           </div>
         ) : null}
         <div className="absolute right-3 top-3 flex flex-col gap-2">
@@ -160,31 +158,38 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
           </Button>
         </div>
       </div>
-      <div className="space-y-3 p-4">
+      <div className="space-y-2.5 p-3.5">
         <div>
-          <h3 className="line-clamp-2 min-h-12 text-base font-semibold">
+          <h3 className="line-clamp-2 min-h-11 text-sm font-semibold sm:text-base">
             <Link to={`/products/${product.slug}`} className="hover:text-primary">
               {product.name}
             </Link>
           </h3>
+          {weight ? <p className="mt-0.5 text-xs font-medium text-muted-foreground">{weight}</p> : null}
         </div>
         <div className="flex items-center gap-1 text-sm">
           <Star className="h-4 w-4 fill-secondary text-secondary" aria-hidden="true" />
           <span className="font-semibold">{rating.toFixed(1)}</span>
           <span className="text-muted-foreground">({reviews})</span>
         </div>
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-lg font-bold">{formatCurrency(price)}</span>
+        <div className="flex items-end justify-between gap-2">
+          <div className="flex flex-wrap items-baseline gap-1.5">
+            <span className="text-base font-bold sm:text-lg">{formatCurrency(price)}</span>
             {compareAtPrice && compareAtPrice > price ? (
-              <span className="text-sm text-muted-foreground line-through">
+              <span className="text-xs text-muted-foreground line-through sm:text-sm">
                 {formatCurrency(compareAtPrice)}
+              </span>
+            ) : null}
+            {discountPercent > 0 ? (
+              <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
+                {discountPercent}% OFF
               </span>
             ) : null}
           </div>
           <Button
             type="button"
             size="icon"
+            className="shrink-0"
             aria-label={isOutOfStock ? `${product.name} is out of stock` : `Add ${product.name} to cart`}
             disabled={isOutOfStock}
             onClick={handleAddToCart}

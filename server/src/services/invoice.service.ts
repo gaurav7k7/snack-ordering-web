@@ -1,5 +1,19 @@
 import PDFDocument from 'pdfkit';
 
+export type InvoiceCompanyInfo = {
+  name: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+  email: string;
+  cin: string;
+  gstin: string;
+};
+
 type InvoiceOrder = {
   orderNumber: string;
   createdAt: Date;
@@ -33,7 +47,7 @@ type InvoiceOrder = {
 const currency = (value: number) => `Rs. ${value.toFixed(2)}`;
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
-export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
+export function generateInvoicePdf(order: InvoiceOrder, company: InvoiceCompanyInfo): PDFKit.PDFDocument {
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
   const customer = typeof order.user === 'object' && order.user ? order.user : undefined;
@@ -42,8 +56,20 @@ export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
   const customerPhone = address?.phone || customer?.phone || order.guestPhone || 'Not provided';
   const customerEmail = customer?.email || order.guestEmail || 'Not provided';
 
-  doc.fontSize(20).font('Helvetica-Bold').fillColor('#000').text('Lotus Delight');
-  doc.fontSize(10).font('Helvetica').fillColor('#666').text('Premium snacks, delivered fast.');
+  const companyAddressLine = [company.addressLine1, company.addressLine2, company.city, company.state, company.postalCode, company.country]
+    .filter(Boolean)
+    .join(', ');
+  const companyRegistrationLine = [company.cin && `CIN: ${company.cin}`, company.gstin && `GSTIN: ${company.gstin}`]
+    .filter(Boolean)
+    .join('   ·   ');
+
+  doc.fontSize(20).font('Helvetica-Bold').fillColor('#000').text(company.name || 'Lotus Delight');
+  if (companyAddressLine) {
+    doc.fontSize(9).font('Helvetica').fillColor('#666').text(companyAddressLine);
+  }
+  if (companyRegistrationLine) {
+    doc.fontSize(9).font('Helvetica').fillColor('#666').text(companyRegistrationLine);
+  }
   doc.moveDown(1.5);
 
   doc.fillColor('#000').fontSize(16).font('Helvetica-Bold').text('Tax Invoice');
@@ -150,9 +176,8 @@ export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
       : []),
     ['Shipping', order.shippingFee === 0 ? 'FREE Delivery' : currency(order.shippingFee)],
     // order.tax is only > 0 for historical orders placed before product
-    // prices were made GST-inclusive — new orders show an informational note
-    // instead of an additive charge (see the disclaimer below the total).
-    ...(order.tax > 0 ? [['Tax (GST)', currency(order.tax)] as [string, string]] : []),
+    // prices became tax-inclusive — new orders charge no additive tax.
+    ...(order.tax > 0 ? [['Tax', currency(order.tax)] as [string, string]] : []),
   ];
 
   summaryLines.forEach(([label, value]) => {
@@ -166,16 +191,7 @@ export function generateInvoicePdf(order: InvoiceOrder): PDFKit.PDFDocument {
   doc.text(currency(order.total), columns.total, cursorY);
   cursorY += 20;
 
-  if (order.tax === 0) {
-    doc
-      .font('Helvetica-Oblique')
-      .fontSize(9)
-      .fillColor('#666')
-      .text('Price includes 5% GST. GST (5%) is included in the product price — no additional tax is charged.', 50, cursorY, {
-        width: 495,
-      });
-  }
-
+  doc.y = cursorY;
   doc.moveDown(4);
   doc
     .font('Helvetica')

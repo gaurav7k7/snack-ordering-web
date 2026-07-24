@@ -1,5 +1,5 @@
 import { baseApi } from '@/redux/api/baseApi';
-import type { SiteSettings } from '@/types/siteSettings';
+import type { CompanyInfo, SiteSettings } from '@/types/siteSettings';
 
 type ApiResponse<T> = {
   success: boolean;
@@ -15,7 +15,9 @@ export const siteSettingsApi = baseApi.injectEndpoints({
     }),
     updateSiteSettings: builder.mutation<
       ApiResponse<{ settings: SiteSettings }>,
-      Partial<Pick<SiteSettings, 'announcementText' | 'b2bClientsHeading' | 'mediaCoverageHeading'>>
+      Partial<Pick<SiteSettings, 'announcementText' | 'b2bClientsHeading' | 'mediaCoverageHeading' | 'galleryHeading'>> & {
+        company?: Partial<CompanyInfo>;
+      }
     >({
       query: (body) => ({ url: '/settings', method: 'PATCH', body }),
       invalidatesTags: [{ type: 'SiteSettings' as const, id: 'SINGLETON' }],

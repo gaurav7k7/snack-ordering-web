@@ -10,6 +10,7 @@ import { sendEmail } from '../services/email.service.js';
 import { decrementStockAndAlert } from '../services/inventory.service.js';
 import { generateInvoicePdf } from '../services/invoice.service.js';
 import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '../services/orderNotification.service.js';
+import { getOrCreateSiteSettings } from '../services/siteSettings.service.js';
 import {
   createRazorpayOrder,
   refundPayment,
@@ -112,7 +113,7 @@ async function performCancellation(order: InstanceType<typeof OrderModel>, reaso
       to: order.guestEmail,
       subject: `Your Lotus Delight order ${order.orderNumber} was cancelled`,
       text: `Hi, your order ${order.orderNumber} has been cancelled. Reason: ${cancellationReason}.`,
-      html: renderEmailHtml(
+      html: await renderEmailHtml(
         'Order cancelled',
         `<p>Your order <strong>${order.orderNumber}</strong> has been cancelled.</p><p>Reason: ${escapeHtml(cancellationReason)}</p>`,
       ),
@@ -533,7 +534,7 @@ export const requestReturn = asyncHandler(async (req, res) => {
       to: order.guestEmail,
       subject: `Return request received for order ${order.orderNumber}`,
       text: `We've received your return request for order ${order.orderNumber}. Our team will review it within 24-48 hours.`,
-      html: renderEmailHtml(
+      html: await renderEmailHtml(
         'Return request received',
         `<p>We've received your return request for order <strong>${order.orderNumber}</strong>.</p><p>Our team will review it within 24-48 hours.</p>`,
       ),
@@ -592,8 +593,9 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json(createApiResponse('Order status updated.', { order }));
 });
 
-function streamInvoice(order: InstanceType<typeof OrderModel>, req: Request, res: Response) {
-  const doc = generateInvoicePdf(order.toObject() as never);
+async function streamInvoice(order: InstanceType<typeof OrderModel>, req: Request, res: Response) {
+  const settings = await getOrCreateSiteSettings();
+  const doc = generateInvoicePdf(order.toObject() as never, settings.company as never);
 
   const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
   res.setHeader('Content-Type', 'application/pdf');
@@ -605,7 +607,7 @@ function streamInvoice(order: InstanceType<typeof OrderModel>, req: Request, res
 
 export const getInvoice = asyncHandler(async (req, res) => {
   const order = await loadOwnedOrderWithCustomer(req.params.id, req.user?.userId);
-  streamInvoice(order, req, res);
+  await streamInvoice(order, req, res);
 });
 
 export const getOrderByIdForAdmin = asyncHandler(async (req, res) => {
@@ -618,7 +620,7 @@ export const getOrderByIdForAdmin = asyncHandler(async (req, res) => {
 
 export const getInvoiceForAdmin = asyncHandler(async (req, res) => {
   const order = await loadOrderByIdWithCustomer(req.params.id);
-  streamInvoice(order, req, res);
+  await streamInvoice(order, req, res);
 });
 
 export const adminCancelOrder = asyncHandler(async (req, res) => {
@@ -673,7 +675,7 @@ export const refundOrder = asyncHandler(async (req, res) => {
       to: order.guestEmail,
       subject: `Refund processed for order ${order.orderNumber}`,
       text: `Hi, a refund of ₹${refundAmount} has been processed for your order ${order.orderNumber}.`,
-      html: renderEmailHtml(
+      html: await renderEmailHtml(
         'Refund processed',
         `<p>A refund of <strong>₹${refundAmount}</strong> has been processed for your order <strong>${order.orderNumber}</strong>.</p>`,
       ),

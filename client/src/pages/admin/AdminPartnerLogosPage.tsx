@@ -38,10 +38,16 @@ function LogoForm({
   draft,
   onChange,
   label,
+  itemLabel,
+  namePlaceholder,
+  showLink = true,
 }: {
   draft: LogoDraft;
   onChange: (next: LogoDraft) => void;
   label: string;
+  itemLabel: string;
+  namePlaceholder: string;
+  showLink?: boolean;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
@@ -51,23 +57,25 @@ function LogoForm({
           required
           value={draft.name}
           onChange={(event) => onChange({ ...draft, name: event.target.value })}
-          placeholder="Company / publication name"
+          placeholder={namePlaceholder}
           className={fieldClass}
         />
       </label>
-      <label className="grid gap-1.5 text-sm">
-        <span className="font-semibold">
-          Link <span className="font-normal text-muted-foreground">(optional)</span>
-        </span>
-        <input
-          value={draft.link}
-          onChange={(event) => onChange({ ...draft, link: event.target.value })}
-          placeholder="https://example.com"
-          className={fieldClass}
-        />
-      </label>
+      {showLink ? (
+        <label className="grid gap-1.5 text-sm">
+          <span className="font-semibold">
+            Link <span className="font-normal text-muted-foreground">(optional)</span>
+          </span>
+          <input
+            value={draft.link}
+            onChange={(event) => onChange({ ...draft, link: event.target.value })}
+            placeholder="https://example.com"
+            className={fieldClass}
+          />
+        </label>
+      ) : null}
       <div className="col-span-full grid gap-1.5 text-sm">
-        <span className="font-semibold">Logo</span>
+        <span className="font-semibold">{itemLabel}</span>
         <div className="flex items-center gap-3">
           <EntityImageUploader
             imageUrl={draft.image?.url}
@@ -99,11 +107,17 @@ function LogoCard({
   isFirst,
   isLast,
   onMove,
+  itemLabel,
+  namePlaceholder,
+  showLink,
 }: {
   logo: PartnerLogo;
   isFirst: boolean;
   isLast: boolean;
   onMove: (direction: 'up' | 'down') => void;
+  itemLabel: string;
+  namePlaceholder: string;
+  showLink: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<LogoDraft>(() => toDraft(logo));
@@ -126,7 +140,7 @@ function LogoCard({
       return;
     }
     if (!draft.image) {
-      toast.error('A logo image is required.');
+      toast.error(`A ${itemLabel.toLowerCase()} image is required.`);
       return;
     }
     try {
@@ -204,7 +218,14 @@ function LogoCard({
 
       {isEditing ? (
         <div className="mt-5 border-t border-border/70 pt-5">
-          <LogoForm draft={draft} onChange={setDraft} label={logo.name} />
+          <LogoForm
+            draft={draft}
+            onChange={setDraft}
+            label={logo.name}
+            itemLabel={itemLabel}
+            namePlaceholder={namePlaceholder}
+            showLink={showLink}
+          />
           <div className="mt-4 flex gap-2">
             <Button type="button" size="sm" disabled={isSaving} onClick={handleSave}>
               {isSaving ? 'Saving…' : 'Save changes'}
@@ -223,10 +244,16 @@ function NewLogoCard({
   category,
   nextOrder,
   onDone,
+  itemLabel,
+  namePlaceholder,
+  showLink,
 }: {
   category: PartnerLogoCategory;
   nextOrder: number;
   onDone: () => void;
+  itemLabel: string;
+  namePlaceholder: string;
+  showLink: boolean;
 }) {
   const [draft, setDraft] = useState<LogoDraft>(EMPTY_DRAFT);
   const [createLogo, { isLoading }] = useCreatePartnerLogoMutation();
@@ -237,7 +264,7 @@ function NewLogoCard({
       return;
     }
     if (!draft.image) {
-      toast.error('A logo image is required.');
+      toast.error(`A ${itemLabel.toLowerCase()} image is required.`);
       return;
     }
     try {
@@ -248,22 +275,29 @@ function NewLogoCard({
         category,
         order: nextOrder,
       }).unwrap();
-      toast.success('Logo added.');
+      toast.success(`${itemLabel} added.`);
       onDone();
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Unable to add logo.'));
+      toast.error(getErrorMessage(error, `Unable to add ${itemLabel.toLowerCase()}.`));
     }
   };
 
   return (
     <div className="rounded-2xl border border-dashed border-primary/50 bg-primary/5 p-5">
       <div className="mb-4 flex items-center justify-between">
-        <p className="font-bold">New logo</p>
-        <Button type="button" variant="ghost" size="icon" aria-label="Cancel new logo" onClick={onDone}>
+        <p className="font-bold">New {itemLabel.toLowerCase()}</p>
+        <Button type="button" variant="ghost" size="icon" aria-label={`Cancel new ${itemLabel.toLowerCase()}`} onClick={onDone}>
           <X className="h-4 w-4" />
         </Button>
       </div>
-      <LogoForm draft={draft} onChange={setDraft} label="new logo" />
+      <LogoForm
+        draft={draft}
+        onChange={setDraft}
+        label={`new ${itemLabel.toLowerCase()}`}
+        itemLabel={itemLabel}
+        namePlaceholder={namePlaceholder}
+        showLink={showLink}
+      />
       <div className="mt-4 flex gap-2">
         <Button type="button" size="sm" disabled={isLoading} onClick={handleCreate}>
           {isLoading ? 'Adding…' : 'Save changes'}
@@ -280,10 +314,16 @@ function PartnerLogoSection({
   category,
   title,
   description,
+  itemLabel = 'Logo',
+  namePlaceholder = 'Company / publication name',
+  showLink = true,
 }: {
   category: PartnerLogoCategory;
   title: string;
   description: string;
+  itemLabel?: string;
+  namePlaceholder?: string;
+  showLink?: boolean;
 }) {
   const { data, isLoading } = useGetPartnerLogosQuery({ category, includeInactive: true });
   const [updateLogo] = useUpdatePartnerLogoMutation();
@@ -315,13 +355,20 @@ function PartnerLogoSection({
         </div>
         {!isAdding ? (
           <Button type="button" size="sm" onClick={() => setIsAdding(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Add logo
+            <Plus className="mr-2 h-4 w-4" /> Add {itemLabel.toLowerCase()}
           </Button>
         ) : null}
       </div>
 
       {isAdding ? (
-        <NewLogoCard category={category} nextOrder={logos.length} onDone={() => setIsAdding(false)} />
+        <NewLogoCard
+          category={category}
+          nextOrder={logos.length}
+          onDone={() => setIsAdding(false)}
+          itemLabel={itemLabel}
+          namePlaceholder={namePlaceholder}
+          showLink={showLink}
+        />
       ) : null}
 
       {isLoading ? (
@@ -330,7 +377,7 @@ function PartnerLogoSection({
         </div>
       ) : logos.length === 0 ? (
         <div className="rounded-2xl border border-border/70 bg-card p-8 text-center text-sm text-muted-foreground">
-          No logos yet. Add your first one above.
+          No {itemLabel.toLowerCase()}s yet. Add your first one above.
         </div>
       ) : (
         <div className="space-y-4">
@@ -341,6 +388,9 @@ function PartnerLogoSection({
               isFirst={index === 0}
               isLast={index === logos.length - 1}
               onMove={(direction) => handleMove(index, direction)}
+              itemLabel={itemLabel}
+              namePlaceholder={namePlaceholder}
+              showLink={showLink}
             />
           ))}
         </div>
@@ -353,14 +403,14 @@ export default function AdminPartnerLogosPage() {
   return (
     <div className="space-y-10">
       <Helmet>
-        <title>B2B Clients & Media Coverage | Lotus Delight Admin</title>
+        <title>B2B Clients, Media Coverage & Gallery | Lotus Delight Admin</title>
       </Helmet>
 
       <div>
-        <h1 className="text-3xl font-black">B2B clients & media coverage</h1>
+        <h1 className="text-3xl font-black">B2B clients, media coverage & gallery</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage the animated logo carousels shown at the bottom of the homepage. Changes appear immediately —
-          edit section headings from Site Settings.
+          Manage the logo carousels and photo gallery shown on the homepage. Changes appear immediately — edit
+          section headings from Site Settings.
         </p>
       </div>
 
@@ -374,6 +424,15 @@ export default function AdminPartnerLogosPage() {
         category="media_coverage"
         title="Media Coverage"
         description="Publications and outlets shown in the homepage's media coverage carousel."
+      />
+
+      <PartnerLogoSection
+        category="gallery"
+        title="Fox Nut Processing gallery"
+        description="Photos shown in the homepage's Fox Nut Processing grid."
+        itemLabel="Photo"
+        namePlaceholder="Internal label (used as alt text if no alt is set)"
+        showLink={false}
       />
     </div>
   );

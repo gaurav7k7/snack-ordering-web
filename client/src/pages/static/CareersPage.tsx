@@ -2,6 +2,7 @@ import { Mail } from 'lucide-react';
 
 import { StaticPageLayout } from '@/components/shared/StaticPageLayout';
 import { Button } from '@/components/ui/button';
+import { useGetSiteSettingsQuery } from '@/redux/api/siteSettingsApi';
 
 const OPEN_ROLES = [
   { title: 'Warehouse & Fulfillment Associate', location: 'Mumbai, MH', type: 'Full-time' },
@@ -9,7 +10,12 @@ const OPEN_ROLES = [
   { title: 'Growth Marketing Intern', location: 'Mumbai, MH', type: 'Internship' },
 ];
 
+const DEFAULT_EMAIL = 'Lotusdelightproducts@gmail.com';
+
 export default function CareersPage() {
+  const { data } = useGetSiteSettingsQuery();
+  const email = data?.data?.settings?.company?.email || DEFAULT_EMAIL;
+
   return (
     <StaticPageLayout
       eyebrow="Join us"
@@ -37,7 +43,7 @@ export default function CareersPage() {
               </p>
             </div>
             <Button asChild size="sm" variant="outline">
-              <a href="mailto:Lotusdelightproducts@gmail.com?subject=Application">
+              <a href={`mailto:${email}?subject=Application`}>
                 <Mail className="mr-2 h-3.5 w-3.5" /> Apply
               </a>
             </Button>
@@ -48,11 +54,8 @@ export default function CareersPage() {
       <h2>Don't see a fit?</h2>
       <p>
         Send us your resume and what you'd want to work on at{' '}
-        <a
-          href="mailto:Lotusdelightproducts@gmail.com"
-          className="font-semibold text-foreground hover:text-primary"
-        >
-          Lotusdelightproducts@gmail.com
+        <a href={`mailto:${email}`} className="font-semibold text-foreground hover:text-primary">
+          {email}
         </a>{' '}
         — we read every message.
       </p>

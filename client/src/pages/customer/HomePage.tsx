@@ -11,7 +11,7 @@ import { ProductShelf } from '@/components/customer/ProductShelf';
 import { ReviewCard } from '@/components/customer/ReviewCard';
 import { SectionHeader } from '@/components/shared/SectionHeader';
 import { env } from '@/config/env';
-import { galleryImages, reviews } from '@/constants/homeContent';
+import { reviews } from '@/constants/homeContent';
 import { useGetCategoriesQuery } from '@/redux/api/categoriesApi';
 import { useGetPartnerLogosQuery } from '@/redux/api/partnerLogosApi';
 import { useSearchProductsQuery } from '@/redux/api/productsApi';
@@ -32,16 +32,20 @@ export default function HomePage() {
     }
   }, [searchParams, setSearchParams]);
 
-  const { data: featuredData } = useSearchProductsQuery({ featured: 'true', limit: '4' });
-  const { data: popularData } = useSearchProductsQuery({ sort: 'popularity', limit: '4' });
-  const { data: dealsData } = useSearchProductsQuery({ discount: '15', limit: '4' });
-  const { data: bestSellersData } = useSearchProductsQuery({ bestSeller: 'true', limit: '4' });
-  const { data: trendingData } = useSearchProductsQuery({ trending: 'true', limit: '4' });
-  const { data: newArrivalsData } = useSearchProductsQuery({ sort: 'newest', limit: '4' });
+  // Shelves are horizontally-scrolling carousels now, not a fixed grid, so
+  // each pulls more than the ~5 cards visible at once — otherwise the arrows
+  // would have nothing left to reveal after the first screenful.
+  const { data: featuredData } = useSearchProductsQuery({ featured: 'true', limit: '12' });
+  const { data: popularData } = useSearchProductsQuery({ sort: 'popularity', limit: '12' });
+  const { data: dealsData } = useSearchProductsQuery({ discount: '15', limit: '12' });
+  const { data: bestSellersData } = useSearchProductsQuery({ bestSeller: 'true', limit: '12' });
+  const { data: trendingData } = useSearchProductsQuery({ trending: 'true', limit: '12' });
+  const { data: newArrivalsData } = useSearchProductsQuery({ sort: 'newest', limit: '12' });
   const { data: categoriesData } = useGetCategoriesQuery();
   const { data: brandsData } = useGetBrandsQuery();
   const { data: b2bClientsData } = useGetPartnerLogosQuery({ category: 'b2b_client' });
   const { data: mediaCoverageData } = useGetPartnerLogosQuery({ category: 'media_coverage' });
+  const { data: galleryData } = useGetPartnerLogosQuery({ category: 'gallery' });
   const { data: siteSettingsData } = useGetSiteSettingsQuery();
 
   const featuredProducts = featuredData?.data?.products ?? [];
@@ -54,6 +58,7 @@ export default function HomePage() {
   const brands = brandsData?.data?.brands ?? [];
   const b2bClients = b2bClientsData?.data?.logos ?? [];
   const mediaCoverage = mediaCoverageData?.data?.logos ?? [];
+  const galleryImages = galleryData?.data?.logos ?? [];
   const siteSettings = siteSettingsData?.data?.settings;
 
   return (
@@ -140,42 +145,12 @@ export default function HomePage() {
       ) : null}
 
       {todaysDeals.length > 0 ? (
-        <section className="bg-foreground py-12 text-background">
-          <div className="container grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-secondary">
-                Today's deals
-              </p>
-              <h2 className="mt-2 text-3xl font-black">Fresh offers before they sell out.</h2>
-              <p className="mt-3 text-sm leading-6 text-background/75">
-                Limited-time pricing on best sellers, combo packs, and seasonal boxes.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {todaysDeals.slice(0, 2).map((product) => (
-                <a
-                  key={product._id}
-                  href={`/products/${product.slug}`}
-                  className="grid grid-cols-[96px_1fr] gap-4 rounded-lg bg-background p-3 text-foreground"
-                >
-                  <img
-                    src={cldUrl(product.images?.[0]?.url, 'thumbnail')}
-                    alt={product.name}
-                    loading="lazy"
-                    className="aspect-square rounded-md object-cover"
-                  />
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
-                      {product.discount}% off
-                    </p>
-                    <h3 className="mt-1 font-semibold">{product.name}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">Save on a fresh pack today.</p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
+        <ProductShelf
+          eyebrow="Today's deals"
+          title="Fresh offers before they sell out"
+          description="Limited-time pricing on best sellers, combo packs, and seasonal boxes."
+          products={todaysDeals}
+        />
       ) : null}
 
       {bestSellers.length > 0 ? (
@@ -209,7 +184,7 @@ export default function HomePage() {
           <div>
             <SectionHeader
               eyebrow="Combo offers"
-              title="Party boxes without the planning"
+              title="Delight in Every Bite"
               description="Mix spicy, cheesy, sweet, and crunchy packs into ready-to-serve bundles for family nights, office treats, and gifting."
             />
             <div className="grid gap-3 sm:grid-cols-2">
@@ -271,31 +246,29 @@ export default function HomePage() {
 
       <Newsletter />
 
-      <section className="py-12">
-        <div className="container">
-          <SectionHeader
-            eyebrow="Instagram gallery"
-            title="Fresh from the feed"
-            description="A quick look at gift boxes, crunchy bowls, and snack spreads customers love."
-          />
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {galleryImages.map((image) => (
-              <img
-                key={image.id}
-                src={image.src}
-                alt={image.alt}
-                loading="lazy"
-                className="aspect-square rounded-lg object-cover transition duration-300 hover:scale-[1.02]"
-              />
-            ))}
+      {galleryImages.length > 0 ? (
+        <section className="py-12">
+          <div className="container">
+            <SectionHeader align="center" title={siteSettings?.galleryHeading || 'Fox Nut Processing'} />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {galleryImages.map((image) => (
+                <img
+                  key={image._id}
+                  src={cldUrl(image.logo.url, 'card')}
+                  alt={image.logo.alt || image.name}
+                  loading="lazy"
+                  className="aspect-square rounded-lg object-cover transition duration-300 hover:scale-[1.02]"
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {b2bClients.length > 0 ? (
         <section className="border-t bg-muted/30 py-12">
           <div className="container">
-            <SectionHeader title={siteSettings?.b2bClientsHeading || 'Our B2B Clients'} />
+            <SectionHeader align="center" title={siteSettings?.b2bClientsHeading || 'Our B2B Clients'} />
             <LogoCarousel logos={b2bClients} />
           </div>
         </section>
@@ -304,7 +277,7 @@ export default function HomePage() {
       {mediaCoverage.length > 0 ? (
         <section className="border-t py-12">
           <div className="container">
-            <SectionHeader title={siteSettings?.mediaCoverageHeading || 'Media Coverage'} />
+            <SectionHeader align="center" title={siteSettings?.mediaCoverageHeading || 'Media Coverage'} />
             <LogoCarousel logos={mediaCoverage} />
           </div>
         </section>

@@ -229,12 +229,7 @@ export default function OrderDetailPage() {
                     <span>Tax</span>
                     <span>{formatCurrency(order.tax)}</span>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span>GST (5%)</span>
-                    <span>Included in price</span>
-                  </div>
-                )}
+                ) : null}
               </div>
               <div className="mt-4 border-t pt-4">
                 <div className="flex items-center justify-between text-base font-semibold">

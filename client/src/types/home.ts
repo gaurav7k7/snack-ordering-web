@@ -76,9 +76,3 @@ export type Review = {
   rating: number;
   quote: string;
 };
-
-export type GalleryImage = {
-  id: string;
-  src: string;
-  alt: string;
-};

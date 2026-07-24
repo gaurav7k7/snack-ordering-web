@@ -170,7 +170,7 @@ export const resetCustomerPassword = asyncHandler(async (req, res) => {
   await sendCriticalEmail({
     to: customer.email,
     subject: 'Reset your Lotus Delight password',
-    html: renderEmailHtml(
+    html: await renderEmailHtml(
       'Reset your password',
       `<p>An administrator has requested a password reset for your account.</p><p>Reset your password by visiting <a href="${resetUrl}">this link</a>. This link expires in 1 hour.</p><p>If you did not expect this, please contact support.</p>`,
     ),

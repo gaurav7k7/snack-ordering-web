@@ -158,12 +158,7 @@ export default function ProductsPage() {
       </Helmet>
       <Breadcrumbs items={[{ label: 'Shop snacks' }]} />
       <section className="container py-8">
-        <SectionHeader
-          level="h1"
-          eyebrow="All snacks"
-          title="Shop the full snack shelf"
-          description="Search, filters, sorting, and live inventory are powered by the product catalog API."
-        />
+        <SectionHeader level="h1" eyebrow="All snacks" title="Shop the full snack shelf" />
 
         <div className="mb-8 rounded-lg border bg-card p-4">
           <div className="grid gap-3 md:grid-cols-[1fr_180px_180px]">

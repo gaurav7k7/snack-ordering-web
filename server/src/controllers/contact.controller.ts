@@ -50,7 +50,7 @@ export const submitContactMessage = asyncHandler(async (req, res) => {
       to: env.supportEmail,
       subject: `[Customer Message] ${resolvedSubject}`,
       text: `From: ${name} <${email}>${phone ? `\nPhone: ${phone}` : ''}\n\n${message}`,
-      html: renderEmailHtml(
+      html: await renderEmailHtml(
         'New customer message',
         `<p><strong>Name:</strong> ${escapeHtml(name)}</p>
          <p><strong>Email:</strong> ${escapeHtml(email)}</p>

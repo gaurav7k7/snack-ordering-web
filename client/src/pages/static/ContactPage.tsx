@@ -6,26 +6,40 @@ import { toast } from 'react-hot-toast';
 import { Breadcrumbs } from '@/components/shared/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useSubmitContactMessageMutation } from '@/redux/api/contactApi';
+import { useGetSiteSettingsQuery } from '@/redux/api/siteSettingsApi';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 import { isValidPhone, sanitizePhoneInput } from '@/utils/validation';
 
 const inputClass =
   'w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm outline-none transition focus:border-primary';
 
-const CONTACT_DETAILS = [
-  {
-    icon: Mail,
-    label: 'Email',
-    value: 'Lotusdelightproducts@gmail.com',
-    href: 'mailto:Lotusdelightproducts@gmail.com',
-  },
-  { icon: Phone, label: 'Phone', value: '+91 93415 02582', href: 'tel:+919341502582' },
-  { icon: MapPin, label: 'Address', value: 'Andheri East, Mumbai, Maharashtra, India' },
-];
+const DEFAULT_PHONE = '+91 93415 02582';
+const DEFAULT_EMAIL = 'Lotusdelightproducts@gmail.com';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [submitMessage, { isLoading }] = useSubmitContactMessageMutation();
+  const { data: settingsData } = useGetSiteSettingsQuery();
+  const company = settingsData?.data?.settings?.company;
+
+  const phone = company?.phone || DEFAULT_PHONE;
+  const email = company?.email || DEFAULT_EMAIL;
+  const addressParts = [
+    company?.addressLine1,
+    company?.addressLine2,
+    company?.city,
+    company?.state,
+    company?.postalCode,
+    company?.country,
+  ].filter(Boolean);
+
+  const contactDetails: Array<{ icon: typeof Mail; label: string; value: string; href?: string }> = [
+    { icon: Mail, label: 'Email', value: email, href: `mailto:${email}` },
+    { icon: Phone, label: 'Phone', value: phone, href: `tel:${phone.replace(/[^+\d]/g, '')}` },
+    ...(addressParts.length > 0
+      ? [{ icon: MapPin, label: 'Address', value: addressParts.join(', ') }]
+      : []),
+  ];
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -63,7 +77,7 @@ export default function ContactPage() {
           </p>
 
           <div className="mt-8 space-y-4">
-            {CONTACT_DETAILS.map((detail) => (
+            {contactDetails.map((detail) => (
               <div key={detail.label} className="flex items-start gap-3">
                 <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                   <detail.icon className="h-5 w-5" />

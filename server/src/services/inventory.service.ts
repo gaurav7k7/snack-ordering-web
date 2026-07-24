@@ -49,7 +49,7 @@ async function sendLowStockAlertEmail(alerts: StockAlert[]) {
     )
     .join('');
 
-  const html = renderEmailHtml(
+  const html = await renderEmailHtml(
     'Low stock alert',
     `<p>The following product${alerts.length > 1 ? 's' : ''} need restocking soon:</p>
      <table style="width:100%;border-collapse:collapse;margin-top:12px;font-size:14px;">

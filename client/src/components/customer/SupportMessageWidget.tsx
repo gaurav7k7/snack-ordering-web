@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { useFloatingActionOffset } from '@/hooks/useFloatingActionOffset';
 import { useSubmitContactMessageMutation } from '@/redux/api/contactApi';
+import { useGetSiteSettingsQuery } from '@/redux/api/siteSettingsApi';
 import { cn } from '@/utils/cn';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 import { isValidPhone, sanitizePhoneInput } from '@/utils/validation';
@@ -17,6 +18,8 @@ const inputClass =
   'h-9 w-full rounded-lg border bg-background px-3 text-xs outline-none focus:ring-2 focus:ring-primary/40';
 
 const EMPTY_FORM = { name: '', email: '', phone: '', message: '' };
+const DEFAULT_PHONE = '+91 93415 02582';
+const DEFAULT_EMAIL = 'Lotusdelightproducts@gmail.com';
 
 export function SupportMessageWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +28,10 @@ export function SupportMessageWidget() {
   const prefersReducedMotion = useReducedMotion();
   const bottomOffset = useFloatingActionOffset();
   const [submitMessage, { isLoading }] = useSubmitContactMessageMutation();
+  const { data: settingsData } = useGetSiteSettingsQuery();
+  const company = settingsData?.data?.settings?.company;
+  const phone = company?.phone || DEFAULT_PHONE;
+  const email = company?.email || DEFAULT_EMAIL;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -122,11 +129,11 @@ export function SupportMessageWidget() {
               )}
 
               <div className="flex flex-col gap-1.5 border-t pt-3 text-xs text-muted-foreground">
-                <a href="tel:+919341502582" className="flex items-center gap-1.5 hover:text-primary">
-                  <Phone className="h-3 w-3" /> +91 93415 02582
+                <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} className="flex items-center gap-1.5 hover:text-primary">
+                  <Phone className="h-3 w-3" /> {phone}
                 </a>
-                <a href="mailto:Lotusdelightproducts@gmail.com" className="flex items-center gap-1.5 hover:text-primary">
-                  <Mail className="h-3 w-3" /> Lotusdelightproducts@gmail.com
+                <a href={`mailto:${email}`} className="flex items-center gap-1.5 hover:text-primary">
+                  <Mail className="h-3 w-3" /> {email}
                 </a>
               </div>
             </div>

@@ -1,7 +1,7 @@
 // Product prices already include 5% GST (set by the admin when pricing each
-// product) — this is kept only for display copy ("GST (5%) Included in
-// Product Price") and to correctly show the real, additive tax amount that
-// was actually charged on historical orders placed before this policy.
+// product) — the customer-facing UI shows no tax breakdown at all. This is
+// kept only to correctly show the real, additive tax amount that was
+// actually charged on historical orders placed before this policy.
 // Nothing computes a *new* additive tax from this going forward.
 export const TAX_RATE = 0.05;
 

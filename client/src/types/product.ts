@@ -39,6 +39,7 @@ export type SearchProduct = {
   badge?: string;
   availableQuantity?: number;
   stock?: 'in_stock' | 'low_stock' | 'out_of_stock';
+  weight?: string;
 };
 
 export type ApiProductImage = { url: string; publicId: string; alt: string };

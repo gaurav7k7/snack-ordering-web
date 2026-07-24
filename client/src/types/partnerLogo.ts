@@ -1,4 +1,4 @@
-export type PartnerLogoCategory = 'b2b_client' | 'media_coverage';
+export type PartnerLogoCategory = 'b2b_client' | 'media_coverage' | 'gallery';
 
 export type PartnerLogo = {
   _id: string;
